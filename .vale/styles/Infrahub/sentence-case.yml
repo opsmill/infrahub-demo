@@ -21,13 +21,18 @@ exceptions:
   - BGP
   - CA certificates
   - CI
+  - CI/CD
+  - CLI
   - Codespaces
   - Containerlab
   - CoreArtifactTarget
   - CoreRepository
   - CoreGroup
+  - DC
+  - DC-2
   - Docker Compose
   - E2E
+  - Example
   - Generics
   - Git
   - GitHub
@@ -63,6 +68,8 @@ exceptions:
   - OIDC
   - Open ID Connect
   - OpsMill
+  - Option A
+  - Option B
   - Pydantic
   - Python
   - RabbitMQ
@@ -75,6 +82,7 @@ exceptions:
   - Tony Stark
   - TransformPython
   - UI
+  - Using
   - Vale
   - VS Code
   - VS Code extensions

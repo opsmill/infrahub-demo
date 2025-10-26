@@ -5,7 +5,9 @@ APIs
 append_git_suffix
 artifact_definitions
 artifact_name
+ASNs
 async
+Auditability
 Authentik
 boolean
 check_definitions
@@ -14,6 +16,8 @@ CloudFormation
 codespace
 codespaces
 combobox
+Composable
+composable
 config
 Config
 configs
@@ -21,9 +25,11 @@ Containerlab
 content_type
 convert_query_response
 coroutine
+create_dc
 cypher
 Dagster
 datastore
+Dcim
 default_branch
 default_filter
 deserialized
@@ -34,6 +40,7 @@ direnv
 display_labels
 docker
 dockerfile
+docstrings
 Docstrings
 docusaurus
 e2e
@@ -42,6 +49,7 @@ enum
 enums
 env
 eslint
+Evolvability
 excalidraw
 fanout
 file_path
@@ -64,6 +72,7 @@ Infrahub's
 infrahubctl
 IP
 IPAddress
+Ipam
 IPAM
 is_empty
 is_ip_within
@@ -75,6 +84,8 @@ json
 JSONSchema
 kbps
 Keycloak
+loopback
+loopbacks
 Loopbacks
 markdownlint
 max_count
@@ -103,17 +114,23 @@ rebase
 rebased
 Redoc
 repo
+repos
 REST
+Reusability
+reusability
 schema_mapping
 sdk
+snake_case
 subcommand
 sudo
 subnet
+subnets
 supernet
 supernets
 SVIs
 template_path
 toml
+tomek
 towncrier
 Towncrier
 uncheck
@@ -122,6 +139,7 @@ upsert
 upserting
 Upserting
 userinfo
+uv
 uuid
 UUID
 validator

@@ -22,7 +22,7 @@ Before you begin, ensure you have the following installed on your system:
 - **Disk space**: At least 10GB free space
 - **Network**: Internet connection for downloading dependencies and Docker images
 
-## Step 1: Install uv
+## Step 1: install uv
 
 If you don't have `uv` installed, follow the installation instructions for your operating system:
 
@@ -40,7 +40,7 @@ Verify the installation:
 uv --version
 ```
 
-## Step 2: Clone the repository
+## Step 2: clone the repository
 
 Clone the demo repository to your local machine:
 
@@ -49,7 +49,7 @@ git clone https://github.com/opsmill/infrahub-demo.git
 cd infrahub-demo
 ```
 
-## Step 3: Install Python dependencies
+## Step 3: install Python dependencies
 
 Use `uv` to install all required Python packages:
 
@@ -63,7 +63,7 @@ uv sync --group dev
 
 This creates a virtual environment and installs all necessary packages including the Infrahub SDK.
 
-## Step 4: Set up environment variables
+## Step 4: set up environment variables
 
 Create environment variables for connecting to Infrahub. You can either export them directly or create a `.env` file:
 
@@ -76,7 +76,7 @@ export INFRAHUB_API_TOKEN="06438eb2-8019-4776-878c-0941b1f1d1ec"
 The API token above is a demo token for local development only. Do not use this in production environments.
 :::
 
-## Step 5: Start Infrahub
+## Step 5: start Infrahub
 
 Start the Infrahub containers using the included invoke task:
 
@@ -100,7 +100,7 @@ You should see containers for:
 - `infrahub-message-queue` - RabbitMQ message broker
 - `infrahub-git` - Git repository server
 
-## Step 6: Access the Infrahub web interface
+## Step 6: access the Infrahub web interface
 
 Once the containers are running, open your web browser and navigate to:
 
@@ -113,11 +113,11 @@ You should see the Infrahub login screen. Use the default credentials:
 - **Username**: `admin`
 - **Password**: `infrahub`
 
-## Step 7: Bootstrap the demo data
+## Step 7: bootstrap the demo data
 
 Now that Infrahub is running, load the demo schemas and data. You can use the automated bootstrap script or run the steps manually.
 
-### Option A: Automated bootstrap (recommended)
+### Option A: automated bootstrap (recommended)
 
 Run the bootstrap script to load everything in one command:
 
@@ -127,7 +127,7 @@ Run the bootstrap script to load everything in one command:
 
 This script performs all the steps in Option B automatically.
 
-### Option B: Manual bootstrap
+### Option B: manual bootstrap
 
 If you prefer to run each step individually:
 
@@ -155,7 +155,7 @@ uv run infrahubctl object load data/events/
 Loading schemas and data can take several minutes. Watch the console output to monitor progress.
 :::
 
-## Step 8: Verify the installation
+## Step 8: verify the installation
 
 To verify that everything is set up correctly:
 

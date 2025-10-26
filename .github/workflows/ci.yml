@@ -152,4 +152,4 @@ jobs:
           curl -sL "https://github.com/errata-ai/vale/releases/download/v${VALE_VERSION}/vale_${VALE_VERSION}_Linux_64-bit.tar.gz" -o vale.tar.gz
           tar -xzf vale.tar.gz
       - name: "Validate documentation style"
-        run: ./vale $(find ./docs -type f \( -name "*.mdx" -o -name "*.md" \) )
+        run: ./vale $(find ./docs/docs -type f \( -name "*.mdx" -o -name "*.md" \) )
