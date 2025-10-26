@@ -32,7 +32,7 @@ spec:
   kind: IpamPrefix
   data:
     - prefix: "10.1.1.0/24"
-      description: "DMZ segment"
+      description: "DMZ network segment"
 
     - prefix: "192.168.1.0/24"
       description: "Internal corporate network"
