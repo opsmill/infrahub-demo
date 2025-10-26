@@ -1,0 +1,987 @@
+# yaml-language-server: $schema=https://schema.infrahub.app/infrahub/schema/latest.json
+---
+version: "1.0"
+
+nodes:
+  # ==========================================
+  # Security Zones
+  # ==========================================
+  - name: Zone
+    namespace: Security
+    description: "Security zone with trust level"
+    label: Security Zone
+    icon: "mdi:shield-lock"
+    menu_placement: SecurityZone
+    include_in_menu: true
+    default_filter: name__value
+    order_by:
+      - name__value
+    display_labels:
+      - name__value
+    attributes:
+      - name: name
+        kind: Text
+        label: Name
+        optional: false
+        unique: true
+        order_weight: 1000
+      - name: description
+        kind: Text
+        label: Description
+        optional: true
+        order_weight: 1100
+      - name: trust_level
+        kind: Number
+        label: Trust Level
+        description: "Trust level (0-100) where 0 is untrusted and 100 is fully trusted"
+        optional: false
+        order_weight: 1200
+
+  # ==========================================
+  # Address Objects
+  # ==========================================
+  - name: IPAddress
+    namespace: Security
+    description: "Individual IP address object for security policies"
+    label: Security IP Address
+    icon: "mdi:ip-network"
+    menu_placement: SecurityIPAddress
+    include_in_menu: true
+    default_filter: name__value
+    order_by:
+      - name__value
+    display_labels:
+      - name__value
+    attributes:
+      - name: name
+        kind: Text
+        label: Name
+        optional: false
+        unique: true
+        order_weight: 1000
+      - name: description
+        kind: Text
+        label: Description
+        optional: true
+        order_weight: 1100
+    relationships:
+      - name: ipam_ip_address
+        peer: IpamIPAddress
+        label: IPAM IP Address
+        cardinality: one
+        kind: Attribute
+        optional: false
+        order_weight: 2000
+        description: "Reference to IPAM IP Address"
+
+  - name: Prefix
+    namespace: Security
+    description: "Network prefix/subnet object for security policies"
+    label: Security Prefix
+    icon: "mdi:ip-network"
+    menu_placement: SecurityPrefix
+    include_in_menu: true
+    default_filter: name__value
+    order_by:
+      - name__value
+    display_labels:
+      - name__value
+    attributes:
+      - name: name
+        kind: Text
+        label: Name
+        optional: false
+        unique: true
+        order_weight: 1000
+      - name: description
+        kind: Text
+        label: Description
+        optional: true
+        order_weight: 1100
+    relationships:
+      - name: ipam_prefix
+        peer: IpamPrefix
+        label: IPAM Prefix
+        cardinality: one
+        kind: Attribute
+        optional: false
+        order_weight: 2000
+        description: "Reference to IPAM Prefix"
+
+  - name: IPRange
+    namespace: Security
+    description: "IP address range object"
+    label: Security IP Range
+    icon: "mdi:ip-network"
+    menu_placement: SecurityIPRange
+    include_in_menu: true
+    default_filter: name__value
+    order_by:
+      - name__value
+    display_labels:
+      - name__value
+    attributes:
+      - name: name
+        kind: Text
+        label: Name
+        optional: false
+        unique: true
+        order_weight: 1000
+      - name: start
+        kind: Text
+        label: Start IP
+        description: "Starting IP address of the range"
+        optional: false
+        order_weight: 1100
+      - name: end
+        kind: Text
+        label: End IP
+        description: "Ending IP address of the range"
+        optional: false
+        order_weight: 1200
+      - name: description
+        kind: Text
+        label: Description
+        optional: true
+        order_weight: 1300
+
+  - name: FQDN
+    namespace: Security
+    description: "Fully Qualified Domain Name object"
+    label: Security FQDN
+    icon: "mdi:web"
+    menu_placement: SecurityFQDN
+    include_in_menu: true
+    default_filter: name__value
+    order_by:
+      - name__value
+    display_labels:
+      - name__value
+    attributes:
+      - name: name
+        kind: Text
+        label: Name
+        optional: false
+        unique: true
+        order_weight: 1000
+      - name: fqdn
+        kind: Text
+        label: FQDN
+        description: "Fully qualified domain name (e.g., www.example.com)"
+        optional: false
+        order_weight: 1100
+      - name: description
+        kind: Text
+        label: Description
+        optional: true
+        order_weight: 1200
+
+  - name: AddressGroup
+    namespace: Security
+    description: "Group of address objects"
+    label: Security Address Group
+    icon: "mdi:folder-network"
+    menu_placement: SecurityAddressGroup
+    include_in_menu: true
+    default_filter: name__value
+    order_by:
+      - name__value
+    display_labels:
+      - name__value
+    attributes:
+      - name: name
+        kind: Text
+        label: Name
+        optional: false
+        unique: true
+        order_weight: 1000
+      - name: description
+        kind: Text
+        label: Description
+        optional: true
+        order_weight: 1100
+    relationships:
+      - name: ip_addresses
+        peer: SecurityIPAddress
+        label: IP Addresses
+        cardinality: many
+        kind: Generic
+        optional: true
+        order_weight: 2000
+      - name: prefixes
+        peer: SecurityPrefix
+        label: Prefixes
+        cardinality: many
+        kind: Generic
+        optional: true
+        order_weight: 2100
+      - name: ip_ranges
+        peer: SecurityIPRange
+        label: IP Ranges
+        cardinality: many
+        kind: Generic
+        optional: true
+        order_weight: 2200
+      - name: fqdns
+        peer: SecurityFQDN
+        label: FQDNs
+        cardinality: many
+        kind: Generic
+        optional: true
+        order_weight: 2300
+
+  # ==========================================
+  # Service Objects
+  # ==========================================
+  - name: Service
+    namespace: Security
+    description: "Network service/port object"
+    label: Security Service
+    icon: "mdi:network"
+    menu_placement: SecurityService
+    include_in_menu: true
+    default_filter: name__value
+    order_by:
+      - name__value
+    display_labels:
+      - name__value
+    attributes:
+      - name: name
+        kind: Text
+        label: Name
+        optional: false
+        unique: true
+        order_weight: 1000
+      - name: description
+        kind: Text
+        label: Description
+        optional: true
+        order_weight: 1100
+      - name: port
+        kind: Number
+        label: Port Number
+        description: "Port number (1-65535)"
+        optional: false
+        order_weight: 1200
+      - name: protocol
+        kind: Dropdown
+        label: Protocol
+        description: "Transport protocol"
+        choices:
+          - name: tcp
+            label: TCP
+            description: "Transmission Control Protocol"
+            color: "#3498DB"
+          - name: udp
+            label: UDP
+            description: "User Datagram Protocol"
+            color: "#2ECC71"
+          - name: icmp
+            label: ICMP
+            description: "Internet Control Message Protocol"
+            color: "#F39C12"
+        default_value: tcp
+        optional: false
+        order_weight: 1300
+
+  - name: ServiceRange
+    namespace: Security
+    description: "Port range object"
+    label: Security Service Range
+    icon: "mdi:network"
+    menu_placement: SecurityServiceRange
+    include_in_menu: true
+    default_filter: name__value
+    order_by:
+      - name__value
+    display_labels:
+      - name__value
+    attributes:
+      - name: name
+        kind: Text
+        label: Name
+        optional: false
+        unique: true
+        order_weight: 1000
+      - name: description
+        kind: Text
+        label: Description
+        optional: true
+        order_weight: 1100
+      - name: start
+        kind: Number
+        label: Start Port
+        description: "Starting port number of the range"
+        optional: false
+        order_weight: 1200
+      - name: end
+        kind: Number
+        label: End Port
+        description: "Ending port number of the range"
+        optional: false
+        order_weight: 1300
+      - name: protocol
+        kind: Dropdown
+        label: Protocol
+        description: "Transport protocol"
+        choices:
+          - name: tcp
+            label: TCP
+            description: "Transmission Control Protocol"
+            color: "#3498DB"
+          - name: udp
+            label: UDP
+            description: "User Datagram Protocol"
+            color: "#2ECC71"
+        default_value: tcp
+        optional: false
+        order_weight: 1400
+
+  - name: ServiceGroup
+    namespace: Security
+    description: "Group of service objects"
+    label: Security Service Group
+    icon: "mdi:folder-network"
+    menu_placement: SecurityServiceGroup
+    include_in_menu: true
+    default_filter: name__value
+    order_by:
+      - name__value
+    display_labels:
+      - name__value
+    attributes:
+      - name: name
+        kind: Text
+        label: Name
+        optional: false
+        unique: true
+        order_weight: 1000
+      - name: description
+        kind: Text
+        label: Description
+        optional: true
+        order_weight: 1100
+    relationships:
+      - name: services
+        peer: SecurityService
+        label: Services
+        cardinality: many
+        kind: Generic
+        optional: true
+        order_weight: 2000
+      - name: service_ranges
+        peer: SecurityServiceRange
+        label: Service Ranges
+        cardinality: many
+        kind: Generic
+        optional: true
+        order_weight: 2100
+
+  # ==========================================
+  # Application Objects
+  # ==========================================
+  - name: Application
+    namespace: Security
+    description: "Application object for application-based security"
+    label: Security Application
+    icon: "mdi:application"
+    menu_placement: SecurityApplication
+    include_in_menu: true
+    default_filter: name__value
+    order_by:
+      - name__value
+    display_labels:
+      - name__value
+    attributes:
+      - name: name
+        kind: Text
+        label: Name
+        optional: false
+        unique: true
+        order_weight: 1000
+      - name: description
+        kind: Text
+        label: Description
+        optional: true
+        order_weight: 1100
+      - name: category
+        kind: Text
+        label: Category
+        description: "Application category (e.g., web-browsing, file-sharing)"
+        optional: true
+        order_weight: 1200
+      - name: subcategory
+        kind: Text
+        label: Subcategory
+        description: "Application subcategory"
+        optional: true
+        order_weight: 1300
+      - name: risk_level
+        kind: Number
+        label: Risk Level
+        description: "Risk level (1-5) where 1 is low and 5 is critical"
+        optional: true
+        order_weight: 1400
+      - name: default_ports
+        kind: Text
+        label: Default Ports
+        description: "Default ports used by this application"
+        optional: true
+        order_weight: 1500
+
+  - name: URLCategory
+    namespace: Security
+    description: "URL category for web filtering"
+    label: Security URL Category
+    icon: "mdi:web"
+    menu_placement: SecurityURLCategory
+    include_in_menu: true
+    default_filter: name__value
+    order_by:
+      - name__value
+    display_labels:
+      - name__value
+    attributes:
+      - name: name
+        kind: Text
+        label: Name
+        optional: false
+        unique: true
+        order_weight: 1000
+      - name: description
+        kind: Text
+        label: Description
+        optional: true
+        order_weight: 1100
+      - name: risk_level
+        kind: Dropdown
+        label: Risk Level
+        description: "Risk level associated with this category"
+        choices:
+          - name: low
+            label: Low
+            description: "Low risk category"
+            color: "#2ECC71"
+          - name: medium
+            label: Medium
+            description: "Medium risk category"
+            color: "#F39C12"
+          - name: high
+            label: High
+            description: "High risk category"
+            color: "#E67E22"
+          - name: critical
+            label: Critical
+            description: "Critical risk category"
+            color: "#E74C3C"
+        default_value: medium
+        optional: true
+        order_weight: 1200
+
+  # ==========================================
+  # Security Profile Objects
+  # ==========================================
+  - name: SecurityProfile
+    namespace: Security
+    description: "Security profile with various protection features"
+    label: Security Profile
+    icon: "mdi:shield-check"
+    menu_placement: SecuritySecurityProfile
+    include_in_menu: true
+    default_filter: name__value
+    order_by:
+      - name__value
+    display_labels:
+      - name__value
+    attributes:
+      - name: name
+        kind: Text
+        label: Name
+        optional: false
+        unique: true
+        order_weight: 1000
+      - name: description
+        kind: Text
+        label: Description
+        optional: true
+        order_weight: 1100
+      - name: antivirus_enabled
+        kind: Boolean
+        label: Antivirus Enabled
+        description: "Enable antivirus scanning"
+        default_value: false
+        optional: true
+        order_weight: 1200
+      - name: ips_enabled
+        kind: Boolean
+        label: IPS Enabled
+        description: "Enable intrusion prevention system"
+        default_value: false
+        optional: true
+        order_weight: 1300
+      - name: url_filtering_enabled
+        kind: Boolean
+        label: URL Filtering Enabled
+        description: "Enable URL filtering"
+        default_value: false
+        optional: true
+        order_weight: 1400
+
+  - name: Schedule
+    namespace: Security
+    description: "Time-based schedule for security policies"
+    label: Security Schedule
+    icon: "mdi:calendar-clock"
+    menu_placement: SecuritySchedule
+    include_in_menu: true
+    default_filter: name__value
+    order_by:
+      - name__value
+    display_labels:
+      - name__value
+    attributes:
+      - name: name
+        kind: Text
+        label: Name
+        optional: false
+        unique: true
+        order_weight: 1000
+      - name: description
+        kind: Text
+        label: Description
+        optional: true
+        order_weight: 1100
+      - name: days_of_week
+        kind: Text
+        label: Days of Week
+        description: "Comma-separated days (e.g., monday,tuesday,wednesday)"
+        optional: false
+        order_weight: 1200
+      - name: start_time
+        kind: Text
+        label: Start Time
+        description: "Start time in HH:MM format"
+        optional: false
+        order_weight: 1300
+      - name: end_time
+        kind: Text
+        label: End Time
+        description: "End time in HH:MM format"
+        optional: false
+        order_weight: 1400
+      - name: timezone
+        kind: Text
+        label: Timezone
+        description: "Timezone (e.g., UTC, America/New_York)"
+        default_value: "UTC"
+        optional: true
+        order_weight: 1500
+
+  # ==========================================
+  # Policy Objects
+  # ==========================================
+  - name: Policy
+    namespace: Security
+    description: "Security policy containing rules"
+    label: Security Policy
+    icon: "mdi:file-document-outline"
+    menu_placement: SecurityPolicy
+    include_in_menu: true
+    default_filter: name__value
+    order_by:
+      - name__value
+    display_labels:
+      - name__value
+    attributes:
+      - name: name
+        kind: Text
+        label: Name
+        optional: false
+        unique: true
+        order_weight: 1000
+      - name: description
+        kind: Text
+        label: Description
+        optional: true
+        order_weight: 1100
+
+  - name: PolicyRule
+    namespace: Security
+    description: "Security policy rule"
+    label: Security Policy Rule
+    icon: "mdi:file-document-edit-outline"
+    menu_placement: SecurityPolicyRule
+    include_in_menu: true
+    default_filter: name__value
+    order_by:
+      - index__value
+    display_labels:
+      - name__value
+    attributes:
+      - name: index
+        kind: Number
+        label: Rule Index
+        description: "Rule index for ordering (lower numbers processed first)"
+        optional: false
+        order_weight: 1000
+      - name: name
+        kind: Text
+        label: Name
+        optional: false
+        order_weight: 1100
+      - name: action
+        kind: Dropdown
+        label: Action
+        description: "Action to take when rule matches"
+        choices:
+          - name: permit
+            label: Permit
+            description: "Allow the traffic"
+            color: "#2ECC71"
+          - name: deny
+            label: Deny
+            description: "Block the traffic"
+            color: "#E74C3C"
+        default_value: deny
+        optional: false
+        order_weight: 1200
+      - name: log
+        kind: Boolean
+        label: Log
+        description: "Enable logging for this rule"
+        default_value: false
+        optional: true
+        order_weight: 1300
+    relationships:
+      - name: policy
+        peer: SecurityPolicy
+        label: Policy
+        cardinality: one
+        kind: Attribute
+        optional: false
+        order_weight: 2000
+      - name: source_zone
+        peer: SecurityZone
+        label: Source Zone
+        cardinality: one
+        kind: Attribute
+        optional: true
+        identifier: policyrule_source_zone
+        order_weight: 2100
+      - name: destination_zone
+        peer: SecurityZone
+        label: Destination Zone
+        cardinality: one
+        kind: Attribute
+        optional: true
+        identifier: policyrule_destination_zone
+        order_weight: 2200
+      - name: source_addresses
+        peer: SecurityAddressGroup
+        label: Source Addresses
+        cardinality: many
+        kind: Generic
+        optional: true
+        identifier: policyrule_source_addresses
+        order_weight: 2300
+      - name: destination_addresses
+        peer: SecurityAddressGroup
+        label: Destination Addresses
+        cardinality: many
+        kind: Generic
+        optional: true
+        identifier: policyrule_destination_addresses
+        order_weight: 2400
+      - name: services
+        peer: SecurityServiceGroup
+        label: Services
+        cardinality: many
+        kind: Generic
+        optional: true
+        order_weight: 2500
+      - name: applications
+        peer: SecurityApplication
+        label: Applications
+        cardinality: many
+        kind: Generic
+        optional: true
+        order_weight: 2600
+      - name: url_categories
+        peer: SecurityURLCategory
+        label: URL Categories
+        cardinality: many
+        kind: Generic
+        optional: true
+        order_weight: 2700
+      - name: security_profile
+        peer: SecuritySecurityProfile
+        label: Security Profile
+        cardinality: one
+        kind: Attribute
+        optional: true
+        order_weight: 2800
+      - name: schedule
+        peer: SecuritySchedule
+        label: Schedule
+        cardinality: one
+        kind: Attribute
+        optional: true
+        order_weight: 2900
+
+  # ==========================================
+  # Segment-specific Security Objects
+  # ==========================================
+  - name: SegmentSecurityZone
+    namespace: Security
+    description: "Security zone for network segments"
+    label: Segment Security Zone
+    icon: "mdi:shield-lock-outline"
+    menu_placement: SecuritySegmentSecurityZone
+    include_in_menu: true
+    default_filter: name__value
+    order_by:
+      - name__value
+    display_labels:
+      - name__value
+    attributes:
+      - name: name
+        kind: Text
+        label: Name
+        optional: false
+        unique: true
+        order_weight: 1000
+      - name: description
+        kind: Text
+        label: Description
+        optional: true
+        order_weight: 1100
+      - name: trust_level
+        kind: Number
+        label: Trust Level
+        description: "Trust level (0-100) where 0 is untrusted and 100 is fully trusted"
+        optional: false
+        order_weight: 1200
+      - name: isolation_level
+        kind: Dropdown
+        label: Isolation Level
+        description: "Level of isolation for this zone"
+        choices:
+          - name: controlled
+            label: Controlled
+            description: "Controlled isolation with specific rules"
+            color: "#F39C12"
+          - name: strict
+            label: Strict
+            description: "Strict isolation with minimal allowed traffic"
+            color: "#E74C3C"
+        default_value: controlled
+        optional: true
+        order_weight: 1300
+
+  - name: SegmentSecurityProfile
+    namespace: Security
+    description: "Security profile for network segments"
+    label: Segment Security Profile
+    icon: "mdi:shield-check-outline"
+    menu_placement: SecuritySegmentSecurityProfile
+    include_in_menu: true
+    default_filter: name__value
+    order_by:
+      - name__value
+    display_labels:
+      - name__value
+    attributes:
+      - name: name
+        kind: Text
+        label: Name
+        optional: false
+        unique: true
+        order_weight: 1000
+      - name: description
+        kind: Text
+        label: Description
+        optional: true
+        order_weight: 1100
+      - name: default_action
+        kind: Dropdown
+        label: Default Action
+        description: "Default action for unmatched traffic"
+        choices:
+          - name: permit
+            label: Permit
+            description: "Allow by default"
+            color: "#2ECC71"
+          - name: deny
+            label: Deny
+            description: "Block by default"
+            color: "#E74C3C"
+        default_value: deny
+        optional: false
+        order_weight: 1200
+      - name: enable_micro_segmentation
+        kind: Boolean
+        label: Enable Micro Segmentation
+        description: "Enable micro-segmentation for this profile"
+        default_value: false
+        optional: true
+        order_weight: 1300
+      - name: enable_dhcp_snooping
+        kind: Boolean
+        label: Enable DHCP Snooping
+        description: "Enable DHCP snooping protection"
+        default_value: false
+        optional: true
+        order_weight: 1400
+      - name: enable_arp_inspection
+        kind: Boolean
+        label: Enable ARP Inspection
+        description: "Enable dynamic ARP inspection"
+        default_value: false
+        optional: true
+        order_weight: 1500
+      - name: max_mac_addresses
+        kind: Number
+        label: Max MAC Addresses
+        description: "Maximum number of MAC addresses allowed"
+        optional: true
+        order_weight: 1600
+
+  - name: SegmentAccessControlList
+    namespace: Security
+    description: "Access control list for network segments"
+    label: Segment ACL
+    icon: "mdi:playlist-check"
+    menu_placement: SecuritySegmentAccessControlList
+    include_in_menu: true
+    default_filter: name__value
+    order_by:
+      - name__value
+    display_labels:
+      - name__value
+    attributes:
+      - name: name
+        kind: Text
+        label: Name
+        optional: false
+        unique: true
+        order_weight: 1000
+      - name: description
+        kind: Text
+        label: Description
+        optional: true
+        order_weight: 1100
+      - name: acl_type
+        kind: Dropdown
+        label: ACL Type
+        description: "Type of access control list"
+        choices:
+          - name: standard
+            label: Standard
+            description: "Standard ACL (address-based only)"
+            color: "#3498DB"
+          - name: extended
+            label: Extended
+            description: "Extended ACL (address and service-based)"
+            color: "#2ECC71"
+        default_value: extended
+        optional: false
+        order_weight: 1200
+
+  - name: SegmentACLRule
+    namespace: Security
+    description: "Access control list rule for network segments"
+    label: Segment ACL Rule
+    icon: "mdi:playlist-edit"
+    menu_placement: SecuritySegmentACLRule
+    include_in_menu: true
+    default_filter: name__value
+    order_by:
+      - index__value
+    display_labels:
+      - name__value
+    attributes:
+      - name: index
+        kind: Number
+        label: Rule Index
+        description: "Rule index for ordering (lower numbers processed first)"
+        optional: false
+        order_weight: 1000
+      - name: name
+        kind: Text
+        label: Name
+        optional: false
+        order_weight: 1100
+      - name: action
+        kind: Dropdown
+        label: Action
+        description: "Action to take when rule matches"
+        choices:
+          - name: permit
+            label: Permit
+            description: "Allow the traffic"
+            color: "#2ECC71"
+          - name: deny
+            label: Deny
+            description: "Block the traffic"
+            color: "#E74C3C"
+        default_value: deny
+        optional: false
+        order_weight: 1200
+      - name: direction
+        kind: Dropdown
+        label: Direction
+        description: "Traffic direction"
+        choices:
+          - name: ingress
+            label: Ingress
+            description: "Inbound traffic"
+            color: "#3498DB"
+          - name: egress
+            label: Egress
+            description: "Outbound traffic"
+            color: "#9B59B6"
+        optional: false
+        order_weight: 1300
+      - name: log
+        kind: Boolean
+        label: Log
+        description: "Enable logging for this rule"
+        default_value: false
+        optional: true
+        order_weight: 1400
+      - name: description
+        kind: Text
+        label: Description
+        optional: true
+        order_weight: 1500
+    relationships:
+      - name: acl
+        peer: SecuritySegmentAccessControlList
+        label: ACL
+        cardinality: one
+        kind: Attribute
+        optional: false
+        order_weight: 2000
+      - name: source_addresses
+        peer: SecurityAddressGroup
+        label: Source Addresses
+        cardinality: many
+        kind: Generic
+        optional: true
+        identifier: aclrule_source_addresses
+        order_weight: 2100
+      - name: destination_addresses
+        peer: SecurityAddressGroup
+        label: Destination Addresses
+        cardinality: many
+        kind: Generic
+        optional: true
+        identifier: aclrule_destination_addresses
+        order_weight: 2200
+      - name: services
+        peer: SecurityServiceGroup
+        label: Services
+        cardinality: many
+        kind: Generic
+        optional: true
+        order_weight: 2300

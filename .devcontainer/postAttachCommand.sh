@@ -1,4 +1,0 @@
-#!/bin/bash
-# Inspired by https://github.com/orgs/community/discussions/15351
-gh codespace ports visibility 8000:public -c $CODESPACE_NAME
-echo "gh codespace ports -c $CODESPACE_NAME" >> ~/.bashrc

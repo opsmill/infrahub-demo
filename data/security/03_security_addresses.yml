@@ -1,57 +1,82 @@
 ---
+# Security IP Addresses that reference IPAM IP Addresses
+# NOTE: Load 01_ipam_for_security.yml FIRST to create the IPAM objects
 apiVersion: infrahub.app/v1
 kind: Object
 spec:
   kind: SecurityIPAddress
   data:
     - name: "web-server-01"
-      address: "10.1.1.10"
+      ipam_ip_address:
+        data:
+          address: "10.1.1.10/32"
       description: "Primary web server"
 
     - name: "web-server-02"
-      address: "10.1.1.11"
+      ipam_ip_address:
+        data:
+          address: "10.1.1.11/32"
       description: "Secondary web server"
 
     - name: "db-server-01"
-      address: "10.1.2.10"
+      ipam_ip_address:
+        data:
+          address: "10.1.2.10/32"
       description: "Primary database server"
 
     - name: "mail-server"
-      address: "10.1.1.20"
+      ipam_ip_address:
+        data:
+          address: "10.1.1.20/32"
       description: "Mail server"
 
     - name: "dns-server-01"
-      address: "10.1.3.10"
+      ipam_ip_address:
+        data:
+          address: "10.1.3.10/32"
       description: "Primary DNS server"
 
     - name: "ntp-server"
-      address: "10.1.3.20"
+      ipam_ip_address:
+        data:
+          address: "10.1.3.20/32"
       description: "Network Time Protocol server"
 
 ---
+# Security Prefixes that reference IPAM Prefixes
 apiVersion: infrahub.app/v1
 kind: Object
 spec:
   kind: SecurityPrefix
   data:
     - name: "dmz-network"
-      prefix: "10.1.1.0/24"
+      ipam_prefix:
+        data:
+          prefix: "10.1.1.0/24"
       description: "DMZ network segment"
 
     - name: "internal-network"
-      prefix: "192.168.1.0/24"
+      ipam_prefix:
+        data:
+          prefix: "192.168.1.0/24"
       description: "Internal corporate network"
 
     - name: "guest-network"
-      prefix: "172.16.1.0/24"
+      ipam_prefix:
+        data:
+          prefix: "172.16.1.0/24"
       description: "Guest network segment"
 
     - name: "management-network"
-      prefix: "10.1.3.0/24"
+      ipam_prefix:
+        data:
+          prefix: "10.1.3.0/24"
       description: "Management network segment"
 
     - name: "server-network"
-      prefix: "10.1.2.0/24"
+      ipam_prefix:
+        data:
+          prefix: "10.1.2.0/24"
       description: "Server network segment"
 
 ---
