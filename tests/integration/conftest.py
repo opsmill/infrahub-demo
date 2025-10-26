@@ -51,7 +51,7 @@ class TestInfrahubDockerWithClient(TestInfrahubDocker):
         return client
 
     @staticmethod
-    def execute_command(command: str, address: str):
+    def execute_command(command: str, address: str) -> subprocess.CompletedProcess[str]:
         """Execute a shell command with Infrahub environment variables."""
         env = os.environ.copy()
         env["INFRAHUB_ADDRESS"] = address

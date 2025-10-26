@@ -1,0 +1,95 @@
+---
+title: Welcome to the Infrahub demo
+---
+
+Welcome to the Infrahub demonstration repository. This demo showcases how Infrahub serves as a central source of truth for managing modern network infrastructure with design-driven automation. It demonstrates Infrahub's core capabilities including schema-driven data modeling, composable topology generation, version control for infrastructure data, automated configuration generation, and validation workflows. Whether you're a network engineer exploring automation, a developer building on Infrahub, or an architect evaluating infrastructure management platforms, this demo provides hands-on experience with real-world patterns and workflows.
+
+## Documentation guide
+
+This documentation is organized following the [Diataxis framework](https://diataxis.fr/) to help you find exactly what you need:
+
+### Getting started
+
+| Page | Purpose |
+|------|---------|
+| **[Installation guide](./install.mdx)** | Step-by-step instructions to install and set up the demo environment on your system. Start here if this is your first time running the demo. |
+
+### Tutorials
+
+| Page | Purpose |
+|------|---------|
+| **[User walkthrough](./user-walkthrough.mdx)** | A complete hands-on tutorial that guides you through the end-user experience: creating topologies, managing branches, running generators, creating proposed changes, and validating configurations. Perfect for learning the workflow from start to finish. |
+
+### Guides
+
+| Page | Purpose |
+|------|---------|
+| **[Developer guide](./developer-guide.mdx)** | Technical deep-dive into how the demo works under the hood. Covers schema architecture, bootstrap scripts, generators, transforms, checks, and testing. Use this when extending functionality, troubleshooting issues, or understanding implementation details. |
+
+### Topics
+
+| Page | Purpose |
+|------|---------|
+| **[Understanding the concepts](./concepts.mdx)** | Explains the architectural patterns, design decisions, and core Infrahub concepts demonstrated in this project. Read this to understand the "why" behind design-driven automation, composable topologies, generators, and integration patterns. |
+
+## Quick start
+
+If you're ready to dive in:
+
+1. Follow the **[installation guide](./install.mdx)** to set up your environment
+2. Walk through the **[user tutorial](./user-walkthrough.mdx)** to create your first data center topology
+3. Explore the **[concepts](./concepts.mdx)** to deepen your understanding
+4. Reference the **[developer guide](./developer-guide.mdx)** when you're ready to extend or customize
+
+## What you'll learn
+
+Through this demo, you'll gain practical experience with:
+
+- **Schema-driven infrastructure modeling** - Defining devices, networks, and services with flexible, extensible schemas
+- **Design-driven automation** - Creating abstract topology designs that generators transform into concrete infrastructure
+- **Composable topologies** - Building complex data center and POP architectures from reusable components
+- **Version control for data** - Using branches and proposed changes to safely modify infrastructure
+- **Automated resource allocation** - Generating IP prefixes, VLANs, and addressing from resource pools
+- **Configuration generation** - Transforming structured data into device configurations via templates
+- **Data validation** - Enforcing consistency with custom checks
+- **GitOps patterns** - Managing infrastructure as code with full versioning and review workflows
+
+## Architecture at a glance
+
+The demo implements realistic network topologies including:
+
+- **Data center fabrics** with spine-leaf architecture and VxLAN/EVPN overlay
+- **Point of presence (POP) networks** with edge routers and peering connections
+- **Network segments** with load balancers and service endpoints
+- **Security zones and policies** with firewall rules and access control
+- **Resource pools** for IP address, VLAN, and ASN allocation
+- **Multi-vendor support** (Arista, Cisco templates)
+- **Automated topology generation** from abstract design definitions
+
+## Key features demonstrated
+
+### Schema extensibility
+
+The demo includes comprehensive schemas for DCIM, IPAM, topology, routing, security, and load balancing. These schemas define not just object types, but relationships, constraints, and lifecycle behaviors.
+
+### Generators and automation
+
+When you create a topology design (for example, DC-2), generators automatically create all supporting objects including devices, interfaces, IP addresses, routing protocols, and BGP peer groups following best practices and business rules.
+
+### Branch-based workflows
+
+All changes happen in branches. Proposed changes provide diff views, run validation checks, and regenerate artifacts before merging to main.
+
+### Artifact generation
+
+Templates transform Infrahub data into deployable artifacts including device configurations, topology diagrams, and cabling matrices.
+
+## Community and support
+
+- **Source code**: [github.com/petercrocker/infrahub-demo-tomek](https://github.com/petercrocker/infrahub-demo-tomek)
+- **Infrahub documentation**: [docs.infrahub.app](https://docs.infrahub.app)
+- **OpsMill website**: [opsmill.com](https://opsmill.com)
+
+## Next steps
+
+Ready to get started? Head to the **[installation guide](./install.mdx)** to set up your environment.

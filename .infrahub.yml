@@ -154,7 +154,7 @@ queries:
     file_path: queries/config/oob.gql
   - name: equinix_pop_config
     file_path: queries/topology/equinix_pop.gql
-# schemas:
-#   - schemas/
-# menus:
-#   - menus/menu.yml
+schemas:
+  - schemas/
+menus:
+  - menus/menu.yml

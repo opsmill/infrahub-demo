@@ -1,0 +1,681 @@
+---
+title: Developer guide
+---
+
+This guide provides a technical deep-dive into how the Infrahub demo works under the hood. Use this when you want to extend functionality, troubleshoot issues, customize the demo, or understand implementation details.
+
+## Project architecture
+
+The demo follows Infrahub's SDK pattern with five core component types working together:
+
+```
+Schemas → Data → Generators → Transforms → Configurations
+                      ↓
+                  Checks (Validation)
+```
+
+### Component types
+
+1. **Schemas** (`schemas/`) - Define data models, relationships, and constraints
+2. **Generators** (`generators/`) - Create infrastructure topology programmatically
+3. **Transforms** (`transforms/`) - Convert Infrahub data to device configurations
+4. **Checks** (`checks/`) - Validate configurations and connectivity
+5. **Templates** (`templates/`) - Jinja2 templates for device configurations
+
+All components are registered in `.infrahub.yml`, which acts as the configuration hub.
+
+## Project structure
+
+```
+infrahub-demo/
+├── .infrahub.yml              # Component registration
+├── checks/                    # Validation checks
+│   ├── spine.py
+│   ├── leaf.py
+│   ├── edge.py
+│   └── loadbalancer.py
+├── data/                      # Demo data
+│   ├── bootstrap/            # Initial data (locations, platforms, roles)
+│   ├── security/             # Security zones, policies, rules
+│   ├── cloud_security/       # Cloud security examples
+│   ├── dc-2.yml              # DC-2 design data
+│   └── dc-3.yml              # DC-3 design data
+├── generators/               # Topology generators
+│   ├── generate_dc.py        # Data center generator
+│   ├── generate_pop.py       # POP generator
+│   ├── generate_segment.py   # Network segment generator
+│   ├── common.py             # Shared utilities
+│   └── schema_protocols.py   # Type protocols
+├── menu/                     # UI menu definitions
+│   └── menu.yml
+├── queries/                  # GraphQL queries
+│   ├── config/              # Configuration queries
+│   ├── topology/            # Topology queries
+│   └── validation/          # Validation queries
+├── schemas/                  # Data model definitions
+│   ├── base/                # Core models
+│   │   ├── dcim.yml
+│   │   ├── ipam.yml
+│   │   ├── location.yml
+│   │   └── topology.yml
+│   └── extensions/          # Extended models
+│       ├── console/
+│       ├── routing/
+│       ├── security/
+│       ├── service/
+│       └── topology/
+├── scripts/                  # Automation scripts
+│   ├── bootstrap.sh         # Complete setup
+│   └── demo.sh              # Demo execution
+├── templates/               # Jinja2 config templates
+├── transforms/              # Config transforms
+│   ├── leaf.py
+│   ├── spine.py
+│   ├── edge.py
+│   └── loadbalancer.py
+├── tests/                   # Test suite
+│   ├── unit/               # Unit tests
+│   ├── integration/        # Integration tests
+│   └── smoke/              # Smoke tests
+└── tasks.py                 # Invoke task definitions
+```
+
+## Schemas
+
+Schemas define the data model using YAML. They specify nodes (object types), attributes, relationships, and constraints.
+
+### Schema naming conventions
+
+- **Nodes**: PascalCase (for example, `DcimGenericDevice`)
+- **Attributes**: snake_case (for example, `device_type`)
+- **Relationships**: snake_case (for example, `parent_location`)
+- **Namespaces**: PascalCase (for example, `Dcim`, `Ipam`, `Service`)
+
+### Schema example
+
+```yaml
+nodes:
+  - name: GenericDevice
+    namespace: Dcim
+    description: "A network device"
+    inherit_from:
+      - DcimDevice
+    attributes:
+      - name: hostname
+        kind: Text
+        optional: false
+        unique: true
+      - name: device_type
+        kind: Text
+        optional: true
+    relationships:
+      - name: location
+        peer: LocationBuilding
+        cardinality: one
+        optional: false
+      - name: interfaces
+        peer: DcimInterface
+        cardinality: many
+        kind: Component
+```
+
+### Schema types
+
+The demo includes schemas for:
+
+- **DCIM** (Data Center Infrastructure Management) - Devices, interfaces, racks
+- **IPAM** (IP Address Management) - IP addresses, prefixes, VLANs
+- **Location** - Sites, buildings, rooms
+- **Topology** - Data centers, POPs, deployments
+- **Routing** - BGP, OSPF, routing policies
+- **Security** - Zones, policies, firewall rules
+- **Service** - Load balancers, segments, services
+
+### Loading schemas
+
+```bash
+uv run infrahubctl schema load schemas --branch main
+```
+
+Schemas are loaded into Infrahub and become the foundation for all data.
+
+## Generators
+
+Generators create infrastructure topology programmatically from high-level design inputs. They inherit from `InfrahubGenerator` and implement the `generate()` method.
+
+### Generator pattern
+
+```python
+from infrahub_sdk.generators import InfrahubGenerator
+from typing import Any
+
+class DCTopologyGenerator(InfrahubGenerator):
+    async def generate(self, data: dict[str, Any]) -> None:
+        """Generate data center topology based on design data."""
+        # 1. Query design data
+        # 2. Create devices
+        # 3. Create interfaces
+        # 4. Create IP addresses
+        # 5. Create routing configurations
+        pass
+```
+
+### DC generator workflow
+
+The `create_dc` generator in `generators/generate_dc.py`:
+
+1. **Queries the topology design** - Reads DC-2 parameters like spine count, leaf count, underlay protocol
+2. **Creates resource pools** - Sets up IP prefix pools and VLAN pools
+3. **Creates devices** - Generates spine, leaf, and border-leaf switches with correct roles and platforms
+4. **Creates interfaces** - Adds physical interfaces, loopbacks, and sub-interfaces
+5. **Creates connections** - Establishes fabric peering between spines and leaves
+6. **Configures routing** - Sets up BGP or OSPF underlay and BGP EVPN overlay
+7. **Assigns IP addresses** - Allocates addresses from pools for all interfaces
+
+### Generator registration
+
+Generators are registered in `.infrahub.yml`:
+
+```yaml
+generator_definitions:
+  - name: create_dc
+    file_path: generators/generate_dc.py
+    targets: topologies_dc
+    query: topology_dc
+    class_name: DCTopologyGenerator
+    parameters:
+      name: name__value
+```
+
+- **targets** - GraphQL query that selects which objects trigger the generator
+- **query** - GraphQL query providing input data
+- **parameters** - Parameters passed from triggering object
+
+### Running generators
+
+Generators can be triggered:
+
+1. **Manually** via the web UI (Actions → Generator Definitions)
+2. **Via API** using GraphQL mutations
+3. **Automatically** via event actions (if configured)
+
+## Transforms
+
+Transforms convert Infrahub data into device configurations. They inherit from `InfrahubTransform` and use Jinja2 templates.
+
+### Transform pattern
+
+```python
+from infrahub_sdk.transforms import InfrahubTransform
+from typing import Any
+
+class SpineTransform(InfrahubTransform):
+    query = "spine_config"  # GraphQL query name
+
+    async def transform(self, data: Any) -> Any:
+        """Transform InfrahubHub data to spine configuration."""
+        device = data["DcimGenericDevice"]["edges"][0]["node"]
+
+        # Process data
+        context = self.prepare_context(device)
+
+        # Render template
+        return self.render_template(
+            template="spine.j2",
+            data=context
+        )
+
+    def prepare_context(self, device: Any) -> dict[str, Any]:
+        """Prepare template context from device data."""
+        return {
+            "hostname": device["name"]["value"],
+            "interfaces": self.process_interfaces(device["interfaces"]),
+            "bgp": self.process_bgp(device),
+        }
+```
+
+### Transform workflow
+
+1. **Query data** - Fetch device and related data via GraphQL
+2. **Process data** - Transform into template-friendly structure
+3. **Render template** - Use Jinja2 to generate configuration
+4. **Return artifact** - Provide configuration as string
+
+### Transform registration
+
+Transforms are registered in `.infrahub.yml`:
+
+```yaml
+python_transforms:
+  - name: spine
+    class_name: Spine
+    file_path: transforms/spine.py
+
+artifact_definitions:
+  - name: spine_config
+    artifact_name: spine
+    content_type: text/plain
+    targets: spines           # GraphQL query selecting devices
+    transformation: spine      # Transform name
+    parameters:
+      device: name__value
+```
+
+## Templates
+
+Jinja2 templates generate device configurations from structured data.
+
+### Template example
+
+```jinja2
+hostname {{ hostname }}
+
+{% for interface in interfaces %}
+interface {{ interface.name }}
+  {% if interface.description %}
+  description {{ interface.description }}
+  {% endif %}
+  {% if interface.ip_address %}
+  ip address {{ interface.ip_address }}
+  {% endif %}
+  {% if interface.enabled %}
+  no shutdown
+  {% endif %}
+{% endfor %}
+
+router bgp {{ bgp.asn }}
+  {% for neighbor in bgp.neighbors %}
+  neighbor {{ neighbor.ip }} remote-as {{ neighbor.asn }}
+  {% endfor %}
+```
+
+Templates use standard Jinja2 syntax with filters and control structures.
+
+## Checks
+
+Checks validate configurations and connectivity. They inherit from `InfrahubCheck` and implement the `check()` method.
+
+### Check pattern
+
+```python
+from infrahub_sdk.checks import InfrahubCheck
+from typing import Any
+
+class CheckSpine(InfrahubCheck):
+    query = "spine_validation"
+
+    async def check(self, data: Any) -> None:
+        """Validate spine device configuration."""
+        device = data["DcimGenericDevice"]["edges"][0]["node"]
+
+        # Validation logic
+        if not self.has_required_interfaces(device):
+            self.log_error(
+                "Missing required interfaces",
+                object_id=device["id"],
+                object_type="DcimGenericDevice"
+            )
+
+        if not self.has_bgp_config(device):
+            self.log_warning(
+                "BGP not configured",
+                object_id=device["id"]
+            )
+```
+
+### Check registration
+
+```yaml
+check_definitions:
+  - name: validate_spine
+    class_name: CheckSpine
+    file_path: checks/spine.py
+    targets: spines
+    parameters:
+      device: name__value
+```
+
+## GraphQL queries
+
+Queries are defined in `.gql` files and referenced by name in transforms and checks.
+
+### Query example
+
+```graphql
+query GetSpineConfig($device_name: String!) {
+  DcimGenericDevice(name__value: $device_name) {
+    edges {
+      node {
+        id
+        name { value }
+        role { value }
+        platform { value }
+        interfaces {
+          edges {
+            node {
+              name { value }
+              description { value }
+              ip_addresses {
+                edges {
+                  node {
+                    address { value }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+### Query registration
+
+```yaml
+queries:
+  - name: spine_config
+    file_path: queries/config/spine.gql
+```
+
+## Bootstrap data
+
+Bootstrap data provides initial objects like locations, platforms, and device types.
+
+### Bootstrap structure
+
+```
+data/bootstrap/
+├── 01_organizations.yml      # Organizations
+├── 02_asn_pools.yml          # BGP ASN pools
+├── 03_locations.yml          # Sites and buildings
+├── 04_platforms.yml          # Device platforms
+├── 05_roles.yml              # Device roles
+├── 06_device_types.yml       # Device models
+├── 07_device_templates.yml   # Interface templates
+└── ...
+```
+
+Files are numbered to ensure correct loading order due to dependencies.
+
+### Loading bootstrap data
+
+```bash
+uv run infrahubctl object load data/bootstrap --branch main
+```
+
+## Testing
+
+The demo includes comprehensive tests:
+
+### Unit tests
+
+Located in `tests/unit/`, these test individual functions and classes:
+
+```python
+def test_topology_creator():
+    """Test topology creator utility."""
+    creator = TopologyCreator(client, data)
+    result = creator.create_devices()
+    assert len(result) == expected_count
+```
+
+Run unit tests:
+
+```bash
+uv run pytest tests/unit/
+```
+
+### Integration tests
+
+Located in `tests/integration/`, these test end-to-end workflows:
+
+```python
+async def test_dc_workflow(async_client_main):
+    """Test complete DC-2 workflow."""
+    # Load schemas
+    # Load data
+    # Run generator
+    # Validate results
+    assert devices_created
+```
+
+Run integration tests:
+
+```bash
+uv run pytest tests/integration/
+```
+
+### Code quality
+
+The project enforces code quality with:
+
+```bash
+# Type checking
+uv run mypy .
+
+# Linting
+uv run ruff check .
+
+# Formatting
+uv run ruff format .
+
+# All checks
+uv run invoke validate
+```
+
+## Development workflow
+
+### Setting up for development
+
+```bash
+# Clone repository
+git clone https://github.com/t0m3kz/infrahub-demo.git
+cd infrahub-demo
+
+# Install dependencies with dev tools
+uv sync --group dev
+
+# Start Infrahub
+uv run invoke start
+
+# Load bootstrap data
+./scripts/bootstrap.sh
+```
+
+### Making changes
+
+1. **Create a feature branch** in Git
+2. **Modify code** (generators, transforms, checks, schemas)
+3. **Add tests** for new functionality
+4. **Run quality checks** (`uv run invoke validate`)
+5. **Test locally** in Infrahub
+6. **Commit changes** with descriptive messages
+7. **Create pull request** for review
+
+### Adding a new generator
+
+1. Create Python file in `generators/`
+2. Implement `InfrahubGenerator` class
+3. Register in `.infrahub.yml` under `generator_definitions`
+4. Create associated GraphQL query in `queries/`
+5. Add unit tests
+6. Test manually in Infrahub
+
+### Adding a new transform
+
+1. Create Python file in `transforms/`
+2. Implement `InfrahubTransform` class
+3. Create Jinja2 template in `templates/`
+4. Register in `.infrahub.yml` under `python_transforms` and `artifact_definitions`
+5. Create GraphQL query in `queries/`
+6. Add unit tests
+7. Test artifact generation
+
+### Adding a new check
+
+1. Create Python file in `checks/`
+2. Implement `InfrahubCheck` class
+3. Register in `.infrahub.yml` under `check_definitions`
+4. Create GraphQL query in `queries/`
+5. Add unit tests
+6. Test in proposed change workflow
+
+## Extending schemas
+
+### Adding new attributes
+
+```yaml
+nodes:
+  - name: GenericDevice
+    namespace: Dcim
+    attributes:
+      - name: serial_number        # New attribute
+        kind: Text
+        optional: true
+        unique: true
+```
+
+### Adding new relationships
+
+```yaml
+relationships:
+  - name: backup_device          # New relationship
+    peer: DcimGenericDevice
+    cardinality: one
+    optional: true
+    description: "Backup device for redundancy"
+```
+
+### Creating new node types
+
+```yaml
+nodes:
+  - name: Router                 # New node type
+    namespace: Dcim
+    inherit_from:
+      - DcimGenericDevice
+    attributes:
+      - name: routing_instance
+        kind: Text
+        optional: false
+```
+
+After modifying schemas, reload them:
+
+```bash
+uv run infrahubctl schema load schemas --branch main
+```
+
+## Common development tasks
+
+### Debugging generators
+
+Add logging to see execution flow:
+
+```python
+import logging
+
+logger = logging.getLogger(__name__)
+
+class MyGenerator(InfrahubGenerator):
+    async def generate(self, data: dict) -> None:
+        logger.info(f"Processing topology: {data}")
+        # ... generator logic
+```
+
+### Testing transforms locally
+
+```python
+# Create test data
+test_data = {
+    "DcimGenericDevice": {
+        "edges": [{"node": {"name": {"value": "spine1"}}}]
+    }
+}
+
+# Initialize transform
+transform = SpineTransform(client=client)
+
+# Run transform
+result = await transform.transform(test_data)
+print(result)
+```
+
+### Validating templates
+
+Use Jinja2 directly to test templates:
+
+```python
+from jinja2 import Template
+
+template = Template(open("templates/spine.j2").read())
+config = template.render(hostname="spine1", interfaces=[...])
+print(config)
+```
+
+## Troubleshooting
+
+### Generator fails
+
+1. Check task logs in Infrahub UI (System → Tasks)
+2. Look for Python exceptions in generator code
+3. Verify input data matches expected structure
+4. Add debug logging to narrow down issue
+
+### Transform produces incorrect output
+
+1. Examine GraphQL query results
+2. Print context data before rendering
+3. Test template with sample data
+4. Check for Jinja2 syntax errors
+
+### Check fails unexpectedly
+
+1. Review check query and data
+2. Verify validation logic
+3. Check for missing relationships or attributes
+4. Test with minimal dataset
+
+### Schema conflicts
+
+1. Check for naming conflicts
+2. Verify relationship peer nodes exist
+3. Ensure proper inheritance
+4. Review schema validation errors
+
+## Best practices
+
+### Code organization
+
+- Keep generators focused on single topology type
+- Separate common logic into utilities (`common.py`)
+- Use type hints throughout
+- Write docstrings for classes and methods
+
+### Testing
+
+- Write tests before implementing features (TDD)
+- Cover both success and failure cases
+- Use mocks for external dependencies
+- Maintain high test coverage
+
+### Documentation
+
+- Document complex generator logic
+- Add inline comments for non-obvious code
+- Update this guide when adding features
+- Keep README.md current
+
+### Performance
+
+- Use batch operations for creating many objects
+- Leverage async/await for concurrent operations
+- Profile generators for large topologies
+- Optimize GraphQL queries to fetch only needed data
+
+## Additional resources
+
+- **Infrahub SDK documentation**: [docs.infrahub.app/python-sdk/](https://docs.infrahub.app/python-sdk/)
+- **Infrahub schema guide**: [docs.infrahub.app/topics/schema/](https://docs.infrahub.app/topics/schema/)

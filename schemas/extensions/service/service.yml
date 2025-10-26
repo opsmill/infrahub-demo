@@ -113,5 +113,3 @@ extensions:
     #       cardinality: many
     #       kind: Component
     #       on_delete: no-action
-
-

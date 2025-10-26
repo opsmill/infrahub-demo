@@ -65,4 +65,3 @@ infrahub_tests:
         spec:
           path: queries/config/firewall.gql
           kind: graphql-query-smoke
-

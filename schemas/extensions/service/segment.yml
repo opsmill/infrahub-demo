@@ -20,7 +20,9 @@ nodes:
         kind: Text
         computed_attribute:
           kind: Jinja2
-          jinja2_template: "{{deployment__name__value}} - {{ owner__name__value }} - {{ environment__value }} - {{ customer_name__value }}"
+          jinja2_template: >-
+            {{deployment__name__value}} - {{ owner__name__value }} -
+            {{ environment__value }} - {{ customer_name__value }}
         read_only: true
         optional: false
       - name: customer_name

@@ -15,6 +15,7 @@ import logging
 import time
 
 import pytest
+from infrahub_sdk import InfrahubClient, InfrahubClientSync
 from infrahub_sdk.graphql import Mutation
 from infrahub_sdk.task.models import TaskState
 from infrahub_sdk.testing.repository import GitRepo
@@ -34,7 +35,7 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
         """Default branch for testing."""
         return "add-dc2"
 
-    def test_01_schema_load(self, client_main):
+    def test_01_schema_load(self, client_main: InfrahubClientSync) -> None:
         """Load all schemas into Infrahub."""
         logging.info("Starting test: test_01_schema_load")
 
@@ -51,7 +52,7 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
             f"Schema load failed: {load_schemas.stdout}\n{load_schemas.stderr}"
         )
 
-    def test_02_load_menu(self, client_main):
+    def test_02_load_menu(self, client_main: InfrahubClientSync) -> None:
         """Load menu definitions."""
         logging.info("Starting test: test_02_load_menu")
 
@@ -65,7 +66,7 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
             f"Menu load failed: {load_menu.stdout}\n{load_menu.stderr}"
         )
 
-    def test_03_load_bootstrap_data(self, client_main):
+    def test_03_load_bootstrap_data(self, client_main: InfrahubClientSync) -> None:
         """Load bootstrap data."""
         logging.info("Starting test: test_03_load_bootstrap_data")
 
@@ -79,7 +80,7 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
             f"Bootstrap data load failed: {load_data.stdout}\n{load_data.stderr}"
         )
 
-    def test_04_load_security_data(self, client_main):
+    def test_04_load_security_data(self, client_main: InfrahubClientSync) -> None:
         """Load security data (optional but good for completeness)."""
         logging.info("Starting test: test_04_load_security_data")
 
@@ -93,7 +94,9 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
             f"Security data load failed: {load_security.stdout}\n{load_security.stderr}"
         )
 
-    async def test_05_add_repository(self, async_client_main, remote_repos_dir):
+    async def test_05_add_repository(
+        self, async_client_main: InfrahubClient, remote_repos_dir: str
+    ) -> None:
         """Add the demo repository to Infrahub."""
         logging.info("Starting test: test_05_add_repository")
 
@@ -144,7 +147,7 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
         )
         logging.info("Repository synchronized successfully")
 
-    def test_06_create_branch(self, client_main, default_branch):
+    def test_06_create_branch(self, client_main: InfrahubClientSync, default_branch: str) -> None:
         """Create a new branch for the DC-2 deployment."""
         logging.info("Starting test: test_06_create_branch - branch: %s", default_branch)
 
@@ -156,7 +159,7 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
             client_main.branch.create(default_branch)
             logging.info("Created branch: %s", default_branch)
 
-    def test_07_load_dc2_design(self, client_main, default_branch):
+    def test_07_load_dc2_design(self, client_main: InfrahubClientSync, default_branch: str) -> None:
         """Load DC-2 design data onto the branch."""
         logging.info("Starting test: test_07_load_dc2_design")
 
@@ -170,7 +173,9 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
             f"DC-2 design load failed: {load_dc2.stdout}\n{load_dc2.stderr}"
         )
 
-    async def test_08_verify_dc2_created(self, async_client_main, default_branch):
+    async def test_08_verify_dc2_created(
+        self, async_client_main: InfrahubClient, default_branch: str
+    ) -> None:
         """Verify that DC-2 topology object was created."""
         logging.info("Starting test: test_08_verify_dc2_created")
 
@@ -191,7 +196,9 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
         assert dc2.name.value == "DC-2", f"Expected DC-2, got {dc2.name.value}"
         logging.info("DC-2 topology verified: %s", dc2.name.value)
 
-    async def test_09_run_generator(self, async_client_main, default_branch):
+    async def test_09_run_generator(
+        self, async_client_main: InfrahubClient, default_branch: str
+    ) -> None:
         """Run the create_dc generator for DC-2."""
         logging.info("Starting test: test_09_run_generator")
 
@@ -263,7 +270,9 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
         )
         logging.info("Generator completed successfully")
 
-    async def test_10_verify_devices_created(self, async_client_main, default_branch):
+    async def test_10_verify_devices_created(
+        self, async_client_main: InfrahubClient, default_branch: str
+    ) -> None:
         """Verify that devices were created by the generator."""
         logging.info("Starting test: test_10_verify_devices_created")
 
@@ -282,7 +291,7 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
         device_names = [device.name.value for device in devices]
         logging.info("Created devices: %s", ", ".join(device_names))
 
-    def test_11_create_diff(self, client_main, default_branch):
+    def test_11_create_diff(self, client_main: InfrahubClientSync, default_branch: str) -> None:
         """Create a diff for the branch."""
         logging.info("Starting test: test_11_create_diff")
 
@@ -308,7 +317,9 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
         )
         logging.info("Diff created successfully")
 
-    def test_12_create_proposed_change(self, client_main, default_branch):
+    def test_12_create_proposed_change(
+        self, client_main: InfrahubClientSync, default_branch: str
+    ) -> None:
         """Create a proposed change to merge the branch."""
         logging.info("Starting test: test_12_create_proposed_change")
 
@@ -398,7 +409,9 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
                 "  - %s: %s", name, conclusion
             )
 
-    def test_13_merge_proposed_change(self, client_main, default_branch):
+    def test_13_merge_proposed_change(
+        self, client_main: InfrahubClientSync, default_branch: str
+    ) -> None:
         """Merge the proposed change."""
         logging.info("Starting test: test_13_merge_proposed_change")
 
@@ -431,7 +444,7 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
         )
         logging.info("Proposed change merged successfully")
 
-    async def test_14_verify_merge_to_main(self, async_client_main):
+    async def test_14_verify_merge_to_main(self, async_client_main: InfrahubClient) -> None:
         """Verify that DC-2 and devices exist in main branch."""
         logging.info("Starting test: test_14_verify_merge_to_main")
 

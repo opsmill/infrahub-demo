@@ -77,7 +77,7 @@ nodes:
     order_by:
       - check__value
     uniqueness_constraints:
-      - [ description__value ]
+      - [description__value]
     human_friendly_id:
       - description__value
     display_labels:
