@@ -14,7 +14,7 @@ echo "Load security data"
 uv run infrahubctl object load data/security/ --branch $BRANCH
 
 echo "Add demo repository"
-uv run infrahubctl repository add DEMO https://github.com/petercrocker/infrahub-demo-tomek.git --ref main --read-only
+uv run infrahubctl repository add DEMO https://github.com/petercrocker/infrahub-demo.git --ref main --read-only
 
 echo "Add event actions"
 sleep 15

@@ -45,7 +45,7 @@ uv run infrahubctl object load data/bootstrap --branch main
 uv run infrahubctl object load data/security/ --branch main
 
 # Add demo repository
-uv run infrahubctl repository add DEMO https://github.com/petercrocker/infrahub-demo-tomek.git --read-only
+uv run infrahubctl repository add DEMO https://github.com/petercrocker/infrahub-demo.git --read-only
 
 # Load event actions (optional)
 uv run infrahubctl object load data/events/ --branch main
@@ -262,7 +262,7 @@ uv run infrahubctl object load data/bootstrap
 uv run infrahubctl object load data/security/
 
 # 6. Add repository
-uv run infrahubctl repository add DEMO https://github.com/petercrocker/infrahub-demo-tomek.git --read-only
+uv run infrahubctl repository add DEMO https://github.com/petercrocker/infrahub-demo.git --read-only
 
 # 7. Load event actions (optional)
 uv run infrahubctl object load data/events/
@@ -347,7 +347,7 @@ query GetDeviceConfig($device_name: String!) {
 
 - [InfraHub Documentation](https://docs.infrahub.app)
 - [InfraHub SDK Documentation](https://docs.infrahub.app/python-sdk/)
-- [Project Discussions](https://github.com/t0m3kz/infrahub-demo/discussions/)
+- [Project Discussions](https://github.com/opsmill/infrahub-demo/discussions/)
 
 ## Documentation Quality
 

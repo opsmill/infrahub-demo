@@ -3,7 +3,7 @@ import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
-  title: 'Infrahub Demo 2',
+  title: 'Infrahub Demo',
   tagline: 'Step by step demo to discover Infrahub',
   favicon: 'img/favicon.ico',
 
@@ -14,7 +14,7 @@ const config: Config = {
   baseUrl: '/',
 
   organizationName: 'opsmill',
-  projectName: 'infrahub-demo2',
+  projectName: 'infrahub-demo',
 
   onBrokenLinks: 'throw',
   onDuplicateRoutes: "throw",
@@ -38,7 +38,7 @@ const config: Config = {
         docs: {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl: "https://github.com/opsmill/infrahub-demo2/tree/main/docs",
+          editUrl: "https://github.com/opsmill/infrahub-demo/tree/main/docs",
           routeBasePath: "/",
           sidebarCollapsed: true,
           sidebarPath: "./sidebars.ts",
@@ -74,7 +74,7 @@ const config: Config = {
         //   position: "right",
         // },
         {
-          href: "https://github.com/opsmill/infrahub-demo2",
+          href: "https://github.com/opsmill/infrahub-demo",
           position: "right",
           className: "header-github-link",
           "aria-label": "GitHub repository",

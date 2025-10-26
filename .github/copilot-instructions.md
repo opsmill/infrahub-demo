@@ -495,7 +495,7 @@ uv run infrahubctl run generators/my_generator.py
 - [InfraHub Documentation](https://docs.infrahub.app)
 - [Project README](../README.md)
 - [InfraHub SDK Documentation](https://docs.infrahub.app/python-sdk/)
-- [Project Discussions](https://github.com/t0m3kz/infrahub-demo/discussions/)
+- [Project Discussions](https://github.com/opsmill/infrahub-demo/discussions/)
 
 ## Best Practices Summary
 

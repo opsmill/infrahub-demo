@@ -10,6 +10,9 @@
 - **Version Control**: Natively integrated into the graph database which opens up some new capabilities like branching, diffing, and merging data directly in the database.
 - **Unified Storage**: By combining a graph database and git, Infrahub stores data and code needed to manage the infrastructure.
 
+> **Note**
+> This demo repository is mostly authored by the OpsMill community member [tomek](https://www.linkedin.com/in/tomekzajac/) from this example: https://github.com/t0m3kz/infrahub-demo
+
 ## Infrahub demo 2
 
 This repository is demoing the key Infrahub features for an example data center with VxLAN/EVPN and firewalls.
