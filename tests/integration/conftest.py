@@ -3,6 +3,7 @@
 import os
 import subprocess
 import tempfile
+from collections.abc import Generator
 from pathlib import Path
 
 import pytest
@@ -17,7 +18,7 @@ class TestInfrahubDockerWithClient(TestInfrahubDocker):
     """Base test class with Infrahub Docker container and clients."""
 
     @pytest.fixture(scope="class")
-    def remote_repos_dir(self) -> str:
+    def remote_repos_dir(self) -> Generator[str, None, None]:
         """Temporary directory for git repositories."""
         with tempfile.TemporaryDirectory() as tmpdir:
             yield tmpdir
