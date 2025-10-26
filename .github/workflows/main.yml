@@ -15,12 +15,12 @@ jobs:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
         with:
-          python-version: "3.10"
+          python-version: "3.12"
       - run: |
           pip install uv
           uv sync
       - run: |
-          echo "Formating code"
+          echo "Formatting code"
           uv run ruff format
           uv run ruff check --select I --fix .
       - run: |
@@ -65,40 +65,3 @@ jobs:
       - name: Run pytest
         run: |
           uv run pytest tests/ -vv
-
-  release:
-    if: ${{ github.ref == 'refs/heads/main' }}
-    permissions:
-      contents: write
-    needs: tests
-    name: Create release in GitHub
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-python@v6
-        with:
-          python-version: "3.10"
-      - run: |
-          pip install uv
-          echo "TAG=v$(uvx --from=toml-cli toml get --toml-path=pyproject.toml project.version)" >> $GITHUB_ENV
-      - name: Creates a release in GitHub and uploads attachments
-        uses: softprops/action-gh-release@v2
-        with:
-          name: Release ${{ env.TAG }}
-          tag_name: ${{ env.TAG }}
-          generate_release_notes: true
-  # document:
-  #   if: ${{ github.ref == 'refs/heads/main' }}
-  #   permissions: write-all
-  #   needs: tests
-  #   name: Update documentation
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v5
-  #     - uses: actions/setup-python@v6
-  #       with:
-  #         python-version: "3.10"
-  #     - run: |
-  #         pip install uv
-  #         uv sync
-  #     - run: uv run mkdocs gh-deploy --force

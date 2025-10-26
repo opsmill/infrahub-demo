@@ -3,8 +3,6 @@
 [![Ruff][ruff-badge]][ruff-link]
 [![Python][python-badge]][python-link]
 [![Actions status][github-badge]][github-link]
-[![Coverage Status][coverage-badge]][coverage-link]
-[![GitHub Discussion][github-discussions-badge]][github-discussions-link]
 
 ---
 
@@ -35,11 +33,6 @@
 - [`transforms/`](transforms/) – Python transforms for InfraHub
 
 ## Quickstart
-
-### Use GitHub Codespaces
-
-Deploy demo using Codespaces:
-[![Launch in GitHub Codespaces](https://img.shields.io/badge/Launch%20Infrahub%20Demo-0B6581?logo=github)](https://codespaces.new/t0m3kz/infrahub-demo?devcontainer_path=.devcontainer%2Fdevcontainer.json&ref=stable)
 
 ### Install the Infrahub SDK
 
@@ -167,36 +160,10 @@ uv run pytest
 
 Or run specific test scripts in the [`tests/`](tests/) directory.
 
-## Contributing
-
-Contributions, questions, and feedback are welcome! Please use [GitHub Discussions][github-discussions-link].
-
 ## References
 
 - [InfraHub Documentation](https://docs.infrahub.app)
-- [Project Discussions](https://github.com/t0m3kz/infrahub-demo/discussions/)
 
 ## License
 
 This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
-
-[ruff-badge]:
-<https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json>
-[ruff-link]:
-(https://github.com/astral-sh/ruff)
-[github-discussions-link]:
-<https://github.com/t0m3kz/infrahub-demo/discussions/>
-[github-discussions-badge]:
-<https://img.shields.io/static/v1?label=Discussions&message=Ask&color=blue&logo=github>
-[github-badge]:
-<https://github.com/t0m3kz/infrahub-demo/actions/workflows/main.yml/badge.svg?branch=main>
-[github-link]:
-<https://github.com/t0m3kz/infrahub-demo/actions/workflows/main.yml>
-[coverage-badge]:
-https://img.shields.io/codecov/c/github/t0m3kz/infrahub-demo?label=coverage
-[coverage-link]:
-https://codecov.io/gh/t0m3kz/infrahub-demo
-[python-badge]:
-<https://img.shields.io/badge/python-3.10%7C3.11%7C3.12-000000?logo=python>
-[python-link]:
-<https://www.python.org>
