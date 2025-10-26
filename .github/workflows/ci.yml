@@ -138,6 +138,8 @@ jobs:
     needs: ["files-changed", "yaml-lint", "python-lint"]
     runs-on: "ubuntu-22.04"
     timeout-minutes: 5
+    env:
+      VALE_VERSION: "3.7.1"
     steps:
       - uses: "actions/checkout@v5"
         with:
@@ -149,7 +151,5 @@ jobs:
         run: |
           curl -sL "https://github.com/errata-ai/vale/releases/download/v${VALE_VERSION}/vale_${VALE_VERSION}_Linux_64-bit.tar.gz" -o vale.tar.gz
           tar -xzf vale.tar.gz
-        env:
-          VALE_VERSION: ${{ env.VALE_VERSION }}
       - name: "Validate documentation style"
         run: ./vale $(find ./docs -type f \( -name "*.mdx" -o -name "*.md" \) )
