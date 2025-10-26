@@ -13,7 +13,7 @@
 > **Note**
 > This demo repository is mostly authored by the OpsMill community member [tomek](https://www.linkedin.com/in/tomekzajac/) from this example: https://github.com/t0m3kz/infrahub-demo
 
-## Infrahub demo 2
+## Infrahub demo
 
 This repository is demoing the key Infrahub features for an example data center with VxLAN/EVPN and firewalls.
 
