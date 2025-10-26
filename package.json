@@ -1,0 +1,12 @@
+{
+  "name": "infrahub-demo",
+  "private": true,
+  "version": "0.1.5",
+  "description": "Infrahub demo - documentation in docs/ directory",
+  "scripts": {
+    "build": "cd docs && npm install && npm run build"
+  },
+  "workspaces": [
+    "docs"
+  ]
+}
