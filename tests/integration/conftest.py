@@ -2,6 +2,7 @@
 
 import os
 import subprocess
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -14,6 +15,12 @@ PROJECT_DIRECTORY = TEST_DIRECTORY.parent.parent
 
 class TestInfrahubDockerWithClient(TestInfrahubDocker):
     """Base test class with Infrahub Docker container and clients."""
+
+    @pytest.fixture(scope="class")
+    def remote_repos_dir(self) -> str:
+        """Temporary directory for git repositories."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            yield tmpdir
 
     @pytest.fixture(scope="class")
     def async_client_main(self, infrahub_port: int) -> InfrahubClient:
