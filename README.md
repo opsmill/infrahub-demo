@@ -62,6 +62,14 @@ uv run invoke start
 
 ### Load initial setup
 
+You can use this script to execute all setup steps:
+
+```bash
+./scripts/bootstrap.sh
+```
+
+### Manual setup (Alternate)
+
 Load schemas
 
 ```bash
@@ -93,24 +101,18 @@ Add demo repository
 uv run infrahubctl repository add DEMO https://github.com/petercrocker/infrahub-demo-tomek.git --read-only
 ```
 
-Add event actions (optional)
+Add event actions
 
 ```bash
 uv run infrahubctl object load data/events/
 ````
-
-You can also use the script to execute all previous steps:
-
-```bash
-./scripts/bootstrap.sh
-```
 
 ### Demo 1 - Data Center
 
 In this demo, configuration is generated for a composable data center.
 
 ```bash
-./scripts/demo.sh design dc-2
+./scripts/demo.sh dc-2 add-dc2
 ```
 
 If you would like to process all steps manually, follow these steps:
