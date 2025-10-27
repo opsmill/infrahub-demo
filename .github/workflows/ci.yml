@@ -96,7 +96,7 @@ jobs:
           RUNNER_NAME=$(echo "${{ runner.name }}" | grep -o 'ghrunner[0-9]\+' | sed 's/ghrunner\([0-9]\+\)/ghrunner_\1/')
           echo "PYTEST_DEBUG_TEMPROOT=/var/lib/github/${RUNNER_NAME}/_temp" >> $GITHUB_ENV
       - name: "Run tests"
-        run: "uv run pytest tests/ -vv"
+        run: "uv run pytest tests/"
         env:
           REPOSITORY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

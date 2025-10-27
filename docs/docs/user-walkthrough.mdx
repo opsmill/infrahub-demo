@@ -86,7 +86,7 @@ Watch the output for success messages. You should see confirmations that the top
 In the web interface:
 
 1. Ensure you're on the `add-dc2` branch
-2. Navigate to **Services → Topology Deployments → Data center**
+2. Navigate to **Network Topologies → Deployments → Data center**
 3. You should see a new entry for **DC-2**
 4. Click on DC-2 to view its properties
 
@@ -116,7 +116,11 @@ A task will start. You can monitor its progress in the **Tasks** view.
 
 ### Using the CLI
 
-Alternatively, trigger the generator from the command line. First, get the generator definition ID, then run it. The web interface method is recommended for this tutorial.
+Alternatively, trigger the generator from the command line:
+
+```bash
+uv run infrahubctl generator create_dc name=DC-2 --branch add-dc2
+```
 
 ### Wait for completion
 
@@ -136,7 +140,7 @@ Once the generator completes, explore what was created:
 
 ### View devices
 
-1. Navigate to **Infrastructure → Devices → Generic Devices**
+1. Navigate to **Device Management → Infrastructure → All Devices**
 2. You should see multiple devices created:
    - Spine switches (typically 2 or more)
    - Leaf switches (typically 4 or more)
@@ -172,7 +176,7 @@ Now that you've made changes on your branch, create a proposed change to merge t
 
 ### Create the proposed change
 
-1. Navigate to **Branches → Proposed Changes**
+1. Navigate to **Proposed Changes**
 2. Click **New Proposed Change**
 3. Fill in the form:
    - **Name**: `Add DC-2 data center`
@@ -250,7 +254,7 @@ The merge process:
 ### Verify the merge
 
 1. Switch back to the **main** branch using the branch selector
-2. Navigate to **Infrastructure → Devices**
+2. Navigate to **evice Management → Infrastructure → All Devices**
 3. You should now see all the DC-2 devices in the main branch
 4. Navigate to **Services → Topology Deployments → Data center**
 5. Verify that DC-2 appears in the main branch
@@ -260,7 +264,7 @@ The merge process:
 Now that DC-2 is in the main branch, view the generated device configurations:
 
 1. Ensure you're on the **main** branch
-2. Navigate to **Infrastructure → Devices → Generic Devices**
+2. Navigate to **Device Management → Infrastructure → All Devices**
 3. Click on a spine device (for example, `dc2-spine1`)
 4. Look for an **Artifacts** section or tab
 5. Click on the spine configuration artifact

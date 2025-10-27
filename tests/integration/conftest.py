@@ -2,8 +2,6 @@
 
 import os
 import subprocess
-import tempfile
-from collections.abc import Generator
 from pathlib import Path
 
 import pytest
@@ -16,12 +14,6 @@ PROJECT_DIRECTORY = TEST_DIRECTORY.parent.parent
 
 class TestInfrahubDockerWithClient(TestInfrahubDocker):
     """Base test class with Infrahub Docker container and clients."""
-
-    @pytest.fixture(scope="class")
-    def remote_repos_dir(self) -> Generator[str, None, None]:
-        """Temporary directory for git repositories."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            yield tmpdir
 
     @pytest.fixture(scope="class")
     def async_client_main(self, infrahub_port: int) -> InfrahubClient:
@@ -52,7 +44,7 @@ class TestInfrahubDockerWithClient(TestInfrahubDocker):
             )
         )
         if default_branch not in client.branch.all():
-            client.branch.create(default_branch)
+            client.branch.create(default_branch, wait_until_completion=True)
         if client.default_branch != default_branch:
             client.default_branch = default_branch
 

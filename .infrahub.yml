@@ -157,4 +157,4 @@ queries:
 schemas:
   - schemas/
 menus:
-  - menus/menu.yml
+  - menu/menu.yml
