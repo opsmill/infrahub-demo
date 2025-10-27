@@ -44,7 +44,7 @@ class TestInfrahubDockerWithClient(TestInfrahubDocker):
             )
         )
         if default_branch not in client.branch.all():
-            client.branch.create(default_branch)
+            client.branch.create(default_branch, wait_until_completion=True)
         if client.default_branch != default_branch:
             client.default_branch = default_branch
 

@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 authors = [
     {name = "Tomek Zajac", email = "tomek@mastuazi.com"},
@@ -5,17 +9,9 @@ authors = [
 ]
 requires-python = "<3.13,>=3.10"
 dependencies = [
-    "invoke<3.0.0,>=2.2.1",
     "infrahub-sdk[all]>=1.14.0,<2.0.0",
-]
-name = "infrahub-demo"
-version = "0.1.4"
-description = "Design driven automation with Infrahub"
-readme = "README.md"
-
-[dependency-groups]
-dev = [
     "infrahub-testcontainers>=1.4.11,<2.0.0",
+    "invoke<3.0.0,>=2.2.1",
     "mypy>=1.15.0",
     "pytest>=8.3.5,<9.0.0",
     "pytest-asyncio>=0.26.0",
@@ -23,6 +19,13 @@ dev = [
     "types-pyyaml>=6.0.12.20250809",
     "yamllint>=1.37.1",
 ]
+name = "infrahub-demo"
+version = "0.1.5"
+description = "Design driven automation with Infrahub"
+readme = "README.md"
+
+[tool.setuptools]
+packages = []
 
 [tool.mypy]
 pretty = true

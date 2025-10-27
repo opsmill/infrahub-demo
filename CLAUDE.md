@@ -10,8 +10,7 @@ This is **infrahub-demo**, a comprehensive demonstration of design-driven networ
 
 - **Package Manager**: `uv` (required for all dependency operations)
 - **Python Version**: 3.10, 3.11, or 3.12
-- **Setup**: `uv sync` to install dependencies
-- **Dev Setup**: `uv sync --group dev` for development tools
+- **Setup**: `uv sync` to install all dependencies
 
 ## Common Commands
 

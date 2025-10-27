@@ -6,7 +6,7 @@ from pathlib import Path
 from invoke import task, Context  # type: ignore
 
 
-INFRAHUB_VERSION = os.getenv("INFRAHUB_VERSION", "")
+INFRAHUB_VERSION = os.getenv("INFRAHUB_VERSION", "stable")
 COMPOSE_COMMAND = f"curl https://infrahub.opsmill.io/{INFRAHUB_VERSION} | docker compose -p infrahub -f -"
 CURRENT_DIRECTORY = Path(__file__).resolve()
 DOCUMENTATION_DIRECTORY = CURRENT_DIRECTORY.parent / "docs"
