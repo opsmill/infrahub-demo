@@ -44,7 +44,7 @@ uv run infrahubctl object load data/bootstrap --branch main
 uv run infrahubctl object load data/security/ --branch main
 
 # Add demo repository
-uv run infrahubctl repository add DEMO https://github.com/petercrocker/infrahub-demo.git --read-only
+uv run infrahubctl repository add DEMO https://github.com/opsmill/infrahub-demo.git --read-only
 
 # Load event actions (optional)
 uv run infrahubctl object load data/events/ --branch main
@@ -261,7 +261,7 @@ uv run infrahubctl object load data/bootstrap
 uv run infrahubctl object load data/security/
 
 # 6. Add repository
-uv run infrahubctl repository add DEMO https://github.com/petercrocker/infrahub-demo.git --read-only
+uv run infrahubctl repository add DEMO https://github.com/opsmill/infrahub-demo.git --read-only
 
 # 7. Load event actions (optional)
 uv run infrahubctl object load data/events/

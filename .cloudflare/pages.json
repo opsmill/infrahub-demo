@@ -1,8 +1,8 @@
 {
   "$schema": "https://developers.cloudflare.com/pages/platform/pages-json-schema.json",
   "build": {
-    "command": "npm run build",
+    "command": "npm install && npm run build",
     "cwd": "docs",
-    "destination_dir": "build"
+    "destination_dir": "docs/build"
   }
 }
