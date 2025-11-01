@@ -118,8 +118,8 @@ class TopologyCreator:
         data_list: list,
     ) -> None:
         """
-        Create objects sequentially (one at a time) with upsert enabled.
-        This prevents race conditions while maintaining idempotency.
+        Create objects sequentially (one at a time) with intelligent upsert.
+        Checks if object exists first to avoid object template duplication bug.
 
         Args:
             kind: The kind of object to create.
@@ -127,10 +127,33 @@ class TopologyCreator:
         """
         for data in data_list:
             try:
-                obj = await self.client.create(
-                    kind=kind, data=data.get("payload"), branch=self.branch
-                )
-                await obj.save(allow_upsert=True)
+                payload = data.get("payload")
+                # Try to get existing object by name (most devices have unique names)
+                existing_obj = None
+                if "name" in payload:
+                    try:
+                        existing_obj = await self.client.get(
+                            kind=kind,
+                            name__value=payload["name"],
+                            branch=self.branch,
+                            raise_when_missing=False,
+                        )
+                    except (IndexError, Exception):
+                        # Object doesn't exist or multiple found
+                        existing_obj = None
+
+                if existing_obj:
+                    # Object already exists, just store it and skip
+                    obj = existing_obj
+                    action = "Found"
+                else:
+                    # Create new object without upsert to avoid template duplication
+                    obj = await self.client.create(
+                        kind=kind, data=payload, branch=self.branch
+                    )
+                    await obj.save(allow_upsert=False)
+                    action = "Created"
+
                 if data.get("store_key"):
                     self.client.store.set(
                         key=data.get("store_key"), node=obj, branch=self.branch
@@ -139,9 +162,9 @@ class TopologyCreator:
                     " ".join(obj.hfid) if obj.hfid else obj.display_label
                 )
                 self.log.info(
-                    f"- Created [{obj.get_kind()}] {object_reference}"
+                    f"- {action} [{obj.get_kind()}] {object_reference}"
                     if object_reference
-                    else f"- Created [{obj.get_kind()}]"
+                    else f"- {action} [{obj.get_kind()}]"
                 )
             except (GraphQLError, ValidationError) as exc:
                 self.log.debug(f"- Creation failed due to {exc}")

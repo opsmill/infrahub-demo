@@ -17,6 +17,6 @@ echo "Add demo repository"
 uv run infrahubctl repository add DEMO https://github.com/opsmill/infrahub-demo.git --ref main --read-only
 
 echo "Add event actions"
-sleep 60
+sleep 90
 uv run infrahubctl object load objects/events/ --branch $BRANCH
 
