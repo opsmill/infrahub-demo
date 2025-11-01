@@ -61,9 +61,9 @@ nodes:
         mock_exists.return_value = True
 
         bootstrap_files = [
-            "data/bootstrap/20_cloud_security_manufacturers.yml",
-            "data/bootstrap/21_cloud_security_platforms.yml",
-            "data/bootstrap/22_cloud_security_device_types.yml",
+            "objects/bootstrap/20_cloud_security_manufacturers.yml",
+            "objects/bootstrap/21_cloud_security_platforms.yml",
+            "objects/bootstrap/22_cloud_security_device_types.yml",
         ]
 
         for file_path in bootstrap_files:
@@ -93,7 +93,7 @@ spec:
 
         mock_exists.return_value = True
 
-        with open("data/bootstrap/20_cloud_security_manufacturers.yml", "r") as f:
+        with open("objects/bootstrap/20_cloud_security_manufacturers.yml", "r") as f:
             content = yaml.safe_load(f.read())
 
         assert "spec" in content
@@ -132,7 +132,7 @@ spec:
 
         mock_exists.return_value = True
 
-        with open("data/bootstrap/22_cloud_security_device_types.yml", "r") as f:
+        with open("objects/bootstrap/22_cloud_security_device_types.yml", "r") as f:
             content = yaml.safe_load(f.read())
 
         assert "spec" in content
@@ -149,10 +149,10 @@ spec:
         mock_exists.return_value = True
 
         data_files = [
-            "data/cloud_security/01_cloud_security_services.yml",
-            "data/cloud_security/02_zscaler_devices.yml",
-            "data/cloud_security/03_cloud_gateways.yml",
-            "data/cloud_security/04_security_services.yml",
+            "objects/cloud_security/01_cloud_security_services.yml",
+            "objects/cloud_security/02_zscaler_devices.yml",
+            "objects/cloud_security/03_cloud_gateways.yml",
+            "objects/cloud_security/04_security_services.yml",
         ]
 
         for file_path in data_files:
@@ -183,7 +183,7 @@ spec:
 
         mock_exists.return_value = True
 
-        with open("data/cloud_security/02_zscaler_devices.yml", "r") as f:
+        with open("objects/cloud_security/02_zscaler_devices.yml", "r") as f:
             content = yaml.safe_load(f.read())
 
         assert "spec" in content

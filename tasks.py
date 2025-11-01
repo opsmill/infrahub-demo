@@ -43,7 +43,7 @@ def load_menu(context: Context, menu: str = "menu", branch: str = "main") -> Non
 
 @task(optional=["branch"])
 def load_objects(
-    context: Context, path: str = "data/bootstrap/", branch: str = "main"
+    context: Context, path: str = "objects/bootstrap/", branch: str = "main"
 ) -> None:
     """Load objects from the given path."""
     context.run(f"infrahubctl object load {path} --branch {branch}")

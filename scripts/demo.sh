@@ -22,4 +22,4 @@ else
 fi
 
 echo "Load initial data"
-uv run infrahubctl object load "data/$1.yml" --branch "$BRANCH"
+uv run infrahubctl object load "objects/$1.yml" --branch "$BRANCH"

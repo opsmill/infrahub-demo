@@ -34,7 +34,7 @@ infrahub-demo/
 │   ├── leaf.py
 │   ├── edge.py
 │   └── loadbalancer.py
-├── data/                      # Demo data
+├── objects/                      # Demo data
 │   ├── bootstrap/            # Initial data (locations, platforms, roles)
 │   ├── security/             # Security zones, policies, rules
 │   ├── cloud_security/       # Cloud security examples
@@ -386,7 +386,7 @@ Bootstrap data provides initial objects like locations, platforms, and device ty
 ### Bootstrap structure
 
 ```
-data/bootstrap/
+objects/bootstrap/
 ├── 01_organizations.yml      # Organizations
 ├── 02_asn_pools.yml          # BGP ASN pools
 ├── 03_locations.yml          # Sites and buildings
@@ -402,7 +402,7 @@ Files are numbered to ensure correct loading order due to dependencies.
 ### Loading bootstrap data
 
 ```bash
-uv run infrahubctl object load data/bootstrap --branch main
+uv run infrahubctl object load objects/bootstrap --branch main
 ```
 
 ## Testing

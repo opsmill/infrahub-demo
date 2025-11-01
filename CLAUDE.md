@@ -38,16 +38,16 @@ uv run infrahubctl schema load schemas --branch main
 uv run infrahubctl menu load menu --branch main
 
 # Load bootstrap data
-uv run infrahubctl object load data/bootstrap --branch main
+uv run infrahubctl object load objects/bootstrap --branch main
 
 # Load security data
-uv run infrahubctl object load data/security/ --branch main
+uv run infrahubctl object load objects/security/ --branch main
 
 # Add demo repository
 uv run infrahubctl repository add DEMO https://github.com/opsmill/infrahub-demo.git --read-only
 
 # Load event actions (optional)
-uv run infrahubctl object load data/events/ --branch main
+uv run infrahubctl object load objects/events/ --branch main
 ```
 
 ### Branch Management
@@ -56,7 +56,7 @@ uv run infrahubctl object load data/events/ --branch main
 uv run infrahubctl branch create <branch-name>
 
 # Load data to specific branch
-uv run infrahubctl object load data/dc-2 --branch <branch-name>
+uv run infrahubctl object load objects/dc-2 --branch <branch-name>
 ```
 
 ### Testing and Validation
@@ -255,16 +255,16 @@ uv run infrahubctl schema load schemas
 uv run infrahubctl menu load menu
 
 # 4. Load bootstrap data
-uv run infrahubctl object load data/bootstrap
+uv run infrahubctl object load objects/bootstrap
 
 # 5. Load security data (optional)
-uv run infrahubctl object load data/security/
+uv run infrahubctl object load objects/security/
 
 # 6. Add repository
 uv run infrahubctl repository add DEMO https://github.com/opsmill/infrahub-demo.git --read-only
 
 # 7. Load event actions (optional)
-uv run infrahubctl object load data/events/
+uv run infrahubctl object load objects/events/
 
 # Or use the bootstrap script
 ./scripts/bootstrap.sh
@@ -279,18 +279,18 @@ uv run infrahubctl object load data/events/
 
 # Manual approach
 uv run infrahubctl branch create my-branch
-uv run infrahubctl object load data/dc-2 --branch my-branch
+uv run infrahubctl object load objects/dc-2 --branch my-branch
 # Then run generator via InfraHub UI: Actions → Generator Definitions → create_dc
 ```
 
 ## Project Structure Details
 
 - `checks/` - Validation checks for spine, leaf, edge, loadbalancer devices
-- `data/bootstrap/` - Initial data (locations, platforms, roles)
-- `data/dc-2/`, `dc-3.yml`, etc. - Demo scenario data
-- `data/security/` - Security-related demo data
-- `data/cloud_security/` - Cloud security examples
-- `data/events/` - Event action definitions
+- `objects/bootstrap/` - Initial data (locations, platforms, roles)
+- `objects/dc-2/`, `dc-3.yml`, etc. - Demo scenario data
+- `objects/security/` - Security-related demo data
+- `objects/cloud_security/` - Cloud security examples
+- `objects/events/` - Event action definitions
 - `generators/` - Topology generators (DC, POP, segment)
 - `generators/common.py` - Shared generator utilities
 - `generators/schema_protocols.py` - Type protocols for schemas

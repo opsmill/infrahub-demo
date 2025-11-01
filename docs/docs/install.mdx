@@ -100,7 +100,7 @@ You should see containers for:
 
 Once the containers are running, open your web browser and navigate to:
 
-```
+```web
 http://localhost:8000
 ```
 
@@ -118,7 +118,7 @@ Now that Infrahub is running, load the demo schemas and data. You can use the au
 Run the bootstrap script to load everything in one command:
 
 ```bash
-./scripts/bootstrap.sh
+uv run ./scripts/bootstrap.sh
 ```
 
 This script performs all the steps in Option B automatically.
@@ -135,16 +135,16 @@ uv run infrahubctl schema load schemas
 uv run infrahubctl menu load menu
 
 # 3. Load bootstrap data (locations, device types, platforms)
-uv run infrahubctl object load data/bootstrap
+uv run infrahubctl object load objects/bootstrap
 
 # 4. Load security data (optional)
-uv run infrahubctl object load data/security/
+uv run infrahubctl object load objects/security/
 
 # 5. Add the demo repository
 uv run infrahubctl repository add DEMO https://github.com/opsmill/infrahub-demo.git --read-only
 
 # 6. Load event actions (optional, enables automatic generator execution)
-uv run infrahubctl object load data/events/
+uv run infrahubctl object load objects/events/
 ```
 
 :::tip

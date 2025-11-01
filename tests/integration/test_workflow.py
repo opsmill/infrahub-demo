@@ -76,7 +76,7 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
         logging.info("Starting test: test_03_load_bootstrap_data")
 
         load_data = self.execute_command(
-            "infrahubctl object load data/bootstrap",
+            "infrahubctl object load objects/bootstrap",
             address=client_main.config.address,
         )
 
@@ -90,7 +90,7 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
         logging.info("Starting test: test_04_load_security_data")
 
         load_security = self.execute_command(
-            "infrahubctl object load data/security/",
+            "infrahubctl object load objects/security/",
             address=client_main.config.address,
         )
 
@@ -175,7 +175,7 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
         logging.info("Starting test: test_07_load_dc2_design")
 
         load_dc2 = self.execute_command(
-            f"infrahubctl object load data/dc-2.yml --branch {default_branch}",
+            f"infrahubctl object load objects/dc-2.yml --branch {default_branch}",
             address=client_main.config.address,
         )
 
