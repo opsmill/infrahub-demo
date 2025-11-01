@@ -145,6 +145,11 @@ class TopologyCreator:
                 if existing_obj:
                     # Object already exists, just store it and skip
                     obj = existing_obj
+                    # Preserve the object_template from payload for later use
+                    if "object_template" in payload and not hasattr(obj, "_data"):
+                        obj._data = {}
+                    if "object_template" in payload:
+                        obj._data["object_template"] = payload["object_template"]
                     action = "Found"
                 else:
                     # Create new object without upsert to avoid template duplication
@@ -451,22 +456,60 @@ class TopologyCreator:
             .keys()
         ]
 
+    def _get_device_template_name(self, device: Any) -> str | None:
+        """
+        Safely get the object template name from a device.
+        Handles both newly created devices and existing devices.
+
+        Args:
+            device: The device object
+
+        Returns:
+            The template name as a string, or None if not found
+        """
+        # Try different ways to access the template name
+        try:
+            # For newly created devices with object_template as list
+            if hasattr(device, "_data") and isinstance(device._data.get("object_template"), list):
+                if device._data["object_template"]:
+                    return device._data["object_template"][0]
+        except (AttributeError, KeyError, IndexError):
+            pass
+
+        try:
+            # For devices loaded from DB - try to get from the payload used to create them
+            if hasattr(device, "object_template"):
+                template = device.object_template
+                # It might be a relationship object
+                if hasattr(template, "peers") and template.peers:
+                    peer = template.peers[0]
+                    if hasattr(peer, "hfid") and peer.hfid:
+                        return peer.hfid[0] if isinstance(peer.hfid, list) else peer.hfid
+        except (AttributeError, IndexError, TypeError):
+            pass
+
+        return None
+
     async def create_oob_connections(
         self,
         connection_type: str,
     ) -> None:
         """Create objects of a specific kind and store in local store."""
         batch = await self.client.create_batch()
-        interfaces: dict = {
-            device.name.value: [
-                interface["name"]
-                for interface in self.data["templates"][
-                    device._data["object_template"][0]
+        interfaces: dict = {}
+
+        for device in self.devices:
+            template_name = self._get_device_template_name(device)
+            if template_name and template_name in self.data["templates"]:
+                interfaces[device.name.value] = [
+                    interface["name"]
+                    for interface in self.data["templates"][template_name]
+                    if interface["role"] == connection_type
                 ]
-                if interface["role"] == connection_type
-            ]
-            for device in self.devices
-        }
+            else:
+                # Skip devices where we can't determine the template
+                self.log.debug(f"Skipping {device.name.value} - could not determine template")
+                interfaces[device.name.value] = []
 
         device_key = "oob" if connection_type == "management" else "console"
         sources = {
@@ -586,4 +629,5 @@ class TopologyCreator:
                 for device in self.devices
                 if device.role.value in ["spine", "leaf", "border_leaf", "edge"]
             ],
+            allow_upsert=True,
         )

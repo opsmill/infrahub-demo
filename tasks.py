@@ -7,10 +7,19 @@ from invoke import task, Context  # type: ignore
 
 
 INFRAHUB_VERSION = os.getenv("INFRAHUB_VERSION", "stable")
-COMPOSE_COMMAND = f"curl https://infrahub.opsmill.io/{INFRAHUB_VERSION} | docker compose -p infrahub -f -"
+MAIN_DIRECTORY_PATH = Path(__file__).parent
+
+# Download compose file and use with override
+def get_compose_command() -> str:
+    """Generate docker compose command with override support."""
+    override_file = MAIN_DIRECTORY_PATH / "docker-compose.override.yml"
+    if override_file.exists():
+        return f"curl -s https://infrahub.opsmill.io/{INFRAHUB_VERSION} | docker compose -p infrahub -f - -f {override_file}"
+    return f"curl -s https://infrahub.opsmill.io/{INFRAHUB_VERSION} | docker compose -p infrahub -f -"
+
+COMPOSE_COMMAND = get_compose_command()
 CURRENT_DIRECTORY = Path(__file__).resolve()
 DOCUMENTATION_DIRECTORY = CURRENT_DIRECTORY.parent / "docs"
-MAIN_DIRECTORY_PATH = Path(__file__).parent
 
 
 @task
