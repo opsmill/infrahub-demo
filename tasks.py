@@ -7,15 +7,22 @@ from invoke import task, Context  # type: ignore
 
 
 INFRAHUB_VERSION = os.getenv("INFRAHUB_VERSION", "stable")
+INFRAHUB_ENTERPRISE = os.getenv("INFRAHUB_ENTERPRISE", "false").lower() == "true"
 MAIN_DIRECTORY_PATH = Path(__file__).parent
 
 # Download compose file and use with override
 def get_compose_command() -> str:
     """Generate docker compose command with override support."""
+    # Determine the base URL based on edition
+    if INFRAHUB_ENTERPRISE:
+        base_url = f"https://infrahub.opsmill.io/enterprise/{INFRAHUB_VERSION}"
+    else:
+        base_url = f"https://infrahub.opsmill.io/{INFRAHUB_VERSION}"
+
     override_file = MAIN_DIRECTORY_PATH / "docker-compose.override.yml"
     if override_file.exists():
-        return f"curl -s https://infrahub.opsmill.io/{INFRAHUB_VERSION} | docker compose -p infrahub -f - -f {override_file}"
-    return f"curl -s https://infrahub.opsmill.io/{INFRAHUB_VERSION} | docker compose -p infrahub -f -"
+        return f"curl -s {base_url} | docker compose -p infrahub -f - -f {override_file}"
+    return f"curl -s {base_url} | docker compose -p infrahub -f -"
 
 COMPOSE_COMMAND = get_compose_command()
 CURRENT_DIRECTORY = Path(__file__).resolve()
@@ -23,8 +30,19 @@ DOCUMENTATION_DIRECTORY = CURRENT_DIRECTORY.parent / "docs"
 
 
 @task
+def info(context: Context) -> None:
+    """Show current Infrahub configuration."""
+    edition = "Enterprise" if INFRAHUB_ENTERPRISE else "Community"
+    print(f"Infrahub Edition: {edition}")
+    print(f"Version: {INFRAHUB_VERSION}")
+    print(f"Command: {COMPOSE_COMMAND}")
+
+
+@task
 def start(context: Context) -> None:
     """Start all containers."""
+    edition = "Enterprise" if INFRAHUB_ENTERPRISE else "Community"
+    print(f"Starting Infrahub {edition} ({INFRAHUB_VERSION})...")
     context.run(f"{COMPOSE_COMMAND} up -d")
 
 

@@ -22,6 +22,7 @@ const sidebars: SidebarsConfig = {
       label: 'Guides',
       items: [
         'developer-guide',
+        'enterprise',
       ],
     },
     {

@@ -16,8 +16,8 @@ uv run infrahubctl object load objects/security/ --branch $BRANCH
 echo "Add demo repository"
 uv run infrahubctl repository add DEMO https://github.com/opsmill/infrahub-demo.git --ref main --read-only
 
-echo "Wait for repo sync - let's sleep for 90 seconds"
-sleep 90
+echo "Wait for repo sync - let's sleep for 120 seconds"
+sleep 120
 
 echo "Add event actions"
 uv run infrahubctl object load objects/events/ --branch $BRANCH
