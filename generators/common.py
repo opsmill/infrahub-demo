@@ -76,6 +76,7 @@ class TopologyCreator:
         self,
         kind: str,
         data_list: list,
+        allow_upsert: bool = False,
     ) -> None:
         """
         Create objects of a specific kind and store in local store.
@@ -83,6 +84,7 @@ class TopologyCreator:
         Args:
             kind: The kind of object to create.
             data_list: List of data dictionaries for creation.
+            allow_upsert: Whether to allow upsert operations. Use False for new devices to prevent race conditions.
         """
         batch = await self.client.create_batch()
         for data in data_list:
@@ -90,7 +92,7 @@ class TopologyCreator:
                 obj = await self.client.create(
                     kind=kind, data=data.get("payload"), branch=self.branch
                 )
-                batch.add(task=obj.save, allow_upsert=True, node=obj)
+                batch.add(task=obj.save, allow_upsert=allow_upsert, node=obj)
                 if data.get("store_key"):
                     self.client.store.set(
                         key=data.get("store_key"), node=obj, branch=self.branch
@@ -109,6 +111,40 @@ class TopologyCreator:
                 )
         except ValidationError as exc:
             self.log.debug(f"- Creation failed due to {exc}")
+
+    async def _create_sequentially(
+        self,
+        kind: str,
+        data_list: list,
+    ) -> None:
+        """
+        Create objects sequentially (one at a time) with upsert enabled.
+        This prevents race conditions while maintaining idempotency.
+
+        Args:
+            kind: The kind of object to create.
+            data_list: List of data dictionaries for creation.
+        """
+        for data in data_list:
+            try:
+                obj = await self.client.create(
+                    kind=kind, data=data.get("payload"), branch=self.branch
+                )
+                await obj.save(allow_upsert=True)
+                if data.get("store_key"):
+                    self.client.store.set(
+                        key=data.get("store_key"), node=obj, branch=self.branch
+                    )
+                object_reference = (
+                    " ".join(obj.hfid) if obj.hfid else obj.display_label
+                )
+                self.log.info(
+                    f"- Created [{obj.get_kind()}] {object_reference}"
+                    if object_reference
+                    else f"- Created [{obj.get_kind()}]"
+                )
+            except (GraphQLError, ValidationError) as exc:
+                self.log.debug(f"- Creation failed due to {exc}")
 
     async def _create(self, kind: str, data: dict) -> None:
         """
@@ -214,6 +250,7 @@ class TopologyCreator:
                 }
                 for pool in subnets
             ],
+            allow_upsert=True,
         )
 
     async def create_split_loopback_pools(self, technical_subnet_obj: Any) -> None:
@@ -382,7 +419,7 @@ class TopologyCreator:
             ("DcimVirtualDevice", virtual_devices),
         ]:
             if devices:
-                await self._create_in_batch(kind=kind, data_list=devices)
+                await self._create_sequentially(kind=kind, data_list=devices)
 
         self.devices = [
             self.client.store.get_by_hfid(f"DcimGenericDevice__{device[0]}")

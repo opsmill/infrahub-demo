@@ -44,7 +44,7 @@ The demo uses composable building blocks to construct complex network architectu
 
 ### Composition model
 
-```
+```tree
 Topology Design
     ├─ Device Templates (spine, leaf, border-leaf)
     ├─ Connectivity Patterns (fabric peering)
@@ -256,7 +256,7 @@ Artifacts are the final outputs that deploy to devices. The demo generates confi
 
 ### Artifact generation flow
 
-```
+```text
 GraphQL Query → Transform → Template → Artifact
 ```
 
@@ -391,7 +391,7 @@ This allows generators to create infrastructure in parallel.
 
 Resource pools support hierarchy for delegation:
 
-```
+```tree
 Root Pool (10.0.0.0/8)
   ├─ Region 1 (10.0.0.0/16)
   │   ├─ DC-1 (10.0.0.0/20)
