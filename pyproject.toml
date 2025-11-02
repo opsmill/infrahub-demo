@@ -9,7 +9,7 @@ authors = [
 ]
 requires-python = "<3.13,>=3.10"
 dependencies = [
-    "infrahub-sdk[all]>=1.15.0b1,<2.0.0",
+    "infrahub-sdk[all]>=1.14.0,<2.0.0",
     "infrahub-testcontainers>=1.4.11,<2.0.0",
     "invoke<3.0.0,>=2.2.1",
     "mypy>=1.15.0",
