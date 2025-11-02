@@ -5,7 +5,6 @@ generics:
   - name: Generic
     namespace: Service
     description: "Services"
-    default_filter: name__value
     order_by:
       - name__value
     display_labels:

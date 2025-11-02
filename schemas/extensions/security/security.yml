@@ -13,7 +13,6 @@ nodes:
     icon: "mdi:shield-lock"
     menu_placement: SecurityZone
     include_in_menu: true
-    default_filter: name__value
     order_by:
       - name__value
     display_labels:
@@ -47,7 +46,6 @@ nodes:
     icon: "mdi:ip-network"
     menu_placement: SecurityIPAddress
     include_in_menu: true
-    default_filter: name__value
     order_by:
       - name__value
     display_labels:
@@ -81,7 +79,6 @@ nodes:
     icon: "mdi:ip-network"
     menu_placement: SecurityPrefix
     include_in_menu: true
-    default_filter: name__value
     order_by:
       - name__value
     display_labels:
@@ -115,7 +112,6 @@ nodes:
     icon: "mdi:ip-network"
     menu_placement: SecurityIPRange
     include_in_menu: true
-    default_filter: name__value
     order_by:
       - name__value
     display_labels:
@@ -152,7 +148,6 @@ nodes:
     icon: "mdi:web"
     menu_placement: SecurityFQDN
     include_in_menu: true
-    default_filter: name__value
     order_by:
       - name__value
     display_labels:
@@ -183,7 +178,6 @@ nodes:
     icon: "mdi:folder-network"
     menu_placement: SecurityAddressGroup
     include_in_menu: true
-    default_filter: name__value
     order_by:
       - name__value
     display_labels:
@@ -240,7 +234,6 @@ nodes:
     icon: "mdi:network"
     menu_placement: SecurityService
     include_in_menu: true
-    default_filter: name__value
     order_by:
       - name__value
     display_labels:
@@ -291,7 +284,6 @@ nodes:
     icon: "mdi:network"
     menu_placement: SecurityServiceRange
     include_in_menu: true
-    default_filter: name__value
     order_by:
       - name__value
     display_labels:
@@ -344,7 +336,6 @@ nodes:
     icon: "mdi:folder-network"
     menu_placement: SecurityServiceGroup
     include_in_menu: true
-    default_filter: name__value
     order_by:
       - name__value
     display_labels:
@@ -387,7 +378,6 @@ nodes:
     icon: "mdi:application"
     menu_placement: SecurityApplication
     include_in_menu: true
-    default_filter: name__value
     order_by:
       - name__value
     display_labels:
@@ -436,7 +426,6 @@ nodes:
     icon: "mdi:web"
     menu_placement: SecurityURLCategory
     include_in_menu: true
-    default_filter: name__value
     order_by:
       - name__value
     display_labels:
@@ -488,7 +477,6 @@ nodes:
     icon: "mdi:shield-check"
     menu_placement: SecuritySecurityProfile
     include_in_menu: true
-    default_filter: name__value
     order_by:
       - name__value
     display_labels:
@@ -534,7 +522,6 @@ nodes:
     icon: "mdi:calendar-clock"
     menu_placement: SecuritySchedule
     include_in_menu: true
-    default_filter: name__value
     order_by:
       - name__value
     display_labels:
@@ -587,7 +574,6 @@ nodes:
     icon: "mdi:file-document-outline"
     menu_placement: SecurityPolicy
     include_in_menu: true
-    default_filter: name__value
     order_by:
       - name__value
     display_labels:
@@ -629,7 +615,6 @@ nodes:
     icon: "mdi:file-document-edit-outline"
     menu_placement: SecurityPolicyRule
     include_in_menu: true
-    default_filter: name__value
     order_by:
       - index__value
     display_labels:
@@ -755,7 +740,6 @@ nodes:
     icon: "mdi:shield-lock-outline"
     menu_placement: SecuritySegmentSecurityZone
     include_in_menu: true
-    default_filter: name__value
     order_by:
       - name__value
     display_labels:
@@ -802,7 +786,6 @@ nodes:
     icon: "mdi:shield-check-outline"
     menu_placement: SecuritySegmentSecurityProfile
     include_in_menu: true
-    default_filter: name__value
     order_by:
       - name__value
     display_labels:
@@ -870,7 +853,6 @@ nodes:
     icon: "mdi:playlist-check"
     menu_placement: SecuritySegmentAccessControlList
     include_in_menu: true
-    default_filter: name__value
     order_by:
       - name__value
     display_labels:
@@ -911,7 +893,6 @@ nodes:
     icon: "mdi:playlist-edit"
     menu_placement: SecuritySegmentACLRule
     include_in_menu: true
-    default_filter: name__value
     order_by:
       - index__value
     display_labels:

@@ -42,7 +42,7 @@ nodes:
         peer: SecurityPolicy
         label: Security Policies
         cardinality: many
-        kind: Attribute
+        kind: Generic
         optional: true
         order_weight: 3000
         description: "Security policies assigned to this firewall"

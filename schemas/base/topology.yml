@@ -8,7 +8,8 @@ generics:
     label: "Network Management Servers"
     human_friendly_id:
       - name__value
-    display_labels: [name__value]
+    display_labels:
+      - name__value
     order_by: [name__value]
     include_in_menu: false
     attributes:
@@ -51,7 +52,6 @@ generics:
     description: Topology Deployment
     label: Deployment
     icon: "carbon:network-3-reference"
-    default_filter: name__value
     human_friendly_id:
       - name__value
     display_labels:
@@ -63,8 +63,9 @@ generics:
         kind: Text
         order_weight: 1
         description: "3 letter deployment code"
-        min_length: 3
-        max_length: 5
+        parameters:
+          min_length: 3
+          max_length: 5
       - name: description
         kind: Text
         order_weight: 2
@@ -264,7 +265,8 @@ nodes:
     include_in_menu: false
     human_friendly_id:
       - name__value
-    display_labels: [name__value]
+    display_labels:
+      - name__value
     order_by: [name__value]
     attributes:
       - name: name
@@ -289,7 +291,8 @@ nodes:
     include_in_menu: false
     human_friendly_id:
       - name__value
-    display_labels: [name__value]
+    display_labels:
+      - name__value
     order_by: [name__value]
     inherit_from:
       - NetworkManagementServer
@@ -311,7 +314,8 @@ nodes:
     menu_placement: "NetworkManagementServer"
     human_friendly_id:
       - name__value
-    display_labels: [name__value]
+    display_labels:
+      - name__value
     order_by: [name__value]
     inherit_from:
       - NetworkManagementServer
@@ -323,7 +327,8 @@ nodes:
     menu_placement: "NetworkManagementServer"
     human_friendly_id:
       - name__value
-    display_labels: [name__value]
+    display_labels:
+      - name__value
     order_by: [name__value]
     inherit_from:
       - NetworkManagementServer
@@ -333,7 +338,6 @@ nodes:
     namespace: Topology
     description: "A Topology represents the entire network pod."
     label: "Data Center Deployment"
-    default_filter: name__value
     display_labels:
       - name__value
     order_by: [name__value]
@@ -398,7 +402,6 @@ nodes:
     namespace: Topology
     description: "A Topology represents the Colocation Center."
     label: "Colocation Center"
-    default_filter: name__value
     display_labels:
       - name__value
     order_by: [name__value]
@@ -430,7 +433,6 @@ nodes:
     namespace: Topology
     description: "A Topology represents Branch Office."
     label: "Branch Office"
-    default_filter: name__value
     display_labels:
       - name__value
     order_by: [name__value]
