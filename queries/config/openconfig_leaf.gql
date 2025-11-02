@@ -1,0 +1,52 @@
+query openconfig_leaf_config($device: String!) {
+  DcimGenericDevice(name__value: $device) {
+    edges {
+      node {
+        id
+        name {
+          value
+        }
+        interfaces {
+          edges {
+            node {
+              name {
+                value
+              }
+              description {
+                value
+              }
+              status {
+                value
+              }
+              ... on DcimPhysicalInterface {
+                mtu {
+                  value
+                }
+                ip_addresses {
+                  edges {
+                    node {
+                      address {
+                        value
+                      }
+                    }
+                  }
+                }
+              }
+              ... on DcimVirtualInterface {
+                ip_addresses {
+                  edges {
+                    node {
+                      address {
+                        value
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

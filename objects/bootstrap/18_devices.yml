@@ -1,0 +1,35 @@
+---
+apiVersion: infrahub.app/v1
+kind: Object
+spec:
+  kind: DcimPhysicalDevice
+  data:
+    - name: corp-firewall
+      role: edge_firewall
+      device_type: SRX-1500
+      platform: Juniper JunOS
+      location:
+        kind: LocationBuilding
+        data:
+          name: PAR-1
+          shortname: par-1
+          parent: Paris
+      status: active
+      interfaces:
+        kind: DcimPhysicalInterface
+        data:
+          - name: fxp0
+            role: management
+            status: free
+          - name: ge-0/0/0
+            role: leaf
+            status: free
+          - name: ge-0/0/1
+            role: leaf
+            status: free
+          - name: ge-0/0/2
+            role: leaf
+            status: free
+          - name: ge-0/0/3
+            role: leaf
+            status: free
