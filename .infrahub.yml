@@ -50,6 +50,14 @@ artifact_definitions:
     transformation: loadbalancer
     parameters:
       device: name__value
+  # Juniper Firewall
+  - name: juniper_firewall_config
+    artifact_name: juniper-firewall
+    content_type: text/plain
+    targets: juniper_firewall
+    transformation: juniper_firewall
+    parameters:
+      device: name__value
   # Containerlab
   - name: Containerlab Topology
     artifact_name: containerlab-topology
@@ -124,6 +132,9 @@ python_transforms:
   - name: equinix_pop
     class_name: EquinixPOP
     file_path: transforms/equinix_pop.py
+  - name: juniper_firewall
+    class_name: JuniperFirewall
+    file_path: transforms/juniper_firewall.py
 
 generator_definitions:
   - name: create_dc
@@ -166,6 +177,8 @@ queries:
     file_path: queries/config/oob.gql
   - name: equinix_pop_config
     file_path: queries/topology/equinix_pop.gql
+  - name: juniper_firewall_config
+    file_path: queries/config/juniper_firewall.gql
 schemas:
   - schemas/
 menus:

@@ -1,0 +1,111 @@
+system {
+    host-name {{ data.device_name }};
+    root-authentication {
+        encrypted-password "$6$CHANGE_THIS_PASSWORD";
+    }
+    services {
+        ssh;
+        web-management {
+            http {
+                interface {{ data.management_interface }};
+            }
+            https {
+                system-generated-certificate;
+                interface {{ data.management_interface }};
+            }
+        }
+    }
+    syslog {
+        user * {
+            any emergency;
+        }
+        file messages {
+            any critical;
+            authorization info;
+        }
+    }
+}
+interfaces {
+{%- for interface in data.interfaces %}
+{%- if interface.ip_address %}
+    {{ interface.name }} {
+        unit 0 {
+            family inet {
+                address {{ interface.ip_address }};
+            }
+        }
+    }
+{%- endif %}
+{%- endfor %}
+}
+{%- if data.applications %}
+applications {
+{%- for app_name, app in data.applications.items() %}
+{%- if app.type == "SecurityService" %}
+    application {{ app_name }} {
+        protocol {{ app.protocol | lower }};
+        destination-port {{ app.port }};
+    }
+{%- endif %}
+{%- endfor %}
+}
+{%- endif %}
+security {
+{%- if data.addresses %}
+    address-book global {
+{%- for addr_name, addr in data.addresses.items() %}
+{%- if addr.type == "SecurityPrefix" %}
+        address {{ addr_name }} {{ addr.value }};
+{%- elif addr.type == "SecurityIPAddress" %}
+        address {{ addr_name }} {{ addr.value }}/32;
+{%- elif addr.type == "SecurityFQDN" %}
+        address {{ addr_name }} dns-name {{ addr.value }};
+{%- endif %}
+{%- endfor %}
+    }
+{%- endif %}
+{%- if data.zone_pairs %}
+    policies {
+{%- for (source_zone, destination_zone), rules in data.zone_pairs.items() %}
+        from-zone {{ source_zone }} to-zone {{ destination_zone }} {
+{%- for rule in rules %}
+            policy {{ rule.name }} {
+                match {
+{%- if rule.source_addresses %}
+{%- for address in rule.source_addresses %}
+                    source-address {{ address }};
+{%- endfor %}
+{%- else %}
+                    source-address any;
+{%- endif %}
+{%- if rule.destination_addresses %}
+{%- for address in rule.destination_addresses %}
+                    destination-address {{ address }};
+{%- endfor %}
+{%- else %}
+                    destination-address any;
+{%- endif %}
+{%- if rule.applications %}
+{%- for application in rule.applications %}
+                    application {{ application }};
+{%- endfor %}
+{%- else %}
+                    application any;
+{%- endif %}
+                }
+                then {
+                    {{ rule.action }};
+{%- if rule.log %}
+                    log {
+                        session-init;
+                        session-close;
+                    }
+{%- endif %}
+                }
+            }
+{%- endfor %}
+        }
+{%- endfor %}
+    }
+{%- endif %}
+}

@@ -158,6 +158,12 @@ class TopologyCreator:
                 for item in self.data["design"]["elements"]
             )
         )
+
+        # Add juniper_firewall group if any firewall roles are present
+        firewall_roles = {"dc_firewall", "edge_firewall"}
+        if any(item["role"] in firewall_roles for item in self.data["design"]["elements"]):
+            roles.append("juniper_firewall")
+
         await self.client.filters(
             kind="CoreStandardGroup",
             name__values=roles + manufacturers,
@@ -362,13 +368,15 @@ class TopologyCreator:
                     "status": "active",
                     "role": role,
                     "location": self.client.store.get_by_hfid(
-                        key=f"LocationBuilding__{topology_name}"
+                        key=f"LocationBuilding__{topology_name}",
+                        branch=self.branch,
                     ).id,
                     "topology": self.data.get("id"),
                     "member_of_groups": [
                         self.client.store.get_by_hfid(
-                            key=f"CoreStandardGroup__{group_name}"
-                        ),
+                            key=f"CoreStandardGroup__{group_name}",
+                            branch=self.branch,
+                        ).id,
                     ],
                     "primary_address": await self.client.allocate_next_ip_address(
                         resource_pool=self.client.store.get(
@@ -396,12 +404,18 @@ class TopologyCreator:
             if devices:
                 await self._create_in_batch(kind=kind, data_list=devices)
 
-        self.devices = [
-            self.client.store.get_by_hfid(f"DcimGenericDevice__{device[0]}")
-            for device in self.client.store._branches[self.branch]
-            ._hfids["DcimGenericDevice"]
-            .keys()
-        ]
+        # Get all devices that were created (DcimGenericDevice includes all subtypes)
+        self.devices = []
+        if "DcimGenericDevice" in self.client.store._branches[self.branch]._hfids:
+            self.devices = [
+                self.client.store.get_by_hfid(
+                    key=f"DcimGenericDevice__{device[0]}",
+                    branch=self.branch,
+                )
+                for device in self.client.store._branches[self.branch]
+                ._hfids["DcimGenericDevice"]
+                .keys()
+            ]
 
     def _get_device_template_name(self, device: Any) -> str | None:
         """
