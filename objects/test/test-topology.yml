@@ -1,0 +1,12 @@
+---
+apiVersion: infrahub.app/v1
+kind: Object
+spec:
+  kind: TopologyDataCenter
+  data:
+    - name: TEST-DC
+      location: TEST-LOCATION
+      description: Test DC for reproducing duplicate interface bug
+      strategy: ebgp-ibgp
+      design: PHYSICAL DC CISCO S
+      emulation: false

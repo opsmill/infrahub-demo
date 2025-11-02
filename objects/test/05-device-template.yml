@@ -1,0 +1,21 @@
+---
+apiVersion: infrahub.app/v1
+kind: Object
+spec:
+  kind: TemplateDcimPhysicalDevice
+  data:
+    - template_name: TEST-DEVICE-TEMPLATE
+      device_type: TEST-DEVICE-TYPE
+      role: leaf
+      status: active
+      interfaces:
+        kind: TemplateDcimPhysicalInterface
+        data:
+          - template_name: TEST-DEVICE-TEMPLATE-eth0
+            name: eth0
+            role: management
+            status: active
+          - template_name: TEST-DEVICE-TEMPLATE-eth1
+            name: eth1
+            role: peering
+            status: active

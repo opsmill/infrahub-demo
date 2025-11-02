@@ -1,0 +1,20 @@
+query TestTopologyQuery($name: String!) {
+  TopologyDataCenter(name__value: $name) {
+    edges {
+      node {
+        id
+        name {
+          value
+        }
+        location {
+          node {
+            id
+            name {
+              value
+            }
+          }
+        }
+      }
+    }
+  }
+}

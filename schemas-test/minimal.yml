@@ -1,0 +1,191 @@
+---
+# Minimal schema for reproducing object template duplicate interface bug
+# This schema includes only what's needed to run the test generator
+version: "1.0"
+
+nodes:
+  # Minimal location node
+  - name: Building
+    namespace: Location
+    description: Simple building location for testing
+    label: Building
+    default_filter: name__value
+    order_by:
+      - name__value
+    display_labels:
+      - name__value
+    attributes:
+      - name: name
+        kind: Text
+        unique: true
+      - name: shortname
+        kind: Text
+        optional: true
+      - name: type
+        kind: Text
+        optional: true
+      - name: status
+        kind: Text
+        default_value: active
+
+  # Minimal manufacturer
+  - name: Manufacturer
+    namespace: Organization
+    description: Device manufacturer for testing
+    label: Manufacturer
+    default_filter: name__value
+    order_by:
+      - name__value
+    display_labels:
+      - name__value
+    attributes:
+      - name: name
+        kind: Text
+        unique: true
+
+  # Minimal platform
+  - name: Platform
+    namespace: Dcim
+    description: Device platform for testing
+    label: Platform
+    default_filter: name__value
+    order_by:
+      - name__value
+    display_labels:
+      - name__value
+    attributes:
+      - name: name
+        kind: Text
+        unique: true
+    relationships:
+      - name: manufacturer
+        peer: OrganizationManufacturer
+        optional: false
+        cardinality: one
+
+  # Minimal device type
+  - name: DeviceType
+    namespace: Dcim
+    description: Device type for testing
+    label: Device Type
+    default_filter: name__value
+    order_by:
+      - name__value
+    display_labels:
+      - name__value
+    attributes:
+      - name: name
+        kind: Text
+        unique: true
+    relationships:
+      - name: manufacturer
+        peer: OrganizationManufacturer
+        optional: false
+        cardinality: one
+      - name: platform
+        peer: DcimPlatform
+        optional: false
+        cardinality: one
+
+  # Physical interface (with template support)
+  - name: PhysicalInterface
+    namespace: Dcim
+    description: Physical network interface
+    label: Physical Interface
+    generate_template: true
+    uniqueness_constraints:
+      - ["device", "name__value"]
+    default_filter: name__value
+    order_by:
+      - name__value
+    display_labels:
+      - name__value
+    attributes:
+      - name: name
+        kind: Text
+      - name: role
+        kind: Text
+        optional: true
+      - name: status
+        kind: Text
+        default_value: active
+    relationships:
+      - name: device
+        peer: DcimPhysicalDevice
+        identifier: device__interface
+        optional: false
+        cardinality: one
+        kind: Parent
+
+  # Physical device (with template support)
+  - name: PhysicalDevice
+    namespace: Dcim
+    description: Physical network device
+    label: Physical Device
+    generate_template: true
+    default_filter: name__value
+    order_by:
+      - name__value
+    display_labels:
+      - name__value
+    attributes:
+      - name: name
+        kind: Text
+        unique: true
+      - name: role
+        kind: Text
+        optional: true
+      - name: status
+        kind: Text
+        default_value: active
+    relationships:
+      - name: device_type
+        peer: DcimDeviceType
+        optional: false
+        cardinality: one
+      - name: platform
+        peer: DcimPlatform
+        optional: false
+        cardinality: one
+      - name: location
+        peer: LocationBuilding
+        optional: false
+        cardinality: one
+      - name: interfaces
+        peer: DcimPhysicalInterface
+        identifier: device__interface
+        optional: true
+        cardinality: many
+        kind: Component
+
+  # Minimal data center topology
+  - name: DataCenter
+    namespace: Topology
+    description: Data center topology for testing
+    label: Data Center
+    default_filter: name__value
+    order_by:
+      - name__value
+    display_labels:
+      - name__value
+    attributes:
+      - name: name
+        kind: Text
+        unique: true
+      - name: description
+        kind: Text
+        optional: true
+      - name: strategy
+        kind: Text
+        optional: true
+      - name: design
+        kind: Text
+        optional: true
+      - name: emulation
+        kind: Boolean
+        optional: true
+    relationships:
+      - name: location
+        peer: LocationBuilding
+        optional: false
+        cardinality: one
