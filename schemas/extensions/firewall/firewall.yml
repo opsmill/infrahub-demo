@@ -1,0 +1,48 @@
+---
+# yaml-language-server: $schema=https://schema.infrahub.app/infrahub/schema/latest.json
+version: "1.0"
+
+nodes:
+  - name: Firewall
+    namespace: Security
+    description: "Firewall device with security policy management capabilities"
+    label: Firewall
+    icon: "mdi:firewall"
+    include_in_menu: true
+    inherit_from:
+      - CoreArtifactTarget
+      - DcimGenericDevice
+    attributes:
+      - name: position
+        label: Position (U)
+        description: Lowest unit.
+        kind: Number
+        optional: true
+        order_weight: 1500
+      - name: serial
+        kind: Text
+        optional: true
+        order_weight: 1500
+      - name: rack_face
+        label: Rack Face
+        description: On which face of the rack the device is mounted.
+        kind: Dropdown
+        optional: false
+        default_value: front
+        order_weight: 1515
+        choices:
+          - name: front
+            label: Front
+            description: Device mounted on the front face of the rack.
+          - name: rear
+            label: Rear
+            description: Device mounted on the rear face of the rack.
+    relationships:
+      - name: policies
+        peer: SecurityPolicy
+        label: Security Policies
+        cardinality: many
+        kind: Attribute
+        optional: true
+        order_weight: 3000
+        description: "Security policies assigned to this firewall"

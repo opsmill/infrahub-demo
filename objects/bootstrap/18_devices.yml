@@ -2,7 +2,7 @@
 apiVersion: infrahub.app/v1
 kind: Object
 spec:
-  kind: DcimPhysicalDevice
+  kind: DcimFirewall
   data:
     - name: corp-firewall
       role: edge_firewall
@@ -15,6 +15,8 @@ spec:
           shortname: par-1
           parent: Paris
       status: active
+      member_of_groups:
+        - juniper_firewall
       interfaces:
         kind: DcimPhysicalInterface
         data:

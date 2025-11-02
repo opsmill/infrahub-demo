@@ -140,13 +140,6 @@ generator_definitions:
     class_name: PopTopologyGenerator
     parameters:
       name: name__value
-  - name: test_minimal
-    file_path: generators/test/test_minimal_generator.py
-    targets: topologies_dc
-    query: test_topology
-    class_name: MinimalTestGenerator
-    parameters:
-      name: name__value
 
 queries:
   - name: topology_dc
@@ -155,8 +148,6 @@ queries:
     file_path: queries/topology/pop.gql
   - name: topology_simulator
     file_path: queries/topology/clab.gql
-  - name: test_topology
-    file_path: queries/test/test_topology.gql
   - name: topology_cabling
     file_path: queries/topology/cabling.gql
   - name: leaf_config

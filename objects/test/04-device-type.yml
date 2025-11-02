@@ -1,9 +1,0 @@
----
-apiVersion: infrahub.app/v1
-kind: Object
-spec:
-  kind: DcimDeviceType
-  data:
-    - name: TEST-DEVICE-TYPE
-      manufacturer: TestVendor
-      platform: TestOS
