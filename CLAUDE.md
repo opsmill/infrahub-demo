@@ -576,3 +576,8 @@ vale $(find ./docs/docs -type f \( -name "*.mdx" -o -name "*.md" \) )
 - Different perspectives or approaches are acknowledged where relevant
 - The content remains focused on explanation without drifting into tutorial or reference material
 - The explanation answers "why" questions, not just "what" or "how"
+
+## Other items
+
+- Always run markdownlint when .md or .mdx files change
+- Always run vale when .md or .mdx files change

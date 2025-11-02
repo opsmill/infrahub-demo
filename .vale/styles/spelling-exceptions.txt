@@ -9,6 +9,7 @@ ASNs
 async
 Auditability
 Authentik
+automations
 boolean
 check_definitions
 class_name

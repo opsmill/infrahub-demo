@@ -20,7 +20,7 @@ In this tutorial, you will:
 
 1. Create a new branch for your changes
 2. Load a data center design (DC-2)
-3. Run a generator to create devices, interfaces, and connections
+3. Wait for the automatic generator to create devices, interfaces, and connections
 4. Create a proposed change
 5. Review the generated artifacts and validation results
 6. Merge the changes to the main branch
@@ -97,38 +97,23 @@ The design specifies high-level parameters like:
 - Underlay routing protocol (eBGP or OSPF)
 - Addressing schemes
 
-## Step 4: Run the data center generator
+## Step 4: Wait for automatic generator execution
 
-Now that the design is loaded, you'll run a generator that transforms the abstract design into concrete infrastructure objects including devices, interfaces, IP addresses, and routing configurations.
+When you loaded the DC-2 design in Step 3, Infrahub automatically triggered a generator action that transforms the abstract design into concrete infrastructure objects including devices, interfaces, IP addresses, and routing configurations.
 
-### Using the web interface
+This automation is configured through an event action (defined in `objects/events/98_generator_action.yml`) that runs the `create_dc` generator whenever a data center topology is created or updated.
 
-1. Ensure you're on the `add-dc2` branch
-2. Navigate to **Actions → Generator Definitions**
-3. Find `create_dc` in the list
-4. Click on `create_dc` to open its detail view
-5. Click the **Run** button
-6. In the dialog, select **Selected Targets**
-7. Choose **DC-2** from the dropdown
-8. Click **Run Generator**
-
-A task will start. You can monitor its progress in the **Tasks** view.
-
-### Using the CLI
-
-Alternatively, trigger the generator from the command line:
-
-```bash
-uv run infrahubctl generator create_dc name=DC-2 --branch add-dc2
-```
-
-### Wait for completion
+### Monitor generator progress
 
 Generator execution can take several minutes as it creates hundreds of objects. Monitor the task status:
 
 1. Navigate to **System → Tasks** in the left sidebar
-2. Find your generator task in the list
+2. Find your generator task in the list (look for `create_dc`)
 3. Watch the status change from "Pending" to "Running" to "Completed"
+
+:::info
+Generator actions are event-driven automations configured in Infrahub. When you load a data center topology object, the event system automatically triggers the `create_dc` generator. This eliminates the need for manual generator execution and ensures consistency across deployments.
+:::
 
 :::tip
 Generators create infrastructure following best practices. For DC-2, the create_dc generator will create spine switches, leaf switches, border leafs, management connections, fabric peering, loopback interfaces, and BGP configurations.
@@ -283,7 +268,7 @@ Congratulations! You've completed the full workflow:
 
 - ✅ Created a branch for your changes
 - ✅ Loaded a topology design
-- ✅ Ran a generator to create infrastructure
+- ✅ Monitored automatic generator execution to create infrastructure
 - ✅ Created a proposed change with automatic validation
 - ✅ Reviewed diffs, checks, and artifacts
 - ✅ Merged changes to the main branch
@@ -338,14 +323,14 @@ You can also perform this entire workflow from the command line. Here's the abbr
 # Create branch
 uv run infrahubctl branch create add-dc2
 
-# Load design
+# Load design (this automatically triggers the generator)
 uv run infrahubctl object load objects/dc-2.yml --branch add-dc2
 
-# Run generator (requires API calls - easier via web interface)
+# Monitor generator progress in the web interface (System → Tasks)
 # Create proposed change (easier via web interface)
 
 # After merge, verify on main
 uv run infrahubctl branch list
 ```
 
-For complex workflows involving generators and proposed changes, the web interface provides a better experience with visual feedback and monitoring.
+For complex workflows involving proposed changes and monitoring generator execution, the web interface provides a better experience with visual feedback and real-time status updates.
