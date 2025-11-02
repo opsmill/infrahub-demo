@@ -122,6 +122,7 @@ jobs:
           cache: 'npm'
           cache-dependency-path: docs/package-lock.json
       - name: "Install dependencies"
+        working-directory: docs
         run: npm install
       - run: |
           pip install uv
