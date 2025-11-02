@@ -2,7 +2,7 @@
 apiVersion: infrahub.app/v1
 kind: Object
 spec:
-  kind: DcimFirewall
+  kind: SecurityFirewall
   data:
     - name: corp-firewall
       role: edge_firewall

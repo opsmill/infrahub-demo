@@ -329,6 +329,7 @@ class TopologyCreator:
         # ... fetch device groups and templates logic ...
         physical_devices: list = []
         virtual_devices: list = []
+        firewall_devices: list = []
         role_counters: dict = {}
         topology_name = self.data.get("name", "")
 
@@ -347,6 +348,12 @@ class TopologyCreator:
                 name = f"{topology_name.lower()}-{role}-{str(role_counters[role]).zfill(2)}"
 
                 # Construct the payload once per device
+                # Determine group name based on role
+                if role in ["dc_firewall", "edge_firewall"]:
+                    group_name = "juniper_firewall"
+                else:
+                    group_name = f"{role}s"
+
                 payload = {
                     "name": name,
                     "object_template": [device["template"]["template_name"]],
@@ -360,7 +367,7 @@ class TopologyCreator:
                     "topology": self.data.get("id"),
                     "member_of_groups": [
                         self.client.store.get_by_hfid(
-                            key=f"CoreStandardGroup__{device['role']}s"
+                            key=f"CoreStandardGroup__{group_name}"
                         ),
                     ],
                     "primary_address": await self.client.allocate_next_ip_address(
@@ -374,15 +381,17 @@ class TopologyCreator:
                 # Append the constructed dictionary to respective lists
 
                 device_entry = {"payload": payload, "store_key": name}
-                (
-                    virtual_devices
-                    if "Virtual" in device["template"]["typename"]
-                    else physical_devices
-                ).append(device_entry)
+                if "Virtual" in device["template"]["typename"]:
+                    virtual_devices.append(device_entry)
+                elif role in ["dc_firewall", "edge_firewall"]:
+                    firewall_devices.append(device_entry)
+                else:
+                    physical_devices.append(device_entry)
 
         for kind, devices in [
             ("DcimPhysicalDevice", physical_devices),
             ("DcimVirtualDevice", virtual_devices),
+            ("SecurityFirewall", firewall_devices),
         ]:
             if devices:
                 await self._create_in_batch(kind=kind, data_list=devices)
