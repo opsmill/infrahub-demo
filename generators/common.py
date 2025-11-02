@@ -76,7 +76,7 @@ class TopologyCreator:
         self,
         kind: str,
         data_list: list,
-        allow_upsert: bool = False,
+        allow_upsert: bool = True,
     ) -> None:
         """
         Create objects of a specific kind and store in local store.
@@ -84,7 +84,7 @@ class TopologyCreator:
         Args:
             kind: The kind of object to create.
             data_list: List of data dictionaries for creation.
-            allow_upsert: Whether to allow upsert operations. Use False for new devices to prevent race conditions.
+            allow_upsert: Whether to allow idempotent upsert operations (default: True).
         """
         batch = await self.client.create_batch()
         for data in data_list:
@@ -111,68 +111,6 @@ class TopologyCreator:
                 )
         except ValidationError as exc:
             self.log.debug(f"- Creation failed due to {exc}")
-
-    async def _create_sequentially(
-        self,
-        kind: str,
-        data_list: list,
-    ) -> None:
-        """
-        Create objects sequentially (one at a time) with intelligent upsert.
-        Checks if object exists first to avoid object template duplication bug.
-
-        Args:
-            kind: The kind of object to create.
-            data_list: List of data dictionaries for creation.
-        """
-        for data in data_list:
-            try:
-                payload = data.get("payload")
-                # Try to get existing object by name (most devices have unique names)
-                existing_obj = None
-                if "name" in payload:
-                    try:
-                        existing_obj = await self.client.get(
-                            kind=kind,
-                            name__value=payload["name"],
-                            branch=self.branch,
-                            raise_when_missing=False,
-                        )
-                    except (IndexError, Exception):
-                        # Object doesn't exist or multiple found
-                        existing_obj = None
-
-                if existing_obj:
-                    # Object already exists, just store it and skip
-                    obj = existing_obj
-                    # Preserve the object_template from payload for later use
-                    if "object_template" in payload and not hasattr(obj, "_data"):
-                        obj._data = {}
-                    if "object_template" in payload:
-                        obj._data["object_template"] = payload["object_template"]
-                    action = "Found"
-                else:
-                    # Create new object without upsert to avoid template duplication
-                    obj = await self.client.create(
-                        kind=kind, data=payload, branch=self.branch
-                    )
-                    await obj.save(allow_upsert=False)
-                    action = "Created"
-
-                if data.get("store_key"):
-                    self.client.store.set(
-                        key=data.get("store_key"), node=obj, branch=self.branch
-                    )
-                object_reference = (
-                    " ".join(obj.hfid) if obj.hfid else obj.display_label
-                )
-                self.log.info(
-                    f"- {action} [{obj.get_kind()}] {object_reference}"
-                    if object_reference
-                    else f"- {action} [{obj.get_kind()}]"
-                )
-            except (GraphQLError, ValidationError) as exc:
-                self.log.debug(f"- Creation failed due to {exc}")
 
     async def _create(self, kind: str, data: dict) -> None:
         """
@@ -447,7 +385,7 @@ class TopologyCreator:
             ("DcimVirtualDevice", virtual_devices),
         ]:
             if devices:
-                await self._create_sequentially(kind=kind, data_list=devices)
+                await self._create_in_batch(kind=kind, data_list=devices)
 
         self.devices = [
             self.client.store.get_by_hfid(f"DcimGenericDevice__{device[0]}")
@@ -458,8 +396,7 @@ class TopologyCreator:
 
     def _get_device_template_name(self, device: Any) -> str | None:
         """
-        Safely get the object template name from a device.
-        Handles both newly created devices and existing devices.
+        Get the object template name from a device.
 
         Args:
             device: The device object
@@ -467,17 +404,7 @@ class TopologyCreator:
         Returns:
             The template name as a string, or None if not found
         """
-        # Try different ways to access the template name
         try:
-            # For newly created devices with object_template as list
-            if hasattr(device, "_data") and isinstance(device._data.get("object_template"), list):
-                if device._data["object_template"]:
-                    return device._data["object_template"][0]
-        except (AttributeError, KeyError, IndexError):
-            pass
-
-        try:
-            # For devices loaded from DB - try to get from the payload used to create them
             if hasattr(device, "object_template"):
                 template = device.object_template
                 # It might be a relationship object
