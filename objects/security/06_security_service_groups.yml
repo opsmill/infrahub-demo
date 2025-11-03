@@ -6,8 +6,6 @@ spec:
   data:
     - name: "web-services"
       description: "Web-related services"
-      services:
-        - "https"
 
     - name: "mail-services"
       description: "Email-related services"
