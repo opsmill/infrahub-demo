@@ -13,6 +13,9 @@ uv run infrahubctl object load objects/bootstrap/ --branch $BRANCH
 echo "Load security data"
 uv run infrahubctl object load objects/security/ --branch $BRANCH
 
+echo "Populate security relationships"
+uv run python scripts/populate_security_relationships.py
+
 echo "Add demo repository"
 uv run infrahubctl repository add DEMO https://github.com/opsmill/infrahub-demo.git --ref main --read-only
 
