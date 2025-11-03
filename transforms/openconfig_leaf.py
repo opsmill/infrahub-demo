@@ -7,7 +7,7 @@ class OpenConfigLeaf(InfrahubTransform):
     query = "openconfig_leaf_config"
 
     async def transform(self, data: Any) -> Any:
-        response_payload = {}
+        response_payload: dict[str, Any] = {}
         response_payload["openconfig-interfaces:interfaces"] = {}
         response_payload["openconfig-interfaces:interfaces"]["interface"] = []
 
