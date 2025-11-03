@@ -79,6 +79,12 @@ spec:
           prefix: "10.1.2.0/24"
       description: "Server network segment"
 
+    - name: "internet"
+      ipam_prefix:
+        data:
+          prefix: "0.0.0.0/0"
+      description: "Any internet address"
+
 ---
 apiVersion: infrahub.app/v1
 kind: Object

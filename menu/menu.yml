@@ -371,6 +371,12 @@ spec:
                   kind: DcimGenericDevice
                   icon: "mdi:server"
 
+                - namespace: Security
+                  name: Firewall
+                  label: Firewalls
+                  kind: SecurityFirewall
+                  icon: "mdi:firewall"
+
                 - name: Interface
                   namespace: Dcim
                   label: "Interfaces"

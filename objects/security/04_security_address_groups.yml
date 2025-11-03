@@ -6,6 +6,9 @@ spec:
   data:
     - name: "web-servers"
       description: "All web servers"
+      ip_addresses:
+        - "web-server-01"
+        - "web-server-02"
 
     - name: "database-servers"
       description: "All database servers"
@@ -30,3 +33,8 @@ spec:
 
     - name: "development-servers"
       description: "Development environment servers"
+
+    - name: "internet"
+      description: "Internet/external networks"
+      prefixes:
+        - "internet"
