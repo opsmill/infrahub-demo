@@ -93,3 +93,12 @@ spec:
         - [2 JUNIPER DC FIREWALLS SRX-1500]
         - [2 CISCO OOB SWITCHES C9200L-24P-4G]
         - [2 PERLE CONSOLE SCG50R]
+    - name: PHYSICAL DC JUNIPER S
+      description: Physical Juniper S design
+      type: DC
+      elements:
+        - [2 JUNIPER SPINES QFX5220-32CD]
+        - [4 JUNIPER LEAFS QFX5220-32CD]
+        - [2 JUNIPER DC FIREWALLS SRX-1500]
+        - [2 CISCO OOB SWITCHES C9200L-24P-4G]
+        - [2 PERLE CONSOLE SCG50R]

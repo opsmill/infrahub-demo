@@ -1187,3 +1187,47 @@ spec:
           - template_name: 7726-32X-O_SPINE_Ethernet124
             name: Ethernet124
             role: uplink
+    - template_name: QFX5220-32CD_SPINE
+      device_type: QFX5220-32CD
+      role: spine
+      status: active
+      interfaces:
+        kind: TemplateDcimPhysicalInterface
+        data:
+          - template_name: QFX5220-32CD_SPINE_fxp0
+            name: fxp0
+            role: management
+          - template_name: QFX5220-32CD_SPINE_ge-0/0/0
+            name: ge-0/0/0
+            role: leaf
+          - template_name: QFX5220-32CD_SPINE_ge-0/0/1
+            name: ge-0/0/1
+            role: leaf
+          - template_name: QFX5220-32CD_SPINE_ge-0/0/2
+            name: ge-0/0/2
+            role: leaf
+          - template_name: QFX5220-32CD_SPINE_ge-0/0/3
+            name: ge-0/0/3
+            role: leaf
+    - template_name: QFX5220-32CD_LEAF
+      device_type: QFX5220-32CD
+      role: leaf
+      status: active
+      interfaces:
+        kind: TemplateDcimPhysicalInterface
+        data:
+          - template_name: QFX5220-32CD_LEAF_fxp0
+            name: fxp0
+            role: management
+          - template_name: QFX5220-32CD_LEAF_ge-0/0/0
+            name: ge-0/0/0
+            role: uplink
+          - template_name: QFX5220-32CD_LEAF_ge-0/0/1
+            name: ge-0/0/1
+            role: uplink
+          - template_name: QFX5220-32CD_LEAF_ge-0/0/2
+            name: ge-0/0/2
+            role: customer
+          - template_name: QFX5220-32CD_LEAF_ge-0/0/3
+            name: ge-0/0/3
+            role: customer

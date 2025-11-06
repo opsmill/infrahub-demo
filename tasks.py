@@ -10,6 +10,7 @@ INFRAHUB_VERSION = os.getenv("INFRAHUB_VERSION", "stable")
 INFRAHUB_ENTERPRISE = os.getenv("INFRAHUB_ENTERPRISE", "false").lower() == "true"
 MAIN_DIRECTORY_PATH = Path(__file__).parent
 
+
 # Download compose file and use with override
 def get_compose_command() -> str:
     """Generate docker compose command with override support."""
@@ -21,8 +22,11 @@ def get_compose_command() -> str:
 
     override_file = MAIN_DIRECTORY_PATH / "docker-compose.override.yml"
     if override_file.exists():
-        return f"curl -s {base_url} | docker compose -p infrahub -f - -f {override_file}"
+        return (
+            f"curl -s {base_url} | docker compose -p infrahub -f - -f {override_file}"
+        )
     return f"curl -s {base_url} | docker compose -p infrahub -f -"
+
 
 COMPOSE_COMMAND = get_compose_command()
 CURRENT_DIRECTORY = Path(__file__).resolve()

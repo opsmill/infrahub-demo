@@ -1,0 +1,191 @@
+##
+## {{ name }} Configuration
+## Generated for Juniper JunOS
+##
+
+system {
+    host-name {{ name }};
+
+{%- if ospf and ospf[0] and ospf[0].router_id %}
+    ## OSPF Router ID
+    ## router-id {{ ospf[0].router_id.split('/')[0] }};
+{%- endif %}
+
+    services {
+        ssh;
+        netconf {
+            ssh;
+        }
+    }
+
+    syslog {
+        user * {
+            any emergency;
+        }
+        file messages {
+            any notice;
+            authorization info;
+        }
+    }
+}
+
+chassis {
+    aggregated-devices {
+        ethernet {
+            device-count 8;
+        }
+    }
+}
+
+interfaces {
+{%- for interface in interfaces %}
+    {{ interface.name }} {
+{%- if interface.description %}
+        description "{{ interface.description }}";
+{%- endif %}
+{%- if interface.status == 'active' %}
+        ## Interface is active
+{%- else %}
+        disable;
+{%- endif %}
+{%- if interface.mtu %}
+        mtu {{ interface.mtu }};
+{%- endif %}
+        unit 0 {
+{%- if interface.vlans %}
+{%- if interface.vlans|length == 1 %}
+            family ethernet-switching {
+                interface-mode access;
+                vlan {
+                    members {{ interface.vlans[0] }};
+                }
+            }
+{%- else %}
+            family ethernet-switching {
+                interface-mode trunk;
+                vlan {
+                    members [ {{ interface.vlans|join(' ') }} ];
+                }
+            }
+{%- endif %}
+{%- elif interface.ip_addresses %}
+            family inet {
+{%- for ip in interface.ip_addresses %}
+                address {{ ip.address }};
+{%- endfor %}
+            }
+{%- endif %}
+        }
+    }
+{%- endfor %}
+
+{%- if vlans %}
+    ## Integrated Routing and Bridging (IRB) for L3 VLANs
+    irb {
+{%- for vlan in vlans %}
+        unit {{ vlan.vlan_id }} {
+            description "{{ vlan.name }} Gateway";
+            family inet {
+                address 192.168.{{ vlan.vlan_id }}.1/24;
+            }
+        }
+{%- endfor %}
+    }
+{%- endif %}
+}
+
+{%- if ospf %}
+{%- for ospf_config in ospf %}
+
+protocols {
+    ospf {
+        reference-bandwidth {{ ospf_config.reference_bandwidth or 10000 }}m;
+{%- if ospf_config.area %}
+        area {{ ospf_config.area }} {
+{%- for interface in interfaces %}
+{%- if interface.get('ospf') and interface.ospf.area == ospf_config.area %}
+            interface {{ interface.name }}.0 {
+                interface-type p2p;
+            }
+{%- endif %}
+{%- endfor %}
+        }
+{%- endif %}
+    }
+
+    lldp {
+        interface all;
+    }
+
+    rstp;
+}
+{%- endfor %}
+{%- endif %}
+
+{%- if bgp %}
+{%- for bgp_config in bgp %}
+
+routing-options {
+{%- if bgp_config.router_id and bgp_config.router_id.address %}
+    router-id {{ bgp_config.router_id.address.split('/')[0] }};
+{%- endif %}
+    autonomous-system {{ bgp_config.local_as.asn }};
+}
+
+protocols {
+    bgp {
+{%- if bgp_config.graceful_restart %}
+        graceful-restart;
+{%- endif %}
+
+        ## BGP Peer Group: {{ bgp_config.profile }}
+        group {{ bgp_config.profile }} {
+            type {{ 'internal' if bgp_config.session_type == 'INTERNAL' else 'external' }};
+{%- if bgp_config.local_ip and bgp_config.local_ip.address %}
+            local-address {{ bgp_config.local_ip.address.split('/')[0] }};
+{%- endif %}
+            family inet {
+                unicast {
+{%- if bgp_config.multipath %}
+                    multipath;
+{%- endif %}
+                }
+            }
+            family evpn {
+                signaling;
+            }
+{%- if bgp_config.send_community_extended %}
+            send-community extended;
+{%- endif %}
+
+{%- for session in bgp_config.sessions %}
+            neighbor {{ session.remote_ip.address.split('/')[0] }} {
+{%- if session.name %}
+                description "{{ session.name }}";
+{%- endif %}
+{%- if bgp_config.session_type == 'INTERNAL' %}
+                peer-as {{ bgp_config.local_as.asn }};
+{%- else %}
+                peer-as {{ session.remote_as.asn }};
+{%- endif %}
+            }
+{%- endfor %}
+        }
+    }
+}
+{%- endfor %}
+{%- endif %}
+
+{%- if vlans %}
+
+vlans {
+{%- for vlan in vlans %}
+    {{ vlan.name }} {
+        vlan-id {{ vlan.vlan_id }};
+        l3-interface irb.{{ vlan.vlan_id }};
+    }
+{%- endfor %}
+}
+{%- endif %}
+
+## End of configuration

@@ -4,8 +4,8 @@ kind: Object
 spec:
   kind: DcimDeviceType
   data:
-    - name: MX204
-      part_number: MX204-HWBASE-AC-FS
+    - name: QFX5220-32CD
+      part_number: QFX5220-32CD
       height: 1
       full_depth: false
       manufacturer: Juniper

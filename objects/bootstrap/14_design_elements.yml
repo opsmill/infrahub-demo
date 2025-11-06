@@ -124,3 +124,15 @@ spec:
       role: border_leaf
       device_type: 5912-54X-O-AC-F
       template: 5912-54X-O-AC-F_LEAF
+    - name: 2 JUNIPER SPINES QFX5220-32CD
+      description: 2 Juniper QFX5220-32CD spines
+      quantity: 2
+      role: spine
+      device_type: QFX5220-32CD
+      template: QFX5220-32CD_SPINE
+    - name: 4 JUNIPER LEAFS QFX5220-32CD
+      description: 4 Juniper QFX5220-32CD leafs
+      quantity: 4
+      role: leaf
+      device_type: QFX5220-32CD
+      template: QFX5220-32CD_LEAF
