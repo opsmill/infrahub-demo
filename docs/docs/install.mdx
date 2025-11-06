@@ -141,7 +141,7 @@ uv run infrahubctl object load objects/bootstrap
 uv run infrahubctl object load objects/security/
 
 # 5. Add the demo repository
-uv run infrahubctl repository add DEMO https://github.com/opsmill/infrahub-demo.git --read-only
+uv run infrahubctl repository add DEMO https://github.com/opsmill/infrahub-demo.git --read-only --ref main
 
 # 6. Load event actions (optional, enables automatic generator execution)
 uv run infrahubctl object load objects/events/

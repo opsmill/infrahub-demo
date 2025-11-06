@@ -17,7 +17,7 @@ echo "Populate security relationships"
 uv run python scripts/populate_security_relationships.py
 
 echo "Add demo repository"
-uv run infrahubctl repository add DEMO https://github.com/opsmill/infrahub-demo.git --ref main --read-only || echo "Repository already exists, skipping..."
+uv run infrahubctl repository add DEMO https://github.com/opsmill/infrahub-demo.git --ref main --read-only --ref main || echo "Repository already exists, skipping..."
 
 echo "Wait for repo sync - let's sleep for 120 seconds"
 sleep 120
