@@ -8,7 +8,7 @@ nodes:
     description: "Network segment with automated VLAN, VNI, and RD assignment"
     label: Network Segment
     icon: "carbon:network-3"
-    menu_placement: ServiceDeviceGeneric
+    menu_placement: ServiceGenericDevice
     uniqueness_constraints:
       - [deployment, owner, environment__value, customer_name__value]
     include_in_menu: true
