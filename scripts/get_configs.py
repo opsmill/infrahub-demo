@@ -94,17 +94,12 @@ async def get_device_configs(client: InfrahubClient) -> None:
                     else:
                         extension = "cfg"
 
-                    # Create role-based subdirectories
-                    role = device.role.value if hasattr(device, "role") else "unknown"
-                    role_path = base_path / role
-                    role_path.mkdir(parents=True, exist_ok=True)
-
-                    # Save the configuration
-                    output_file = role_path / f"{device.name.value}.{extension}"
+                    # Save the configuration directly in devices folder
+                    output_file = base_path / f"{device.name.value}.{extension}"
                     with open(output_file, "w") as file:
                         file.write(artifact_content)
 
-                    print(f"  ✓ Saved {role}/{device.name.value}.{extension}")
+                    print(f"  ✓ Saved {device.name.value}.{extension}")
                     config_count += 1
 
         except Exception as e:
