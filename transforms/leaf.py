@@ -3,7 +3,7 @@ from typing import Any
 from infrahub_sdk.transforms import InfrahubTransform
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from .common import get_bgp_profile, get_data, get_interfaces, get_ospf, get_vlans
+from .common import get_bgp_profile, get_data, get_interfaces, get_loopbacks, get_ospf, get_vlans
 
 
 class Leaf(InfrahubTransform):
@@ -34,6 +34,7 @@ class Leaf(InfrahubTransform):
             "ospf": get_ospf(data.get("device_services")),
             "interfaces": get_interfaces(data.get("interfaces")),
             "vlans": get_vlans(data.get("interfaces")),
+            "loopbacks": get_loopbacks(data.get("interfaces")),
         }
 
         return template.render(**config)

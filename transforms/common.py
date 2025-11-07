@@ -138,6 +138,27 @@ def get_vlans(data: list) -> list[dict[str, Any]]:
     ]
 
 
+def get_loopbacks(data: list) -> dict[str, str]:
+    """
+    Extracts loopback interfaces and their primary IP addresses.
+    Returns a dictionary mapping loopback interface names to IP addresses.
+    Example: {"loopback0": "10.0.0.1/32", "loopback1": "10.0.0.2/32"}
+    """
+    loopbacks = {}
+    for iface in data:
+        name = iface.get("name", "").lower()
+        role = iface.get("role", "").lower()
+
+        # Check if this is a loopback interface by role or name
+        if role == "loopback" or "loopback" in name or "lo" == name[:2]:
+            ip_addresses = iface.get("ip_addresses", [])
+            if ip_addresses:
+                # Get the first IP address
+                loopbacks[name] = ip_addresses[0].get("address", "")
+
+    return loopbacks
+
+
 def get_interfaces(data: list) -> list[dict[str, Any]]:
     """
     Returns a list of interface dictionaries sorted by interface name.
