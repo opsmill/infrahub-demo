@@ -10,6 +10,7 @@ nodes:
     icon: carbon:floating-ip
     include_in_menu: false
     inherit_from:
+      - ServiceGeneric
       - ServiceGenericDevice
     attributes:
       - name: name
