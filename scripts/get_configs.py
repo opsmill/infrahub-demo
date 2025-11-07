@@ -173,7 +173,7 @@ async def main(branch: str | None = None) -> None:
 
     print("=" * 60)
     print("Configuration extraction complete!")
-    print(f"Configs saved to: ./generated-configs/")
+    print("Configs saved to: ./generated-configs/")
     print("=" * 60 + "\n")
 
 
