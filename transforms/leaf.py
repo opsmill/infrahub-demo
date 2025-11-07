@@ -27,11 +27,37 @@ class Leaf(InfrahubTransform):
         # Render the template with enhanced data
         template = env.get_template(template_name)
 
-        bgp = get_bgp_profile(data.get("device_services"))
+        bgp_profiles = get_bgp_profile(data.get("device_services"))
+        ospf_configs = get_ospf(data.get("device_services"))
+
+        # Extract first OSPF config or use empty dict
+        ospf = ospf_configs[0] if ospf_configs else {}
+
+        # Restructure BGP data for template
+        # Template expects: bgp.local_as, bgp.router_id, bgp.neighbors
+        bgp = {}
+        if bgp_profiles:
+            # Get common BGP settings from first profile
+            first_profile = bgp_profiles[0]
+            bgp = {
+                "local_as": first_profile.get("local_as", {}).get("asn", ""),
+                "router_id": first_profile.get("router_id", ""),
+                "neighbors": [],
+            }
+            # Collect all neighbors from all profiles
+            for profile in bgp_profiles:
+                for session in profile.get("sessions", []):
+                    neighbor = {
+                        "name": session.get("name", ""),
+                        "remote_ip": session.get("remote_ip", {}).get("address", ""),
+                        "remote_as": session.get("remote_as", {}).get("asn", ""),
+                    }
+                    bgp["neighbors"].append(neighbor)
+
         config = {
             "name": data.get("name"),
             "bgp": bgp,
-            "ospf": get_ospf(data.get("device_services")),
+            "ospf": ospf,
             "interfaces": get_interfaces(data.get("interfaces")),
             "vlans": get_vlans(data.get("interfaces")),
             "loopbacks": get_loopbacks(data.get("interfaces")),
