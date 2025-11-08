@@ -37,7 +37,7 @@ spec:
       napalm_driver: eos
       netmiko_device_type: arista_eos
       ansible_network_os: eos
-      containerlab_os: ceos
+      containerlab_os: arista_ceos
 
     - name: Sonic OS
       nornir_platform: sonic
