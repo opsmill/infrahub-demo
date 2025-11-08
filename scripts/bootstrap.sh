@@ -1,5 +1,6 @@
 #!/bin/bash
 BRANCH=${1:-main}
+INFRAHUB_ADDRESS=${INFRAHUB_ADDRESS:-http://localhost:8000}
 
 echo ""
 echo "============================================================"
@@ -8,6 +9,33 @@ echo "============================================================"
 echo "  Branch: $BRANCH"
 echo "============================================================"
 echo ""
+
+# Check if Infrahub is ready
+echo "Checking if Infrahub is ready..."
+MAX_RETRIES=30
+RETRY_COUNT=0
+SLEEP_TIME=2
+
+while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+    if curl -s -f -o /dev/null "${INFRAHUB_ADDRESS}/api/schema"; then
+        echo "✓ Infrahub is ready!"
+        echo ""
+        break
+    fi
+
+    RETRY_COUNT=$((RETRY_COUNT + 1))
+    if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+        echo ""
+        echo "✗ ERROR: Infrahub is not responding after ${MAX_RETRIES} attempts"
+        echo "  Please ensure Infrahub is running with: uv run invoke start"
+        echo "  Check container status with: docker ps"
+        echo ""
+        exit 1
+    fi
+
+    echo -n "."
+    sleep $SLEEP_TIME
+done
 
 echo "[1/7] Loading schemas..."
 uv run infrahubctl schema load schemas --branch $BRANCH
