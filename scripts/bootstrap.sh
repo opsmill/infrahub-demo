@@ -60,7 +60,7 @@ echo "  All data has been loaded into Infrahub"
 echo "  Branch: $BRANCH"
 echo "  Next steps:"
 echo "    - Create a branch: uv run infrahubctl branch create <name>"
-echo "    - Load a DC design: uv run infrahubctl object load objects/dc-cisco-s.yml --branch <name>"
+echo "    - Load a DC design: uv run infrahubctl object load objects/dc-arista-s.yml --branch <name>"
 echo "============================================================"
 echo ""
 

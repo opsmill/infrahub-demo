@@ -33,6 +33,47 @@ CURRENT_DIRECTORY = Path(__file__).resolve()
 DOCUMENTATION_DIRECTORY = CURRENT_DIRECTORY.parent / "docs"
 
 
+@task(name="list")
+def list_tasks(context: Context) -> None:
+    """List all available invoke tasks with descriptions."""
+    # Import sys and inspect to get the current module
+    import inspect
+    current_module = inspect.getmodule(inspect.currentframe())
+
+    tasks_info = []
+
+    # Get all task objects from the current module
+    for name, obj in inspect.getmembers(current_module):
+        # Check if the object is a task (has __wrapped__ or is a Task instance)
+        if hasattr(obj, '__wrapped__') or (hasattr(obj, '__class__') and 'Task' in obj.__class__.__name__):
+            # Get the display name (check if task has a custom name)
+            display_name = getattr(obj, 'name', name)
+            # Remove leading underscore from function names if present
+            if display_name.startswith('_'):
+                continue
+            # Get the first line of the docstring as description
+            if obj.__doc__:
+                description = obj.__doc__.strip().split('\n')[0]
+            else:
+                description = "No description available"
+            tasks_info.append((display_name, description))
+
+    # Sort by task name
+    tasks_info.sort(key=lambda x: x[0])
+
+    # Print header
+    print("\nAvailable tasks:\n")
+
+    # Calculate max task name length for alignment
+    max_name_len = max(len(name) for name, _ in tasks_info) if tasks_info else 0
+
+    # Print each task
+    for name, desc in tasks_info:
+        print(f"  {name.ljust(max_name_len)}  {desc}")
+
+    print()
+
+
 @task
 def info(context: Context) -> None:
     """Show current Infrahub configuration."""

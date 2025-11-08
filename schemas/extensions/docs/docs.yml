@@ -9,7 +9,7 @@ nodes:
     include_in_menu: false
     label: Documentation
     display_labels:
-      - name
+      - name__value
     attributes:
       - name: name
         kind: Text
