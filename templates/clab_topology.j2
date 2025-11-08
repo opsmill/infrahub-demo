@@ -1,3 +1,6 @@
+{% set default_images = {
+  "ceos": "registry.opsmill.io/external/ceos-image:4.29.0.2F"
+} %}
 {% for topology in data.TopologyDeployment.edges %}
 ---
 name: {{ topology.node.name.value }}
@@ -11,20 +14,22 @@ mgmt:
 topology:
   kinds:
     ceos:
-      image: "${CEOS_DOCKER_IMAGE}"
+      image: "{{ default_images.ceos }}"
       exec:
         - sleep 10
         - FastCli -p 15 -c 'security pki key generate rsa 4096 eAPI.key'
         - FastCli -p 15 -c 'security pki certificate generate self-signed eAPI.crt key eAPI.key generate rsa 4096 validity 30000 parameters common-name eAPI'
     linux:
-      image: "${LINUX_HOST_DOCKER_IMAGE}"
+      image: "{{ default_images.linux }}"
 
   nodes:
     {% for device in topology.node.devices.edges %}
     {{ device.node.name.value }}:
       kind: {{ device.node.platform.node.containerlab_os.value }}
       type: {{ device.node.device_type.node.name.value }}
+      {% if device.node.os_version.value %}
       image: {{ device.node.os_version.value }}
+      {% endif %}
       {% if device.node.primary_address.node.address is defined %}
       {% set mgmt_ip = device.node.primary_address.node.address.value.split('/') %}
       mgmt-ipv4: {{ mgmt_ip[0] }}
@@ -32,10 +37,6 @@ topology:
     {% endfor %}
     {% if networkos == "ceos" %}
       startup-config: generated-configs/devices/{{ device.node.name.value }}.cfg
-    {% endif %}
-    {% if networkos == "linux" %}
-      env:
-        TMODE: lacp
     {% endif %}
 
   links:

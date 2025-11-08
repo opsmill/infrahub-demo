@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=https://schema.infrahub.app/infrahub/schema/latest.json
+---
+version: "1.0"
+
+nodes:
+  - name: Docs
+    namespace: Docs
+    description: "Documentation links"
+    include_in_menu: true
+    label: Documentation
+    display_labels:
+      - name
+    attributes:
+      - name: name
+        kind: Text
+        optional: false
+        default_value: "Documentation Links"
+      - name: infrahub_docs
+        label: Infrahub Documentation
+        kind: URL
+        optional: true
+      - name: infrahub_demo_docs
+        label: Demo Documentation
+        kind: URL
+        optional: true
+      - name: opsmill_website
+        label: OpsMill Website
+        kind: URL
+        optional: true

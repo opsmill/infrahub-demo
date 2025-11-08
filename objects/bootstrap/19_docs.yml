@@ -1,0 +1,10 @@
+---
+apiVersion: infrahub.app/v1
+kind: Object
+spec:
+  kind: DocsDocs
+  data:
+    - name: Docs
+      infrahub_docs: https://docs.infrahub.app
+      infrahub_demo_docs: https://docs.infrahub.app/demo/
+      opsmill_website: https://opsmill.com

@@ -17,7 +17,7 @@ from pathlib import Path
 from infrahub_sdk import InfrahubClient
 
 
-async def get_containerlab_topologies(client: InfrahubClient) -> None:
+async def get_containerlab_topologies(client: InfrahubClient) -> list[str]:
     """Fetch containerlab topology artifacts and save to files."""
     directory_path = Path("./generated-configs/clab")
     directory_path.mkdir(parents=True, exist_ok=True)
@@ -26,7 +26,7 @@ async def get_containerlab_topologies(client: InfrahubClient) -> None:
 
     topologies = await client.all(kind="TopologyDataCenter")
 
-    topology_count = 0
+    saved_topologies = []
     for topology in topologies:
         try:
             # Check if topology has containerlab-topology artifact
@@ -41,17 +41,19 @@ async def get_containerlab_topologies(client: InfrahubClient) -> None:
             if has_clab_artifact:
                 # Fetch artifact content
                 artifact_content = await topology.artifact_fetch("containerlab-topology")
-                output_file = directory_path / f"{topology.name.value}.yml"
+                output_file = directory_path / f"{topology.name.value}.clab.yml"
                 with open(output_file, "w") as file:
                     file.write(artifact_content)
                 print(f"  ✓ Saved topology: {output_file}")
-                topology_count += 1
+                saved_topologies.append(topology.name.value)
         except Exception as e:
             print(f"  ✗ Error fetching topology {topology.name.value}: {e}")
 
-    if topology_count == 0:
+    if len(saved_topologies) == 0:
         print("  No containerlab topologies found")
     print()
+
+    return saved_topologies
 
 
 async def get_device_configs(client: InfrahubClient) -> None:
@@ -162,7 +164,7 @@ async def main(branch: str | None = None) -> None:
     print("=" * 60 + "\n")
 
     # Fetch all artifact types
-    await get_containerlab_topologies(client)
+    saved_topologies = await get_containerlab_topologies(client)
     await get_device_configs(client)
     await get_topology_cabling(client)
 
@@ -170,6 +172,19 @@ async def main(branch: str | None = None) -> None:
     print("Configuration extraction complete!")
     print("Configs saved to: ./generated-configs/")
     print("=" * 60 + "\n")
+
+    # Display containerlab deployment instructions if topologies were saved
+    if saved_topologies:
+        print("=" * 60)
+        print("Deploy with Containerlab")
+        print("=" * 60 + "\n")
+        print("To deploy a data center topology in Containerlab, use:\n")
+        for topology_name in saved_topologies:
+            print(f"  sudo -E containerlab deploy -t generated-configs/clab/{topology_name}.clab.yml")
+        print("\nTo destroy a topology:")
+        for topology_name in saved_topologies:
+            print(f"  sudo -E containerlab destroy -t generated-configs/clab/{topology_name}.clab.yml")
+        print("\n" + "=" * 60 + "\n")
 
 
 if __name__ == "__main__":

@@ -3,6 +3,13 @@ apiVersion: infrahub.app/v1
 kind: Menu
 spec:
   data:
+    # ===================== DOCUMENTATION =====================
+    - namespace: Docs
+      name: Documentation
+      label: Documentation
+      icon: "mdi:book-open-variant"
+      kind: DocsDocs
+
     # ===================== ORGANIZATION =====================
     - namespace: Organization
       name: MainMenu
