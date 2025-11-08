@@ -22,6 +22,7 @@ topology:
 
   nodes:
     {% for device in topology.node.devices.edges %}
+    {% if device.node.platform.node.containerlab_os.value == "arista_ceos" %}
     {{ device.node.name.value }}:
       kind: {{ device.node.platform.node.containerlab_os.value }}
       type: {{ device.node.device_type.node.name.value }}
@@ -32,10 +33,9 @@ topology:
       {% set mgmt_ip = device.node.primary_address.node.address.value.split('/') %}
       mgmt-ipv4: {{ mgmt_ip[0] }}
       {% endif %}
-    {% endfor %}
-    {% if networkos == "arista_ceos" %}
       startup-config: generated-configs/devices/{{ device.node.name.value }}.cfg
     {% endif %}
+    {% endfor %}
 
   links:
     {% set processed_endpoints = [] %}
