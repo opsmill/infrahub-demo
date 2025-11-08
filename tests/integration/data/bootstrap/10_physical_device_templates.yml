@@ -124,17 +124,8 @@ spec:
           - template_name: SRX-1500_EDGE_FIREWALL_fxp0
             name: fxp0
             role: management
-          - template_name: SRX-1500_EDGE_FIREWALL_ge-0/0/0
-            name: ge-0/0/0
-            role: leaf
-          - template_name: SRX-1500_EDGE_FIREWALL_ge-0/0/1
-            name: ge-0/0/1
-            role: leaf
-          - template_name: SRX-1500_EDGE_FIREWALL_ge-0/0/2
-            name: ge-0/0/2
-            role: leaf
-          - template_name: SRX-1500_EDGE_FIREWALL_ge-0/0/3
-            name: ge-0/0/3
+          - template_name: SRX-1500_EDGE_FIREWALL_ge-0/0/[0-3]
+            name: ge-0/0/[0-3]
             role: leaf
     - template_name: SRX-1500_DC_FIREWALL
       device_type: SRX-1500
@@ -148,17 +139,8 @@ spec:
           - template_name: SRX-1500_DC_FIREWALL_fxp0
             name: fxp0
             role: management
-          - template_name: SRX-1500_DC_FIREWALL_ge-0/0/0
-            name: ge-0/0/0
-            role: leaf
-          - template_name: SRX-1500_DC_FIREWALL_ge-0/0/1
-            name: ge-0/0/1
-            role: leaf
-          - template_name: SRX-1500_DC_FIREWALL_ge-0/0/2
-            name: ge-0/0/2
-            role: leaf
-          - template_name: SRX-1500_DC_FIREWALL_ge-0/0/3
-            name: ge-0/0/3
+          - template_name: SRX-1500_DC_FIREWALL_ge-0/0/[0-3]
+            name: ge-0/0/[0-3]
             role: leaf
     - template_name: C9200L-24P-4G_OOB
       device_type: C9200L-24P-4G
@@ -184,11 +166,8 @@ spec:
       interfaces:
         kind: TemplateDcimPhysicalInterface
         data:
-          - template_name: SCG50R_CONSOLE_Ethernet0
-            name: Ethernet0
-            role: management
-          - template_name: SCG50R_CONSOLE_Ethernet1
-            name: Ethernet1
+          - template_name: SCG50R_CONSOLE_Ethernet[0-1]
+            name: Ethernet[0-1]
             role: management
     - template_name: N9K-C9316D-GX_EDGE
       device_type: N9K-C9316D-GX
