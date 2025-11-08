@@ -16,5 +16,4 @@ __pycache__
 **/.ruff_cache
 docker-compose.override.yml
 docker-compose.yml
-infrahub_demo.egg-info
 generated-configs/
