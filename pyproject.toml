@@ -40,3 +40,6 @@ follow_untyped_imports = true
 asyncio_mode = "auto"
 testpaths = ["tests"]
 asyncio_default_fixture_loop_scope = "function"
+filterwarnings = [
+    "ignore:`background_execution` is deprecated:DeprecationWarning:infrahub_sdk.branch",
+]

@@ -26,7 +26,7 @@
                 {
                   "node": {
                     "name": {
-                      "value": "dc-3-dc_firewall-01"
+                      "value": "dc-arista-s-dc_firewall-01"
                     },
                     "role": {
                       "value": "dc_firewall"
@@ -67,7 +67,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-oob-01",
+                                  "dc-arista-s-oob-01",
                                   "GigabitEthernet1/0/2"
                                 ],
                                 "display_label": "GigabitEthernet1/0/2"
@@ -134,7 +134,7 @@
                 {
                   "node": {
                     "name": {
-                      "value": "dc-3-dc_firewall-02"
+                      "value": "dc-arista-s-dc_firewall-02"
                     },
                     "role": {
                       "value": "dc_firewall"
@@ -175,7 +175,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-oob-02",
+                                  "dc-arista-s-oob-02",
                                   "GigabitEthernet1/0/2"
                                 ],
                                 "display_label": "GigabitEthernet1/0/2"
@@ -242,7 +242,7 @@
                 {
                   "node": {
                     "name": {
-                      "value": "dc-3-leaf-01"
+                      "value": "dc-arista-s-leaf-01"
                     },
                     "role": {
                       "value": "leaf"
@@ -595,7 +595,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-spine-01",
+                                  "dc-arista-s-spine-01",
                                   "Ethernet1/1"
                                 ],
                                 "display_label": "Ethernet1/1"
@@ -614,7 +614,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-spine-02",
+                                  "dc-arista-s-spine-02",
                                   "Ethernet1/1"
                                 ],
                                 "display_label": "Ethernet1/1"
@@ -783,7 +783,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-oob-01",
+                                  "dc-arista-s-oob-01",
                                   "GigabitEthernet1/0/4"
                                 ],
                                 "display_label": "GigabitEthernet1/0/4"
@@ -798,7 +798,7 @@
                 {
                   "node": {
                     "name": {
-                      "value": "dc-3-leaf-02"
+                      "value": "dc-arista-s-leaf-02"
                     },
                     "role": {
                       "value": "leaf"
@@ -1151,7 +1151,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-spine-01",
+                                  "dc-arista-s-spine-01",
                                   "Ethernet1/2"
                                 ],
                                 "display_label": "Ethernet1/2"
@@ -1170,7 +1170,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-spine-02",
+                                  "dc-arista-s-spine-02",
                                   "Ethernet1/2"
                                 ],
                                 "display_label": "Ethernet1/2"
@@ -1339,7 +1339,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-oob-02",
+                                  "dc-arista-s-oob-02",
                                   "GigabitEthernet1/0/4"
                                 ],
                                 "display_label": "GigabitEthernet1/0/4"
@@ -1354,7 +1354,7 @@
                 {
                   "node": {
                     "name": {
-                      "value": "dc-3-leaf-03"
+                      "value": "dc-arista-s-leaf-03"
                     },
                     "role": {
                       "value": "leaf"
@@ -1707,7 +1707,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-spine-01",
+                                  "dc-arista-s-spine-01",
                                   "Ethernet1/3"
                                 ],
                                 "display_label": "Ethernet1/3"
@@ -1726,7 +1726,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-spine-02",
+                                  "dc-arista-s-spine-02",
                                   "Ethernet1/3"
                                 ],
                                 "display_label": "Ethernet1/3"
@@ -1895,7 +1895,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-oob-01",
+                                  "dc-arista-s-oob-01",
                                   "GigabitEthernet1/0/5"
                                 ],
                                 "display_label": "GigabitEthernet1/0/5"
@@ -1910,7 +1910,7 @@
                 {
                   "node": {
                     "name": {
-                      "value": "dc-3-leaf-04"
+                      "value": "dc-arista-s-leaf-04"
                     },
                     "role": {
                       "value": "leaf"
@@ -2263,7 +2263,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-spine-01",
+                                  "dc-arista-s-spine-01",
                                   "Ethernet1/4"
                                 ],
                                 "display_label": "Ethernet1/4"
@@ -2282,7 +2282,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-spine-02",
+                                  "dc-arista-s-spine-02",
                                   "Ethernet1/4"
                                 ],
                                 "display_label": "Ethernet1/4"
@@ -2451,7 +2451,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-oob-02",
+                                  "dc-arista-s-oob-02",
                                   "GigabitEthernet1/0/5"
                                 ],
                                 "display_label": "GigabitEthernet1/0/5"
@@ -2466,7 +2466,7 @@
                 {
                   "node": {
                     "name": {
-                      "value": "dc-3-leaf-05"
+                      "value": "dc-arista-s-leaf-05"
                     },
                     "role": {
                       "value": "leaf"
@@ -2819,7 +2819,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-spine-01",
+                                  "dc-arista-s-spine-01",
                                   "Ethernet1/5"
                                 ],
                                 "display_label": "Ethernet1/5"
@@ -2838,7 +2838,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-spine-02",
+                                  "dc-arista-s-spine-02",
                                   "Ethernet1/5"
                                 ],
                                 "display_label": "Ethernet1/5"
@@ -3007,7 +3007,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-oob-01",
+                                  "dc-arista-s-oob-01",
                                   "GigabitEthernet1/0/6"
                                 ],
                                 "display_label": "GigabitEthernet1/0/6"
@@ -3022,7 +3022,7 @@
                 {
                   "node": {
                     "name": {
-                      "value": "dc-3-leaf-06"
+                      "value": "dc-arista-s-leaf-06"
                     },
                     "role": {
                       "value": "leaf"
@@ -3375,7 +3375,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-spine-01",
+                                  "dc-arista-s-spine-01",
                                   "Ethernet1/6"
                                 ],
                                 "display_label": "Ethernet1/6"
@@ -3394,7 +3394,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-spine-02",
+                                  "dc-arista-s-spine-02",
                                   "Ethernet1/6"
                                 ],
                                 "display_label": "Ethernet1/6"
@@ -3563,7 +3563,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-oob-02",
+                                  "dc-arista-s-oob-02",
                                   "GigabitEthernet1/0/6"
                                 ],
                                 "display_label": "GigabitEthernet1/0/6"
@@ -3578,7 +3578,7 @@
                 {
                   "node": {
                     "name": {
-                      "value": "dc-3-leaf-07"
+                      "value": "dc-arista-s-leaf-07"
                     },
                     "role": {
                       "value": "leaf"
@@ -3931,7 +3931,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-spine-01",
+                                  "dc-arista-s-spine-01",
                                   "Ethernet1/7"
                                 ],
                                 "display_label": "Ethernet1/7"
@@ -3950,7 +3950,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-spine-02",
+                                  "dc-arista-s-spine-02",
                                   "Ethernet1/7"
                                 ],
                                 "display_label": "Ethernet1/7"
@@ -4119,7 +4119,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-oob-01",
+                                  "dc-arista-s-oob-01",
                                   "GigabitEthernet1/0/7"
                                 ],
                                 "display_label": "GigabitEthernet1/0/7"
@@ -4134,7 +4134,7 @@
                 {
                   "node": {
                     "name": {
-                      "value": "dc-3-leaf-08"
+                      "value": "dc-arista-s-leaf-08"
                     },
                     "role": {
                       "value": "leaf"
@@ -4487,7 +4487,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-spine-01",
+                                  "dc-arista-s-spine-01",
                                   "Ethernet1/8"
                                 ],
                                 "display_label": "Ethernet1/8"
@@ -4506,7 +4506,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-spine-02",
+                                  "dc-arista-s-spine-02",
                                   "Ethernet1/8"
                                 ],
                                 "display_label": "Ethernet1/8"
@@ -4675,7 +4675,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-oob-02",
+                                  "dc-arista-s-oob-02",
                                   "GigabitEthernet1/0/7"
                                 ],
                                 "display_label": "GigabitEthernet1/0/7"
@@ -4690,7 +4690,7 @@
                 {
                   "node": {
                     "name": {
-                      "value": "dc-3-spine-01"
+                      "value": "dc-arista-s-spine-01"
                     },
                     "role": {
                       "value": "spine"
@@ -4731,7 +4731,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-leaf-01",
+                                  "dc-arista-s-leaf-01",
                                   "Ethernet1/31"
                                 ],
                                 "display_label": "Ethernet1/31"
@@ -4880,7 +4880,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-leaf-02",
+                                  "dc-arista-s-leaf-02",
                                   "Ethernet1/31"
                                 ],
                                 "display_label": "Ethernet1/31"
@@ -5029,7 +5029,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-leaf-03",
+                                  "dc-arista-s-leaf-03",
                                   "Ethernet1/31"
                                 ],
                                 "display_label": "Ethernet1/31"
@@ -5139,7 +5139,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-leaf-04",
+                                  "dc-arista-s-leaf-04",
                                   "Ethernet1/31"
                                 ],
                                 "display_label": "Ethernet1/31"
@@ -5158,7 +5158,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-leaf-05",
+                                  "dc-arista-s-leaf-05",
                                   "Ethernet1/31"
                                 ],
                                 "display_label": "Ethernet1/31"
@@ -5177,7 +5177,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-leaf-06",
+                                  "dc-arista-s-leaf-06",
                                   "Ethernet1/31"
                                 ],
                                 "display_label": "Ethernet1/31"
@@ -5196,7 +5196,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-leaf-07",
+                                  "dc-arista-s-leaf-07",
                                   "Ethernet1/31"
                                 ],
                                 "display_label": "Ethernet1/31"
@@ -5215,7 +5215,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-leaf-08",
+                                  "dc-arista-s-leaf-08",
                                   "Ethernet1/31"
                                 ],
                                 "display_label": "Ethernet1/31"
@@ -5267,7 +5267,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-oob-01",
+                                  "dc-arista-s-oob-01",
                                   "GigabitEthernet1/0/1"
                                 ],
                                 "display_label": "GigabitEthernet1/0/1"
@@ -5282,7 +5282,7 @@
                 {
                   "node": {
                     "name": {
-                      "value": "dc-3-spine-02"
+                      "value": "dc-arista-s-spine-02"
                     },
                     "role": {
                       "value": "spine"
@@ -5323,7 +5323,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-leaf-01",
+                                  "dc-arista-s-leaf-01",
                                   "Ethernet1/32"
                                 ],
                                 "display_label": "Ethernet1/32"
@@ -5472,7 +5472,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-leaf-02",
+                                  "dc-arista-s-leaf-02",
                                   "Ethernet1/32"
                                 ],
                                 "display_label": "Ethernet1/32"
@@ -5621,7 +5621,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-leaf-03",
+                                  "dc-arista-s-leaf-03",
                                   "Ethernet1/32"
                                 ],
                                 "display_label": "Ethernet1/32"
@@ -5731,7 +5731,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-leaf-04",
+                                  "dc-arista-s-leaf-04",
                                   "Ethernet1/32"
                                 ],
                                 "display_label": "Ethernet1/32"
@@ -5750,7 +5750,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-leaf-05",
+                                  "dc-arista-s-leaf-05",
                                   "Ethernet1/32"
                                 ],
                                 "display_label": "Ethernet1/32"
@@ -5769,7 +5769,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-leaf-06",
+                                  "dc-arista-s-leaf-06",
                                   "Ethernet1/32"
                                 ],
                                 "display_label": "Ethernet1/32"
@@ -5788,7 +5788,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-leaf-07",
+                                  "dc-arista-s-leaf-07",
                                   "Ethernet1/32"
                                 ],
                                 "display_label": "Ethernet1/32"
@@ -5807,7 +5807,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-leaf-08",
+                                  "dc-arista-s-leaf-08",
                                   "Ethernet1/32"
                                 ],
                                 "display_label": "Ethernet1/32"
@@ -5859,7 +5859,7 @@
                             "connector": {
                               "node": {
                                 "hfid": [
-                                  "dc-3-oob-02",
+                                  "dc-arista-s-oob-02",
                                   "GigabitEthernet1/0/1"
                                 ],
                                 "display_label": "GigabitEthernet1/0/1"

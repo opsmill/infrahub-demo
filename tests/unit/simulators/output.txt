@@ -3,75 +3,84 @@ name: DC-3
 prefix: ""
 
 mgmt:
-  network: dc-3
+  network: dc-arista-s
   ipv4-subnet: 172.20.3.0/24
 
- 
-topology: 
+topology:
+  kinds:
+    ceos:
+      image: "${CEOS_DOCKER_IMAGE}"
+      exec:
+        - sleep 10
+        - FastCli -p 15 -c 'security pki key generate rsa 4096 eAPI.key'
+        - FastCli -p 15 -c 'security pki certificate generate self-signed eAPI.crt key eAPI.key generate rsa 4096 validity 30000 parameters common-name eAPI'
+    linux:
+      image: "${LINUX_HOST_DOCKER_IMAGE}"
+
   nodes:
-    dc-3-dc_firewall-01:
+    dc-arista-s-dc_firewall-01:
       kind: juniper_vjunosswitch
       type: SRX-1500
       image: None
-    dc-3-dc_firewall-02:
+    dc-arista-s-dc_firewall-02:
       kind: juniper_vjunosswitch
       type: SRX-1500
       image: None
-    dc-3-leaf-01:
+    dc-arista-s-leaf-01:
       kind: cisco_n9kv
       type: N9K-C9336C-FX2
       image: None
-    dc-3-leaf-02:
+    dc-arista-s-leaf-02:
       kind: cisco_n9kv
       type: N9K-C9336C-FX2
       image: None
-    dc-3-leaf-03:
+    dc-arista-s-leaf-03:
       kind: cisco_n9kv
       type: N9K-C9336C-FX2
       image: None
-    dc-3-leaf-04:
+    dc-arista-s-leaf-04:
       kind: cisco_n9kv
       type: N9K-C9336C-FX2
       image: None
-    dc-3-leaf-05:
+    dc-arista-s-leaf-05:
       kind: cisco_n9kv
       type: N9K-C9336C-FX2
       image: None
-    dc-3-leaf-06:
+    dc-arista-s-leaf-06:
       kind: cisco_n9kv
       type: N9K-C9336C-FX2
       image: None
-    dc-3-leaf-07:
+    dc-arista-s-leaf-07:
       kind: cisco_n9kv
       type: N9K-C9336C-FX2
       image: None
-    dc-3-leaf-08:
+    dc-arista-s-leaf-08:
       kind: cisco_n9kv
       type: N9K-C9336C-FX2
       image: None
-    dc-3-spine-01:
+    dc-arista-s-spine-01:
       kind: cisco_n9kv
       type: N9K-C9336C-FX2
       image: None
-    dc-3-spine-02:
+    dc-arista-s-spine-02:
       kind: cisco_n9kv
       type: N9K-C9336C-FX2
       image: None
 
   links:
-    - endpoints: ["dc-3-leaf-01:eth1/31", "dc-3-spine-01:eth1/1"]
-    - endpoints: ["dc-3-leaf-01:eth1/32", "dc-3-spine-02:eth1/1"]
-    - endpoints: ["dc-3-leaf-02:eth1/31", "dc-3-spine-01:eth1/2"]
-    - endpoints: ["dc-3-leaf-02:eth1/32", "dc-3-spine-02:eth1/2"]
-    - endpoints: ["dc-3-leaf-03:eth1/31", "dc-3-spine-01:eth1/3"]
-    - endpoints: ["dc-3-leaf-03:eth1/32", "dc-3-spine-02:eth1/3"]
-    - endpoints: ["dc-3-leaf-04:eth1/31", "dc-3-spine-01:eth1/4"]
-    - endpoints: ["dc-3-leaf-04:eth1/32", "dc-3-spine-02:eth1/4"]
-    - endpoints: ["dc-3-leaf-05:eth1/31", "dc-3-spine-01:eth1/5"]
-    - endpoints: ["dc-3-leaf-05:eth1/32", "dc-3-spine-02:eth1/5"]
-    - endpoints: ["dc-3-leaf-06:eth1/31", "dc-3-spine-01:eth1/6"]
-    - endpoints: ["dc-3-leaf-06:eth1/32", "dc-3-spine-02:eth1/6"]
-    - endpoints: ["dc-3-leaf-07:eth1/31", "dc-3-spine-01:eth1/7"]
-    - endpoints: ["dc-3-leaf-07:eth1/32", "dc-3-spine-02:eth1/7"]
-    - endpoints: ["dc-3-leaf-08:eth1/31", "dc-3-spine-01:eth1/8"]
-    - endpoints: ["dc-3-leaf-08:eth1/32", "dc-3-spine-02:eth1/8"]
+    - endpoints: ["dc-arista-s-leaf-01:eth1/31", "dc-arista-s-spine-01:eth1/1"]
+    - endpoints: ["dc-arista-s-leaf-01:eth1/32", "dc-arista-s-spine-02:eth1/1"]
+    - endpoints: ["dc-arista-s-leaf-02:eth1/31", "dc-arista-s-spine-01:eth1/2"]
+    - endpoints: ["dc-arista-s-leaf-02:eth1/32", "dc-arista-s-spine-02:eth1/2"]
+    - endpoints: ["dc-arista-s-leaf-03:eth1/31", "dc-arista-s-spine-01:eth1/3"]
+    - endpoints: ["dc-arista-s-leaf-03:eth1/32", "dc-arista-s-spine-02:eth1/3"]
+    - endpoints: ["dc-arista-s-leaf-04:eth1/31", "dc-arista-s-spine-01:eth1/4"]
+    - endpoints: ["dc-arista-s-leaf-04:eth1/32", "dc-arista-s-spine-02:eth1/4"]
+    - endpoints: ["dc-arista-s-leaf-05:eth1/31", "dc-arista-s-spine-01:eth1/5"]
+    - endpoints: ["dc-arista-s-leaf-05:eth1/32", "dc-arista-s-spine-02:eth1/5"]
+    - endpoints: ["dc-arista-s-leaf-06:eth1/31", "dc-arista-s-spine-01:eth1/6"]
+    - endpoints: ["dc-arista-s-leaf-06:eth1/32", "dc-arista-s-spine-02:eth1/6"]
+    - endpoints: ["dc-arista-s-leaf-07:eth1/31", "dc-arista-s-spine-01:eth1/7"]
+    - endpoints: ["dc-arista-s-leaf-07:eth1/32", "dc-arista-s-spine-02:eth1/7"]
+    - endpoints: ["dc-arista-s-leaf-08:eth1/31", "dc-arista-s-spine-01:eth1/8"]
+    - endpoints: ["dc-arista-s-leaf-08:eth1/32", "dc-arista-s-spine-02:eth1/8"]

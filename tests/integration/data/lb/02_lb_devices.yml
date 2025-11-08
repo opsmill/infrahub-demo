@@ -4,7 +4,7 @@ kind: Object
 spec:
   kind: DcimVirtualDevice
   data:
-    - name: dc-1-lb-01
+    - name: dc-cisco-s-border-leafs-lb-01
       location:
         kind: LocationBuilding
         data:
@@ -58,7 +58,7 @@ spec:
                   fall: 2
                   timeout: 20
 
-    - name: dc-1-lb-02
+    - name: dc-cisco-s-border-leafs-lb-02
       location:
         kind: LocationBuilding
         data:
