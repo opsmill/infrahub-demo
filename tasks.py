@@ -80,6 +80,12 @@ def load_objects(
     context.run(f"infrahubctl object load {path} --branch {branch}")
 
 
+@task(optional=["branch"])
+def bootstrap(context: Context, branch: str = "main") -> None:
+    """Run the complete bootstrap process (schemas, menu, data, security, repository)."""
+    context.run(f"./scripts/bootstrap.sh {branch}")
+
+
 @task
 def destroy(context: Context) -> None:
     """Destroy all containers."""

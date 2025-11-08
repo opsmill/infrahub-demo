@@ -1,27 +1,66 @@
 #!/bin/bash
 BRANCH=${1:-main}
 
-echo "Load schemas"
+echo ""
+echo "============================================================"
+echo "  Infrahub Demo Bootstrap"
+echo "============================================================"
+echo "  Branch: $BRANCH"
+echo "============================================================"
+echo ""
+
+echo "[1/7] Loading schemas..."
 uv run infrahubctl schema load schemas --branch $BRANCH
+echo "✓ Schemas loaded successfully"
+echo ""
 
-echo "Load menu"
+echo "[2/7] Loading menu definitions..."
 uv run infrahubctl menu load menu --branch $BRANCH
+echo "✓ Menu loaded successfully"
+echo ""
 
-echo "Load initial data"
+echo "[3/7] Loading bootstrap data (locations, platforms, roles, etc.)..."
 uv run infrahubctl object load objects/bootstrap/ --branch $BRANCH
+echo "✓ Bootstrap data loaded successfully"
+echo ""
 
-echo "Load security data"
+echo "[4/7] Loading security data (zones, policies, rules)..."
 uv run infrahubctl object load objects/security/ --branch $BRANCH
+echo "✓ Security data loaded successfully"
+echo ""
 
-echo "Populate security relationships"
+echo "[5/7] Populating security relationships..."
 uv run python scripts/populate_security_relationships.py
+echo "✓ Security relationships populated successfully"
+echo ""
 
-echo "Add demo repository"
-uv run infrahubctl repository add DEMO https://github.com/opsmill/infrahub-demo.git --ref main --read-only --ref main || echo "Repository already exists, skipping..."
+echo "[6/7] Adding demo repository..."
+uv run infrahubctl repository add DEMO https://github.com/opsmill/infrahub-demo.git --ref main --read-only --ref main || echo "⚠ Repository already exists, skipping..."
+echo "✓ Repository added"
+echo ""
 
-echo "Wait for repo sync - let's sleep for 120 seconds"
-sleep 120
+echo "[7/7] Waiting for repository sync (120 seconds)..."
+for i in {1..12}; do
+    echo -n "."
+    sleep 10
+done
+echo ""
+echo "✓ Repository sync complete"
+echo ""
 
-echo "Add event actions"
+echo "Loading event actions..."
 uv run infrahubctl object load objects/events/ --branch $BRANCH
+echo "✓ Event actions loaded successfully"
+echo ""
+
+echo "============================================================"
+echo "  Bootstrap Complete!"
+echo "============================================================"
+echo "  All data has been loaded into Infrahub"
+echo "  Branch: $BRANCH"
+echo "  Next steps:"
+echo "    - Create a branch: uv run infrahubctl branch create <name>"
+echo "    - Load a DC design: uv run infrahubctl object load objects/dc-cisco-s.yml --branch <name>"
+echo "============================================================"
+echo ""
 
