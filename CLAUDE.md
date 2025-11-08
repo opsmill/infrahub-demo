@@ -56,7 +56,7 @@ uv run infrahubctl object load objects/events/ --branch main
 uv run infrahubctl branch create <branch-name>
 
 # Load data to specific branch
-uv run infrahubctl object load objects/dc-2 --branch <branch-name>
+uv run infrahubctl object load objects/dc-cisco-s --branch <branch-name>
 ```
 
 ### Testing and Validation
@@ -275,11 +275,11 @@ uv run infrahubctl object load objects/events/
 ### Data Center Demo
 ```bash
 # Automated approach
-./scripts/demo.sh design dc-2
+./scripts/demo.sh design dc-cisco-s
 
 # Manual approach
 uv run infrahubctl branch create my-branch
-uv run infrahubctl object load objects/dc-2 --branch my-branch
+uv run infrahubctl object load objects/dc-cisco-s --branch my-branch
 # Then run generator via InfraHub UI: Actions → Generator Definitions → create_dc
 ```
 
@@ -287,7 +287,7 @@ uv run infrahubctl object load objects/dc-2 --branch my-branch
 
 - `checks/` - Validation checks for spine, leaf, edge, loadbalancer devices
 - `objects/bootstrap/` - Initial data (locations, platforms, roles)
-- `objects/dc-2/`, `dc-3.yml`, etc. - Demo scenario data
+- `objects/dc-cisco-s.yml`, `dc-arista-s.yml`, `dc-sonic-border-leafs.yml`, `dc-juniper-s.yml`, etc. - Demo scenario data
 - `objects/security/` - Security-related demo data
 - `objects/cloud_security/` - Cloud security examples
 - `objects/events/` - Event action definitions

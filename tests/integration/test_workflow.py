@@ -175,7 +175,7 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
         logging.info("Starting test: test_07_load_dc2_design")
 
         load_dc2 = self.execute_command(
-            f"infrahubctl object load objects/dc-2.yml --branch {default_branch}",
+            f"infrahubctl object load objects/dc-cisco-s.yml --branch {default_branch}",
             address=client_main.config.address,
         )
 
