@@ -6,7 +6,7 @@ nodes:
   - name: Docs
     namespace: Docs
     description: "Documentation links"
-    include_in_menu: true
+    include_in_menu: false
     label: Documentation
     display_labels:
       - name
@@ -14,16 +14,8 @@ nodes:
       - name: name
         kind: Text
         optional: false
-        default_value: "Documentation Links"
-      - name: infrahub_docs
-        label: Infrahub Documentation
-        kind: URL
-        optional: true
-      - name: infrahub_demo_docs
-        label: Demo Documentation
-        kind: URL
-        optional: true
-      - name: opsmill_website
-        label: OpsMill Website
+        default_value: "Links"
+      - name: link
+        label: Link
         kind: URL
         optional: true

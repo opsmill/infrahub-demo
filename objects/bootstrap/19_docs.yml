@@ -4,7 +4,9 @@ kind: Object
 spec:
   kind: DocsDocs
   data:
-    - name: Docs
-      infrahub_docs: https://docs.infrahub.app
-      infrahub_demo_docs: https://docs.infrahub.app/demo/
-      opsmill_website: https://opsmill.com
+    - name: Infrahub Docs
+      link: https://docs.infrahub.app
+    - name: Demo Docs
+      link: https://docs.infrahub.app/demo/
+    - name: OpsMill Website
+      link: https://opsmill.com
