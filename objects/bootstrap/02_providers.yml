@@ -4,27 +4,34 @@ kind: Object
 spec:
   kind: OrganizationProvider
   data:
-    - name: "AWS"
-    - name: "Azure"
-    - name: "Google Cloud"
-    - name: "IBM"
-    - name: "Oracle"
-    - name: "Arelion"
-    - name: "Colt Technology Services"
-    - name: "Verizon Business"
-    - name: "GTT Communications"
-    - name: "Hurricane Electric"
-    - name: "Lumen"
-    - name: "Zayo"
+    # UNUSED: Cloud providers not referenced in any loaded objects
+    # - name: "AWS"
+    # - name: "Azure"
+    # - name: "Google Cloud"
+    # - name: "IBM"
+    # - name: "Oracle"
+
+    # UNUSED: Network/transit providers not referenced in any loaded objects
+    # - name: "Arelion"
+    # - name: "Colt Technology Services"
+    # - name: "Verizon Business"
+    # - name: "GTT Communications"
+    # - name: "Hurricane Electric"
+    # - name: "Lumen"
+    # - name: "Zayo"
+    # - name: "Interxion"
+    # - name: "PCCW Global"
+    # - name: "Orange S.A"
+    # - name: "Tata Communications"
+    # - name: "Sprint"
+    # - name: "NTT America"
+    # - name: "Cogent Communications"
+    # - name: "Comcast Cable Communication"
+    # - name: "Telecom Italia Sparkle"
+    # - name: "AT&T Services"
+
+    # USED: Colocation/datacenter provider - used in objects/pop-1.yml and objects/pop-2.yml
     - name: "Equinix"
-    - name: "Interxion"
-    - name: "PCCW Global"
-    - name: "Orange S.A"
-    - name: "Tata Communications"
-    - name: "Sprint"
-    - name: "NTT America"
-    - name: "Cogent Communications"
-    - name: "Comcast Cable Communication"
-    - name: "Telecom Italia Sparkle"
-    - name: "AT&T Services"
+
+    # USED: Generic provider - used in objects/dc-arista-s.yml, objects/dc-cisco-s.yml, objects/dc-juniper-s.yml, objects/dc-sonic-border-leafs.yml, objects/dc-cisco-s-border-leafs.yml
     - name: "Technology Partner"

@@ -56,7 +56,11 @@ uv run infrahubctl object load objects/events/ --branch main
 uv run infrahubctl branch create <branch-name>
 
 # Load data to specific branch
-uv run infrahubctl object load objects/dc-cisco-s --branch <branch-name>
+uv run infrahubctl object load objects/dc-arista-s.yml --branch <branch-name>
+
+# Create a proposed change for a branch
+uv run invoke create-pc --branch <branch-name>
+uv run python scripts/create_proposed_change.py --branch <branch-name>
 ```
 
 ### Testing and Validation
@@ -87,6 +91,18 @@ uv run mypy .
 
 # Full validation suite
 uv run invoke validate
+```
+
+### Bootstrap and Demo Workflows
+```bash
+# Bootstrap Infrahub (Python version with Rich UI)
+uv run invoke bootstrap
+
+# Demo DC Arista topology (creates branch, loads data, creates proposed change)
+uv run invoke demo-dc-arista
+
+# Extract generated configurations from Infrahub
+uv run python scripts/get_configs.py --branch <branch-name>
 ```
 
 ## High-Level Architecture
@@ -163,6 +179,41 @@ Every new functionality must have corresponding tests:
 - Follow PascalCase for classes, snake_case for functions/variables
 - Add docstrings for all classes and functions
 
+### Terminal UI Best Practices
+
+When creating user-facing scripts with Rich for terminal output:
+
+**Box Styles:**
+- Use `box.SIMPLE` for panels and tables (ASCII characters: `+`, `-`, `|`)
+- Avoid `box.ROUNDED` and `box.DOUBLE` (Unicode characters may not render properly in all terminals)
+- Example:
+  ```python
+  from rich import box
+  from rich.panel import Panel
+
+  Panel("Content", box=box.SIMPLE)  # Good - works everywhere
+  ```
+
+**Progress Bars:**
+- Include task description in the progress bar itself, not in a separate print statement
+- Use spinners, bars, percentages, and time indicators for better UX
+- Example from `scripts/bootstrap.py`:
+  ```python
+  with Progress(
+      SpinnerColumn(spinner_name="dots12", style="bold bright_yellow"),
+      TextColumn("[progress.description]{task.description}", style="bold white"),
+      BarColumn(bar_width=60),
+      TextColumn("[bold bright_cyan]{task.percentage:>3.0f}%"),
+      TimeElapsedColumn(),
+      TimeRemainingColumn(),
+  ) as progress:
+      task = progress.add_task("[7/7] 🔄 Waiting for repository sync", total=seconds)
+  ```
+
+**Type Stubs:**
+- Install type stubs for external libraries: `uv pip install types-requests`
+- Mypy configuration excludes `scripts/debug/` directory from type checking
+
 ## InfraHub SDK Patterns
 
 ### Generator Pattern
@@ -179,6 +230,7 @@ class MyTopologyGenerator(InfrahubGenerator):
 ### Transform Pattern
 ```python
 from infrahub_sdk.transforms import InfrahubTransform
+from jinja2 import Environment, FileSystemLoader
 from typing import Any
 
 class MyTransform(InfrahubTransform):
@@ -186,8 +238,22 @@ class MyTransform(InfrahubTransform):
 
     async def transform(self, data: Any) -> Any:
         """Transform InfraHub data to device configuration."""
-        return self.render_template(template="my_template.j2", data=data)
+        # Set up Jinja2 environment
+        template_path = f"{self.root_directory}/templates/configs"
+        env = Environment(
+            loader=FileSystemLoader(template_path),
+            autoescape=False,  # Disable autoescape for device configs (not HTML)
+        )
+
+        template = env.get_template("device_config.j2")
+        return template.render(data=data)
 ```
+
+**Important Transform Notes:**
+- Always disable Jinja2 autoescape (`autoescape=False`) when generating device configs
+- HTML entities in Infrahub data (e.g., `&gt;`) are decoded in `transforms/common.py`
+- Use `get_interface_roles()` to organize interfaces by role for templates
+- Interface descriptions are automatically HTML-decoded to prevent `&gt;` appearing as `-&gt;`
 
 ### Check Pattern
 ```python
@@ -202,6 +268,20 @@ class MyCheck(InfrahubCheck):
         if not self.is_valid(data):
             self.log_error("Validation failed", data)
 ```
+
+### Common Transform Utilities
+
+The `transforms/common.py` module provides helper functions for data processing:
+
+- **`get_data(data)`** - Extracts and cleans GraphQL response data
+- **`get_interfaces(data)`** - Returns sorted list of interface dictionaries with HTML-decoded descriptions
+- **`get_interface_roles(data)`** - Organizes interfaces by role (loopback, uplink, downlink, customer, all_physical, all_downlink)
+- **`get_loopbacks(data)`** - Extracts loopback interfaces and their IP addresses as a dict
+- **`get_vlans(data)`** - Extracts VLAN information from interface services
+- **`get_bgp_profile(services)`** - Groups BGP sessions by peer group
+- **`get_ospf(services)`** - Extracts OSPF configuration information
+
+**Key Feature:** All interface descriptions are automatically HTML-decoded using `html.unescape()` to convert entities like `&gt;` → `>`, `&lt;` → `<`, `&amp;` → `&`.
 
 ## Schema Conventions
 
@@ -287,7 +367,7 @@ uv run infrahubctl object load objects/dc-cisco-s --branch my-branch
 
 - `checks/` - Validation checks for spine, leaf, edge, loadbalancer devices
 - `objects/bootstrap/` - Initial data (locations, platforms, roles)
-- `objects/dc-cisco-s.yml`, `dc-arista-s.yml`, `dc-sonic-border-leafs.yml`, `dc-juniper-s.yml`, etc. - Demo scenario data
+- `objects/dc-arista-s.yml`, `dc-cisco-s.yml`, `dc-sonic-border-leafs.yml`, `dc-juniper-s.yml`, etc. - Demo scenario data
 - `objects/security/` - Security-related demo data
 - `objects/cloud_security/` - Cloud security examples
 - `objects/events/` - Event action definitions
@@ -295,19 +375,29 @@ uv run infrahubctl object load objects/dc-cisco-s --branch my-branch
 - `generators/common.py` - Shared generator utilities
 - `generators/schema_protocols.py` - Type protocols for schemas
 - `menu/` - InfraHub menu definitions
-- `queries/config/` - Configuration queries
+- `queries/config/` - Configuration queries (leaf_config, spine_config, etc.)
 - `queries/topology/` - Topology queries
 - `queries/validation/` - Validation queries
-- `schemas/base/` - Base schema models
+- `schemas/base/` - Base schema models (dcim, ipam, location, topology)
 - `schemas/extensions/` - Extended schemas
-- `scripts/bootstrap.sh` - Complete setup script
-- `scripts/demo.sh` - Demo execution script
+- `scripts/` - User-facing automation scripts:
+  - `bootstrap.py` - Python bootstrap script with Rich UI (recommended)
+  - `bootstrap.sh` - Bash bootstrap script (legacy)
+  - `create_proposed_change.py` - Create Infrahub Proposed Changes
+  - `get_configs.py` - Extract device configs and topologies from artifacts
+  - `populate_security_relationships.py` - Populate security zone relationships
+- `scripts/debug/` - Debug scripts (excluded from git tracking)
 - `templates/` - Jinja2 configuration templates
+  - `templates/configs/leafs/` - Leaf device templates (arista_eos.j2, dell_sonic.j2, etc.)
+  - `templates/configs/spines/` - Spine device templates (arista_eos.j2, dell_sonic.j2, etc.)
 - `transforms/` - Python transform implementations
+  - `transforms/common.py` - Shared utilities (get_interface_roles, get_loopbacks, HTML decoding, etc.)
+  - `transforms/leaf.py` - Leaf device configuration transform
+  - `transforms/spine.py` - Spine device configuration transform
 - `tests/conftest.py` - Pytest fixtures and configuration
 - `tests/unit/` - Unit tests
 - `tests/integration/` - Integration tests
-- `tasks.py` - Invoke task definitions
+- `tasks.py` - Invoke task definitions (bootstrap, demo-dc-arista, create-pc, etc.)
 
 ## GraphQL Query Patterns
 
@@ -341,6 +431,58 @@ query GetDeviceConfig($device_name: String!) {
 4. **Schema conflicts**: Check for naming conflicts when extending schemas
 5. **Incorrect inheritance**: Ensure proper `inherit_from` usage in schemas
 6. **Missing .infrahub.yml entries**: Register all generators/transforms/checks
+7. **Using wrong box style in Rich**: Use `box.SIMPLE` instead of `box.ROUNDED` or `box.DOUBLE` for terminal compatibility
+8. **Jinja2 autoescape enabled**: Always set `autoescape=False` in transforms for device configs
+9. **HTML entities in descriptions**: Use `get_interface_roles()` which handles HTML decoding automatically
+10. **Template expects different data structure**: Spine templates expect `interface_roles`, leaf templates expect `interfaces.all_physical`
+11. **Missing type stubs**: Install type stubs with `uv pip install types-<package>` when mypy reports import errors
+
+## Debugging Transforms and Artifacts
+
+### Testing Transforms Locally
+
+You can test transforms locally before they run in Infrahub:
+
+```bash
+# Test leaf transform
+uv run infrahubctl transform leaf --branch <branch-name> --debug device=<device-name>
+
+# Test spine transform
+uv run infrahubctl transform spine --branch <branch-name> --debug device=<device-name>
+
+# Example
+uv run infrahubctl transform spine --branch add-dc3 --debug device=dc-3-spine-01
+```
+
+### Common Transform Issues
+
+**"interface_roles is undefined" error:**
+- The template expects `interface_roles` but transform provides flat `interfaces` list
+- Solution: Use `get_interface_roles()` instead of `get_interfaces()` in transform
+- Spine templates need: `interface_roles.loopback`, `interface_roles.all_downlink`
+- Leaf templates need: `interfaces.all_physical`
+
+**HTML entities in output (`&gt;`, `&lt;`, etc.):**
+- Infrahub stores descriptions with HTML-encoded entities
+- Solution: Disable Jinja2 autoescape (`autoescape=False`)
+- `get_interfaces()` automatically decodes descriptions with `html.unescape()`
+
+**Artifact caching:**
+- Artifacts in Infrahub are cached
+- Template/transform changes won't appear until artifacts regenerate
+- Trigger regeneration by updating device or running generator again
+
+### Extracting Generated Configs
+
+```bash
+# Extract all artifacts from a branch
+uv run python scripts/get_configs.py --branch <branch-name>
+
+# Output locations:
+# - generated-configs/devices/*.cfg  - Device configurations
+# - generated-configs/clab/*.clab.yml - Containerlab topologies
+# - generated-configs/cabling/*.txt - Cabling matrices
+```
 
 ## Resources
 

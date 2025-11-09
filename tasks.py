@@ -165,7 +165,7 @@ def bootstrap_bash(context: Context, branch: str = "main") -> None:
 @task(optional=["branch"], name="bootstrap")
 def bootstrap_py(context: Context, branch: str = "main") -> None:
     """Run the complete bootstrap process (Python version with Rich UI)."""
-    context.run(f"uv run python scripts/bootstrap.py --branch {branch}")
+    context.run(f"uv run python scripts/bootstrap.py --branch {branch}", pty=True)
 
 
 @task(optional=["branch"], name="demo-dc-arista")
@@ -215,7 +215,7 @@ def demo_dc_arista(context: Context, branch: str = "add-dc3") -> None:
 
     # Create proposed change
     console.print(f"\n[bright_magenta]→[/bright_magenta] Creating proposed change for branch '[bold]{branch}[/bold]'...")
-    context.run(f"uv run python scripts/create_proposed_change.py --branch {branch}")
+    context.run(f"uv run python scripts/create_proposed_change.py --branch {branch}", pty=True)
 
     console.print()
 
@@ -223,7 +223,7 @@ def demo_dc_arista(context: Context, branch: str = "add-dc3") -> None:
 @task(optional=["branch"], name="create-pc")
 def create_proposed_change(context: Context, branch: str = "add-dc3") -> None:
     """Create an Infrahub Proposed Change for a branch."""
-    context.run(f"uv run python scripts/create_proposed_change.py --branch {branch}")
+    context.run(f"uv run python scripts/create_proposed_change.py --branch {branch}", pty=True)
 
 
 @task(optional=["branch", "topology"])
@@ -239,7 +239,7 @@ def containerlab(context: Context, branch: str = "add-dc3", topology: str = "DC-
     ))
 
     console.print(f"\n[magenta]→[/magenta] Generating configurations from branch: [bold]{branch}[/bold]")
-    context.run(f"uv run scripts/get_configs.py --branch {branch}")
+    context.run(f"uv run scripts/get_configs.py --branch {branch}", pty=True)
 
     topology_file = f"generated-configs/clab/{topology}.clab.yml"
     console.print(f"\n[magenta]→[/magenta] Deploying containerlab topology: [bold]{topology_file}[/bold]")
