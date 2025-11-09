@@ -145,6 +145,7 @@ query spine_config($device: String!) {
               interface_services{
                 edges{
                   node{
+                    __typename
                     ... on ServiceOSPF{
                       area { node {area {value}}}
                       ospf_interface_profile{node{

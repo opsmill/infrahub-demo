@@ -15,6 +15,13 @@ import asyncio
 from pathlib import Path
 
 from infrahub_sdk import InfrahubClient
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
+from rich import box
+from rich.progress import Progress, SpinnerColumn, TextColumn
+
+console = Console()
 
 
 async def get_containerlab_topologies(client: InfrahubClient) -> list[str]:
@@ -22,7 +29,7 @@ async def get_containerlab_topologies(client: InfrahubClient) -> list[str]:
     directory_path = Path("./generated-configs/clab")
     directory_path.mkdir(parents=True, exist_ok=True)
 
-    print("Fetching containerlab topologies...")
+    console.print("\n[cyan]→[/cyan] Fetching containerlab topologies...")
 
     topologies = await client.all(kind="TopologyDataCenter")
 
@@ -44,14 +51,13 @@ async def get_containerlab_topologies(client: InfrahubClient) -> list[str]:
                 output_file = directory_path / f"{topology.name.value}.clab.yml"
                 with open(output_file, "w") as file:
                     file.write(artifact_content)
-                print(f"  ✓ Saved topology: {output_file}")
+                console.print(f"  [green]✓[/green] Saved topology: [bold]{output_file}[/bold]")
                 saved_topologies.append(topology.name.value)
         except Exception as e:
-            print(f"  ✗ Error fetching topology {topology.name.value}: {e}")
+            console.print(f"  [red]✗[/red] Error fetching topology {topology.name.value}: [dim]{e}[/dim]")
 
     if len(saved_topologies) == 0:
-        print("  No containerlab topologies found")
-    print()
+        console.print("  [yellow]No containerlab topologies found[/yellow]")
 
     return saved_topologies
 
@@ -61,7 +67,7 @@ async def get_device_configs(client: InfrahubClient) -> None:
     base_path = Path("./generated-configs/devices")
     base_path.mkdir(parents=True, exist_ok=True)
 
-    print("Fetching device configurations...")
+    console.print("\n[cyan]→[/cyan] Fetching device configurations...")
 
     devices = await client.all(kind="DcimGenericDevice")
 
@@ -101,15 +107,14 @@ async def get_device_configs(client: InfrahubClient) -> None:
                     with open(output_file, "w") as file:
                         file.write(artifact_content)
 
-                    print(f"  ✓ Saved {device.name.value}.{extension}")
+                    console.print(f"  [green]✓[/green] Saved [bold]{device.name.value}.{extension}[/bold]")
                     config_count += 1
 
         except Exception as e:
-            print(f"  ✗ Error fetching config for {device.name.value}: {e}")
+            console.print(f"  [red]✗[/red] Error fetching config for {device.name.value}: [dim]{e}[/dim]")
 
     if config_count == 0:
-        print("  No device configurations found")
-    print()
+        console.print("  [yellow]No device configurations found[/yellow]")
 
 
 async def get_topology_cabling(client: InfrahubClient) -> None:
@@ -117,7 +122,7 @@ async def get_topology_cabling(client: InfrahubClient) -> None:
     directory_path = Path("./generated-configs/cabling")
     directory_path.mkdir(parents=True, exist_ok=True)
 
-    print("Fetching topology cabling matrices...")
+    console.print("\n[cyan]→[/cyan] Fetching topology cabling matrices...")
 
     topologies = await client.all(kind="TopologyDataCenter")
 
@@ -139,52 +144,75 @@ async def get_topology_cabling(client: InfrahubClient) -> None:
                 output_file = directory_path / f"{topology.name.value}-cabling.txt"
                 with open(output_file, "w") as file:
                     file.write(artifact_content)
-                print(f"  ✓ Saved cabling matrix: {output_file}")
+                console.print(f"  [green]✓[/green] Saved cabling matrix: [bold]{output_file}[/bold]")
                 cabling_count += 1
         except Exception as e:
-            print(f"  ✗ Error fetching cabling for {topology.name.value}: {e}")
+            console.print(f"  [red]✗[/red] Error fetching cabling for {topology.name.value}: [dim]{e}[/dim]")
 
     if cabling_count == 0:
-        print("  No cabling matrices found")
-    print()
+        console.print("  [yellow]No cabling matrices found[/yellow]")
 
 
 async def main(branch: str | None = None) -> None:
     """Main function to fetch all artifacts."""
     # Connect to Infrahub with branch configuration
+    branch_name = branch if branch else "main"
+
+    console.print()
+    console.print(Panel(
+        f"[bold cyan]Extracting Infrahub Configuration Artifacts[/bold cyan]\n"
+        f"[dim]Branch:[/dim] {branch_name}",
+        border_style="cyan",
+        box=box.ROUNDED
+    ))
+
     if branch:
-        print(f"Using branch: {branch}")
         client = InfrahubClient(config={"default_branch": branch})
     else:
-        print("Using main branch")
         client = InfrahubClient()
-
-    print("\n" + "=" * 60)
-    print("Extracting Infrahub Configuration Artifacts")
-    print("=" * 60 + "\n")
 
     # Fetch all artifact types
     saved_topologies = await get_containerlab_topologies(client)
     await get_device_configs(client)
     await get_topology_cabling(client)
 
-    print("=" * 60)
-    print("Configuration extraction complete!")
-    print("Configs saved to: ./generated-configs/")
-    print("=" * 60 + "\n")
+    console.print()
+    console.print(Panel(
+        "[bold green]Configuration extraction complete![/bold green]\n"
+        f"[dim]Saved to:[/dim] [bold]./generated-configs/[/bold]",
+        border_style="green",
+        box=box.ROUNDED
+    ))
 
     # Display containerlab deployment instructions if topologies were saved
     if saved_topologies:
-        print("=" * 60)
-        print("Deploy with Containerlab")
-        print("=" * 60 + "\n")
-        print("To deploy a data center topology in Containerlab, use:\n")
+        console.print()
+
+        # Create deployment table
+        deploy_table = Table(
+            title="Containerlab Deployment Commands",
+            box=box.ROUNDED,
+            show_header=True,
+            header_style="bold magenta"
+        )
+        deploy_table.add_column("Action", style="cyan", no_wrap=True)
+        deploy_table.add_column("Command", style="white")
+
         for topology_name in saved_topologies:
-            print(f"  sudo -E containerlab deploy -t generated-configs/clab/{topology_name}.clab.yml")
-        print("\nTo destroy a topology:")
-        for topology_name in saved_topologies:
-            print(f"  sudo -E containerlab destroy -t generated-configs/clab/{topology_name}.clab.yml")
-        print("\n" + "=" * 60 + "\n")
+            deploy_cmd = f"sudo -E containerlab deploy -t generated-configs/clab/{topology_name}.clab.yml"
+            destroy_cmd = f"sudo -E containerlab destroy -t generated-configs/clab/{topology_name}.clab.yml"
+
+            deploy_table.add_row(
+                f"Deploy {topology_name}",
+                f"[green]{deploy_cmd}[/green]"
+            )
+            deploy_table.add_row(
+                f"Destroy {topology_name}",
+                f"[red]{destroy_cmd}[/red]"
+            )
+
+        console.print(deploy_table)
+        console.print()
 
 
 if __name__ == "__main__":

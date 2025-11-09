@@ -144,10 +144,10 @@ def load_objects(
 
 @task(optional=["branch"])
 def bootstrap(context: Context, branch: str = "main") -> None:
-    """Run the complete bootstrap process (schemas, menu, data, security, repository)."""
+    """Run the complete bootstrap process (bash version)."""
     console.print()
     console.print(Panel(
-        f"[bold blue]Infrahub Bootstrap[/bold blue]\n"
+        f"[bold blue]Infrahub Bootstrap (Bash)[/bold blue]\n"
         f"[dim]Branch:[/dim] {branch}\n"
         f"[dim]This will load schemas, menu, bootstrap data, security, and repository[/dim]",
         border_style="blue",
@@ -158,6 +158,12 @@ def bootstrap(context: Context, branch: str = "main") -> None:
     console.print()
     console.print("[green]✓[/green] Bootstrap completed successfully!")
     console.print()
+
+
+@task(optional=["branch"], name="bootstrap-py")
+def bootstrap_py(context: Context, branch: str = "main") -> None:
+    """Run the complete bootstrap process (Python version with Rich UI)."""
+    context.run(f"uv run python scripts/bootstrap.py --branch {branch}")
 
 
 @task(optional=["branch"], name="demo-dc-arista")
