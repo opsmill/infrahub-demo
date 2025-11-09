@@ -18,3 +18,4 @@ docker-compose.override.yml
 docker-compose.yml
 generated-configs/
 infrahub_demo.egg-info
+scripts/debug/
