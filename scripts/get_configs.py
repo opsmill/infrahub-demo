@@ -167,7 +167,7 @@ async def main(branch: str | None = None) -> int:
         f"[bold cyan]Extracting Infrahub Configuration Artifacts[/bold cyan]\n"
         f"[dim]Branch:[/dim] {branch_name}",
         border_style="cyan",
-        box=box.ROUNDED
+        box=box.SIMPLE
     ))
 
     if branch:
@@ -201,7 +201,7 @@ async def main(branch: str | None = None) -> int:
             "  • Check Infrahub logs for errors",
             title="[bold red]Error[/bold red]",
             border_style="red",
-            box=box.ROUNDED
+            box=box.SIMPLE
         ))
         return 1
 
@@ -214,7 +214,7 @@ async def main(branch: str | None = None) -> int:
         f"  • [cyan]{cabling_count}[/cyan] cabling matri{'x' if cabling_count == 1 else 'ces'}\n\n"
         f"[dim]Saved to:[/dim] [bold]./generated-configs/[/bold]",
         border_style="green",
-        box=box.ROUNDED
+        box=box.SIMPLE
     ))
 
     # Display containerlab deployment instructions if topologies were saved
@@ -224,7 +224,7 @@ async def main(branch: str | None = None) -> int:
         # Create deployment table
         deploy_table = Table(
             title="Containerlab Deployment Commands",
-            box=box.ROUNDED,
+            box=box.SIMPLE,
             show_header=True,
             header_style="bold magenta"
         )

@@ -40,7 +40,7 @@ async def create_proposed_change(branch: str) -> int:
         f"[bright_cyan]Source Branch:[/bright_cyan] [bold yellow]{branch}[/bold yellow]\n"
         f"[bright_cyan]Target Branch:[/bright_cyan] [bold green]main[/bold green]",
         border_style="bright_magenta",
-        box=box.ROUNDED,
+        box=box.SIMPLE,
         title="[bold bright_white]Proposed Change[/bold bright_white]",
         title_align="left"
     ))
@@ -131,7 +131,7 @@ async def create_proposed_change(branch: str) -> int:
             f"[bold bright_white]View Proposed Change:[/bold bright_white]\n\n"
             f"[bright_blue]{pc_url}[/bright_blue]",
             border_style="bright_green",
-            box=box.ROUNDED
+            box=box.SIMPLE
         ))
 
         console.print()

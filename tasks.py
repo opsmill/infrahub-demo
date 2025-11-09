@@ -67,7 +67,7 @@ def list_tasks(context: Context) -> None:
     # Create a Rich table
     table = Table(
         title="Available Invoke Tasks",
-        box=box.ROUNDED,
+        box=box.SIMPLE,
         show_header=True,
         header_style="bold cyan"
     )
@@ -93,7 +93,7 @@ def info(context: Context) -> None:
         f"[cyan]Command:[/cyan] [dim]{COMPOSE_COMMAND}[/dim]",
         title="[bold]Infrahub Configuration[/bold]",
         border_style="blue",
-        box=box.ROUNDED
+        box=box.SIMPLE
     )
     console.print()
     console.print(info_panel)
@@ -108,7 +108,7 @@ def start(context: Context) -> None:
     console.print(Panel(
         f"[green]Starting Infrahub {edition}[/green] [dim]({INFRAHUB_VERSION})[/dim]",
         border_style="green",
-        box=box.ROUNDED
+        box=box.SIMPLE
     ))
     context.run(f"{COMPOSE_COMMAND} up -d")
     console.print("[green]✓[/green] Infrahub started successfully")
@@ -153,7 +153,7 @@ def bootstrap_bash(context: Context, branch: str = "main") -> None:
         f"[dim]Branch:[/dim] {branch}\n"
         f"[dim]This will load schemas, menu, bootstrap data, security, and repository[/dim]",
         border_style="blue",
-        box=box.ROUNDED
+        box=box.SIMPLE
     ))
     console.print()
     context.run(f"./scripts/bootstrap.sh {branch}")
@@ -176,7 +176,7 @@ def demo_dc_arista(context: Context, branch: str = "add-dc3") -> None:
         f"[bold cyan]Arista Data Center Demo[/bold cyan]\n"
         f"[dim]Branch:[/dim] {branch}",
         border_style="cyan",
-        box=box.ROUNDED
+        box=box.SIMPLE
     ))
 
     console.print(f"\n[cyan]→[/cyan] Creating branch: [bold]{branch}[/bold]")
@@ -235,7 +235,7 @@ def containerlab(context: Context, branch: str = "add-dc3", topology: str = "DC-
         f"[dim]Branch:[/dim] {branch}\n"
         f"[dim]Topology:[/dim] {topology}",
         border_style="magenta",
-        box=box.ROUNDED
+        box=box.SIMPLE
     ))
 
     console.print(f"\n[magenta]→[/magenta] Generating configurations from branch: [bold]{branch}[/bold]")
@@ -256,7 +256,7 @@ def destroy(context: Context) -> None:
     console.print(Panel(
         "[red]Destroying all containers and volumes[/red]",
         border_style="red",
-        box=box.ROUNDED
+        box=box.SIMPLE
     ))
     context.run(f"{COMPOSE_COMMAND} down -v")
     console.print("[green]✓[/green] All containers and volumes destroyed")
@@ -269,7 +269,7 @@ def stop(context: Context) -> None:
     console.print(Panel(
         "[yellow]Stopping all containers[/yellow]",
         border_style="yellow",
-        box=box.ROUNDED
+        box=box.SIMPLE
     ))
     context.run(f"{COMPOSE_COMMAND} down")
     console.print("[green]✓[/green] All containers stopped")
@@ -283,7 +283,7 @@ def restart(context: Context, component: str = "") -> None:
         console.print(Panel(
             f"[yellow]Restarting component:[/yellow] [bold]{component}[/bold]",
             border_style="yellow",
-            box=box.ROUNDED
+            box=box.SIMPLE
         ))
         context.run(f"{COMPOSE_COMMAND} restart {component}")
         console.print(f"[green]✓[/green] Component '{component}' restarted")
@@ -293,7 +293,7 @@ def restart(context: Context, component: str = "") -> None:
     console.print(Panel(
         "[yellow]Restarting all containers[/yellow]",
         border_style="yellow",
-        box=box.ROUNDED
+        box=box.SIMPLE
     ))
     context.run(f"{COMPOSE_COMMAND} restart")
     console.print("[green]✓[/green] All containers restarted")
@@ -306,7 +306,7 @@ def run_tests(context: Context) -> None:
     console.print(Panel(
         "[bold cyan]Running Tests[/bold cyan]",
         border_style="cyan",
-        box=box.ROUNDED
+        box=box.SIMPLE
     ))
     context.run("pytest -vv tests")
     console.print("[green]✓[/green] Tests completed")
@@ -320,7 +320,7 @@ def validate(context: Context) -> None:
         "[bold cyan]Running Code Validation[/bold cyan]\n"
         "[dim]Ruff → Mypy → Pytest[/dim]",
         border_style="cyan",
-        box=box.ROUNDED
+        box=box.SIMPLE
     ))
 
     console.print("\n[cyan]→[/cyan] Running Ruff checks...")
@@ -344,7 +344,7 @@ def format(context: Context) -> None:
         "[bold magenta]Formatting Python Code[/bold magenta]\n"
         "[dim]Ruff Format → Ruff Fix[/dim]",
         border_style="magenta",
-        box=box.ROUNDED
+        box=box.SIMPLE
     ))
 
     exec_cmds = ["ruff format .", "ruff check . --fix"]
@@ -391,7 +391,7 @@ def lint_all(context: Context) -> None:
         "[bold yellow]Running All Linters[/bold yellow]\n"
         "[dim]YAML → Ruff → Mypy[/dim]",
         border_style="yellow",
-        box=box.ROUNDED
+        box=box.SIMPLE
     ))
 
     console.print("\n[yellow]→[/yellow] Running yamllint...")
@@ -415,7 +415,7 @@ def docs_build(context: Context) -> None:
         "[bold blue]Building Documentation Website[/bold blue]\n"
         f"[dim]Directory:[/dim] {DOCUMENTATION_DIRECTORY}",
         border_style="blue",
-        box=box.ROUNDED
+        box=box.SIMPLE
     ))
 
     exec_cmd = "npm run build"

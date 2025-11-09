@@ -91,7 +91,7 @@ def check_infrahub_ready(max_retries: int = 30, sleep_time: int = 2) -> bool:
         "  [bold]docker ps[/bold]",
         title="Connection Error",
         border_style="red",
-        box=box.ROUNDED
+        box=box.SIMPLE
     ))
     return False
 
@@ -120,8 +120,6 @@ def run_command(command: str, description: str, step: str, color: str = "cyan", 
 
 def wait_for_repository_sync(seconds: int = 120) -> None:
     """Wait for repository synchronization with progress bar."""
-    console.print()  # Add blank line for spacing
-
     with Progress(
         SpinnerColumn(spinner_name="dots12", style="bold bright_yellow"),
         TextColumn("[progress.description]{task.description}", style="bold white"),
@@ -139,7 +137,7 @@ def wait_for_repository_sync(seconds: int = 120) -> None:
         TimeRemainingColumn(),
         console=console,
     ) as progress:
-        task = progress.add_task(f"⏳ Waiting for repository sync ({seconds}s)", total=seconds)
+        task = progress.add_task("[7/7] 🔄 Waiting for repository sync", total=seconds)
 
         for _ in range(seconds):
             time.sleep(1)
@@ -161,7 +159,7 @@ def main(branch: str = "main") -> int:
         "  [green]•[/green] Security data\n"
         "  [bright_magenta]•[/bright_magenta] Demo repository",
         border_style="bright_blue",
-        box=box.ROUNDED,
+        box=box.SIMPLE,
         title="[bold bright_blue]Bootstrap Process[/bold bright_blue]"
     ))
 
@@ -244,7 +242,7 @@ def main(branch: str = "main") -> int:
     console.print(Rule(style="dim bright_magenta"))
 
     # Wait for repository sync
-    console.print("\n[bold bright_yellow on black][7/7][/bold bright_yellow on black] 🔄 [bold white]Waiting for repository sync[/bold white]")
+    console.print()  # Add spacing
     wait_for_repository_sync(120)
 
     console.print(Rule(style="dim bright_yellow"))
@@ -272,7 +270,7 @@ def main(branch: str = "main") -> int:
         "  [green]•[/green] Create a Proposed Change",
         title="[bold bright_green]✓ Success[/bold bright_green]",
         border_style="bright_green",
-        box=box.ROUNDED
+        box=box.SIMPLE
     ))
 
     return 0
