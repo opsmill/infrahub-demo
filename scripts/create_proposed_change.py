@@ -40,7 +40,7 @@ async def create_proposed_change(branch: str) -> int:
         f"[bright_cyan]Source Branch:[/bright_cyan] [bold yellow]{branch}[/bold yellow]\n"
         f"[bright_cyan]Target Branch:[/bright_cyan] [bold green]main[/bold green]",
         border_style="bright_magenta",
-        box=box.DOUBLE,
+        box=box.ROUNDED,
         title="[bold bright_white]Proposed Change[/bold bright_white]",
         title_align="left"
     ))
@@ -59,25 +59,17 @@ async def create_proposed_change(branch: str) -> int:
     console.print(f"\n[cyan]→[/cyan] Checking if branch [bold]{branch}[/bold] exists...")
 
     try:
-        branches = await client.branch.all()
-
-        # Handle both cases: branches as objects or as strings
-        if branches and hasattr(branches[0], 'name'):
-            branch_names = [b.name for b in branches]
+        # Try to get the specific branch to verify it exists
+        branch_obj = await client.branch.get(branch)
+        if branch_obj:
+            console.print(f"[green]✓[/green] Branch [bold]{branch}[/bold] exists")
         else:
-            branch_names = list(branches)
-
-        if branch not in branch_names:
             console.print(f"[red]✗ Branch '[bold]{branch}[/bold]' does not exist[/red]")
-            console.print("\n[yellow]Available branches:[/yellow]")
-            for b in branch_names[:10]:  # Show first 10
-                console.print(f"  • {b}")
             return 1
-
-        console.print(f"[green]✓[/green] Branch [bold]{branch}[/bold] exists")
     except Exception as e:
-        console.print(f"[red]✗ Error checking branches:[/red] {e}")
-        return 1
+        # If we can't verify the branch, just warn and continue
+        console.print(f"[yellow]⚠[/yellow] Could not verify branch exists: {e}")
+        console.print(f"[dim]Continuing anyway...[/dim]")
 
     # Create proposed change
     console.print("\n[yellow]→[/yellow] Creating proposed change...")
@@ -110,19 +102,25 @@ async def create_proposed_change(branch: str) -> int:
         console.print()
         details_table = Table(
             title="✨ Proposed Change Details",
-            box=box.ROUNDED,
+            box=box.SIMPLE,
             show_header=True,
             header_style="bold bright_cyan",
-            border_style="bright_green"
+            border_style="bright_green",
+            padding=(0, 1)
         )
-        details_table.add_column("Property", style="bright_cyan", no_wrap=True)
-        details_table.add_column("Value", style="bright_white")
+        details_table.add_column("Property", style="bright_cyan", no_wrap=True, width=20)
+        details_table.add_column("Value", style="bright_white", width=50)
 
         details_table.add_row("ID", f"[bold yellow]{proposed_change.id}[/bold yellow]")
         details_table.add_row("Name", f"[bold]{proposed_change.name.value}[/bold]")
         details_table.add_row("Source Branch", f"[bold yellow]{branch}[/bold yellow]")
         details_table.add_row("Destination Branch", "[bold green]main[/bold green]")
-        details_table.add_row("State", f"[bold bright_magenta]{proposed_change.state.value if hasattr(proposed_change, 'state') else 'open'}[/bold bright_magenta]")
+
+        # Handle state - it might be None for newly created proposed changes
+        state_value = "open"
+        if hasattr(proposed_change, 'state') and proposed_change.state:
+            state_value = proposed_change.state.value if hasattr(proposed_change.state, 'value') else str(proposed_change.state)
+        details_table.add_row("State", f"[bold bright_magenta]{state_value}[/bold bright_magenta]")
 
         console.print(details_table)
         console.print()

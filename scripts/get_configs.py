@@ -201,7 +201,7 @@ async def main(branch: str | None = None) -> int:
             "  • Check Infrahub logs for errors",
             title="[bold red]Error[/bold red]",
             border_style="red",
-            box=box.DOUBLE
+            box=box.ROUNDED
         ))
         return 1
 

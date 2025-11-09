@@ -223,3 +223,47 @@ def get_interfaces(data: list) -> list[dict[str, Any]]:
     return [
         name_to_interface[name] for name in sorted_names if name in name_to_interface
     ]
+
+
+def get_interface_roles(data: list) -> dict[str, list[dict[str, Any]]]:
+    """
+    Organizes interfaces by their role for template consumption.
+    Returns a dictionary with keys like 'loopback', 'uplink', 'downlink', 'all_downlink', 'all_physical'.
+    Each value is a list of interface dictionaries with ip_address (first IP with mask).
+    """
+    # First get all interfaces using existing function
+    all_interfaces = get_interfaces(data)
+
+    # Organize by role
+    roles: dict[str, list[dict[str, Any]]] = defaultdict(list)
+
+    for iface in all_interfaces:
+        role = (iface.get("role") or "").lower()
+        name_lower = iface.get("name", "").lower()
+
+        # Create interface dict with ip_address (first IP with mask)
+        iface_copy = iface.copy()
+        if iface.get("ip_addresses"):
+            iface_copy["ip_address"] = iface["ip_addresses"][0].get("address", "")
+        else:
+            iface_copy["ip_address"] = ""
+
+        # Categorize by role
+        if role == "loopback" or "loopback" in name_lower or name_lower.startswith("lo"):
+            roles["loopback"].append(iface_copy)
+        elif role in ("uplink", "spine"):
+            roles["uplink"].append(iface_copy)
+        elif role in ("downlink", "leaf"):
+            roles["downlink"].append(iface_copy)
+        elif role in ("customer", "access"):
+            roles["customer"].append(iface_copy)
+        else:
+            # Physical interfaces (non-loopback)
+            if not (role == "loopback" or "loopback" in name_lower):
+                roles["other"].append(iface_copy)
+
+    # Create aggregate lists
+    roles["all_downlink"] = roles["downlink"] + roles["customer"]
+    roles["all_physical"] = roles["uplink"] + roles["downlink"] + roles["customer"] + roles["other"]
+
+    return dict(roles)

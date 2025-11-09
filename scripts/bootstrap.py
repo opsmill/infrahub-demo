@@ -161,7 +161,7 @@ def main(branch: str = "main") -> int:
         "  [green]•[/green] Security data\n"
         "  [bright_magenta]•[/bright_magenta] Demo repository",
         border_style="bright_blue",
-        box=box.DOUBLE,
+        box=box.ROUNDED,
         title="[bold bright_blue]Bootstrap Process[/bold bright_blue]"
     ))
 
@@ -272,7 +272,7 @@ def main(branch: str = "main") -> int:
         "  [green]•[/green] Create a Proposed Change",
         title="[bold bright_green]✓ Success[/bold bright_green]",
         border_style="bright_green",
-        box=box.DOUBLE
+        box=box.ROUNDED
     ))
 
     return 0

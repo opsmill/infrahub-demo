@@ -4,7 +4,7 @@ from infrahub_sdk.transforms import InfrahubTransform
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from netutils.utils import jinja2_convenience_function
 
-from .common import get_bgp_profile, get_data, get_interfaces, get_loopbacks, get_ospf
+from .common import get_bgp_profile, get_data, get_interface_roles, get_loopbacks, get_ospf
 
 
 class Spine(InfrahubTransform):
@@ -65,7 +65,7 @@ class Spine(InfrahubTransform):
             "hostname": data.get("name"),
             "bgp": bgp,
             "ospf": ospf,
-            "interfaces": get_interfaces(data.get("interfaces")),
+            "interface_roles": get_interface_roles(data.get("interfaces")),
             "loopbacks": get_loopbacks(data.get("interfaces")),
         }
 
