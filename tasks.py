@@ -2,11 +2,13 @@
 
 import os
 import sys
+import time
 from pathlib import Path
 from invoke import task, Context  # type: ignore
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
+from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeElapsedColumn
 from rich import box
 
 console = Console()
@@ -184,7 +186,44 @@ def demo_dc_arista(context: Context, branch: str = "add-dc3") -> None:
     context.run(f"uv run infrahubctl object load objects/dc-arista-s.yml --branch {branch}")
 
     console.print(f"\n[green]✓[/green] DC Arista topology loaded to branch '[bold green]{branch}[/bold green]'")
+
+    # Wait for generator to finish creating the data
+    console.print(f"\n[yellow]→[/yellow] Waiting for generator to complete data creation...")
+    wait_seconds = 60  # Wait 60 seconds for generator to process
+
+    with Progress(
+        SpinnerColumn(spinner_name="dots12", style="bold bright_yellow"),
+        TextColumn("[progress.description]{task.description}", style="bold white"),
+        BarColumn(
+            bar_width=40,
+            style="yellow",
+            complete_style="bright_green",
+            finished_style="bold bright_green",
+            pulse_style="bright_yellow"
+        ),
+        TextColumn("[bold bright_cyan]{task.percentage:>3.0f}%"),
+        TextColumn("•", style="dim"),
+        TimeElapsedColumn(),
+        console=console,
+    ) as progress:
+        task = progress.add_task("⏳ Generator processing", total=wait_seconds)
+        for _ in range(wait_seconds):
+            time.sleep(1)
+            progress.update(task, advance=1)
+
+    console.print(f"[green]✓[/green] Generator processing complete")
+
+    # Create proposed change
+    console.print(f"\n[bright_magenta]→[/bright_magenta] Creating proposed change for branch '[bold]{branch}[/bold]'...")
+    context.run(f"uv run python scripts/create_proposed_change.py --branch {branch}")
+
     console.print()
+
+
+@task(optional=["branch"], name="create-pc")
+def create_proposed_change(context: Context, branch: str = "add-dc3") -> None:
+    """Create an Infrahub Proposed Change for a branch."""
+    context.run(f"uv run python scripts/create_proposed_change.py --branch {branch}")
 
 
 @task(optional=["branch", "topology"])
