@@ -127,6 +127,28 @@ def bootstrap(context: Context, branch: str = "main") -> None:
     context.run(f"./scripts/bootstrap.sh {branch}")
 
 
+@task(optional=["branch"], name="demo-dc-arista")
+def demo_dc_arista(context: Context, branch: str = "add-dc3") -> None:
+    """Create branch and load Arista DC demo topology."""
+    print(f"Creating branch: {branch}")
+    context.run(f"uv run infrahubctl branch create {branch}")
+    print(f"Loading DC Arista topology to branch: {branch}")
+    context.run(f"uv run infrahubctl object load objects/dc-arista-s.yml --branch {branch}")
+    print(f"✓ DC Arista topology loaded to branch '{branch}'")
+
+
+@task(optional=["branch", "topology"])
+def containerlab(context: Context, branch: str = "add-dc3", topology: str = "DC-3") -> None:
+    """Generate configs and deploy containerlab topology."""
+    print(f"Generating configurations from branch: {branch}")
+    context.run(f"uv run scripts/get_configs.py --branch {branch}")
+
+    topology_file = f"generated-configs/clab/{topology}.clab.yml"
+    print(f"\nDeploying containerlab topology: {topology_file}")
+    context.run(f"sudo -E containerlab deploy -t {topology_file}")
+    print(f"✓ Containerlab topology '{topology}' deployed successfully")
+
+
 @task
 def destroy(context: Context) -> None:
     """Destroy all containers."""
