@@ -40,6 +40,7 @@ import requests
 from rich.console import Console
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeElapsedColumn
+from rich.rule import Rule
 from rich import box
 
 console = Console()
@@ -49,23 +50,23 @@ INFRAHUB_ADDRESS = "http://localhost:8000"
 
 def check_infrahub_ready(max_retries: int = 30, sleep_time: int = 2) -> bool:
     """Check if Infrahub is ready to accept requests."""
-    console.print("\n[cyan]→[/cyan] Checking if Infrahub is ready...")
+    console.print("\n[bold cyan]→ Checking if Infrahub is ready...[/bold cyan]")
 
     with Progress(
-        SpinnerColumn(),
+        SpinnerColumn(spinner_name="dots"),
         TextColumn("[progress.description]{task.description}"),
-        BarColumn(),
+        BarColumn(bar_width=40),
         TimeElapsedColumn(),
         console=console,
     ) as progress:
-        task = progress.add_task("[cyan]Waiting for Infrahub...", total=max_retries)
+        task = progress.add_task("[bold magenta]Waiting for Infrahub...", total=max_retries)
 
         for attempt in range(max_retries):
             try:
                 response = requests.get(f"{INFRAHUB_ADDRESS}/api/schema", timeout=2)
                 if response.status_code == 200:
                     progress.update(task, completed=max_retries)
-                    console.print("[green]✓[/green] Infrahub is ready!\n")
+                    console.print("[bold green]✓ Infrahub is ready![/bold green]\n")
                     return True
             except requests.exceptions.RequestException:
                 pass
@@ -87,9 +88,9 @@ def check_infrahub_ready(max_retries: int = 30, sleep_time: int = 2) -> bool:
     return False
 
 
-def run_command(command: str, description: str, step: str) -> bool:
+def run_command(command: str, description: str, step: str, color: str = "cyan") -> bool:
     """Run a shell command and display output."""
-    console.print(f"\n[cyan]{step}[/cyan] {description}")
+    console.print(f"\n[bold {color} on black]{step}[/bold {color} on black] [bold white]{description}[/bold white]")
 
     try:
         subprocess.run(
@@ -99,45 +100,50 @@ def run_command(command: str, description: str, step: str) -> bool:
             capture_output=False,
             text=True
         )
-        console.print(f"[green]✓[/green] {description} completed")
+        console.print(f"[bold green]✓[/bold green] [green]{description} completed[/green]")
         return True
     except subprocess.CalledProcessError as e:
-        console.print(f"[red]✗[/red] Failed: {description}")
+        console.print(f"[bold red]✗[/bold red] [red]Failed: {description}[/red]")
         console.print(f"[dim]Error: {e}[/dim]")
         return False
 
 
 def wait_for_repository_sync(seconds: int = 120) -> None:
     """Wait for repository synchronization with progress bar."""
-    console.print(f"\n[cyan]→[/cyan] Waiting for repository sync ({seconds} seconds)...")
+    console.print(f"\n[bold yellow]⏳ Waiting for repository sync ({seconds} seconds)...[/bold yellow]")
 
     with Progress(
-        SpinnerColumn(),
+        SpinnerColumn(spinner_name="point"),
         TextColumn("[progress.description]{task.description}"),
-        BarColumn(),
+        BarColumn(bar_width=40, complete_style="yellow", finished_style="green"),
         TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
         TimeElapsedColumn(),
         console=console,
     ) as progress:
-        task = progress.add_task("[cyan]Syncing repository...", total=seconds)
+        task = progress.add_task("[bold yellow]Syncing repository...", total=seconds)
 
         for _ in range(seconds):
             time.sleep(1)
             progress.update(task, advance=1)
 
-    console.print("[green]✓[/green] Repository sync complete\n")
+    console.print("[bold green]✓ Repository sync complete[/bold green]\n")
 
 
 def main(branch: str = "main") -> int:
     """Main bootstrap function."""
     console.print()
     console.print(Panel(
-        f"[bold blue]Infrahub Demo Bootstrap[/bold blue]\n"
-        f"[dim]Branch:[/dim] [bold]{branch}[/bold]\n\n"
-        "[dim]This will load schemas, menu, bootstrap data, security, and repository[/dim]",
-        border_style="blue",
-        box=box.ROUNDED,
-        title="Bootstrap Process"
+        f"[bold bright_blue]🚀 Infrahub Demo Bootstrap[/bold bright_blue]\n"
+        f"[bright_cyan]Branch:[/bright_cyan] [bold yellow]{branch}[/bold yellow]\n\n"
+        "[dim]This will load:[/dim]\n"
+        "  [blue]•[/blue] Schemas\n"
+        "  [magenta]•[/magenta] Menu definitions\n"
+        "  [yellow]•[/yellow] Bootstrap data\n"
+        "  [green]•[/green] Security data\n"
+        "  [bright_magenta]•[/bright_magenta] Demo repository",
+        border_style="bright_blue",
+        box=box.DOUBLE,
+        title="[bold bright_blue]Bootstrap Process[/bold bright_blue]"
     ))
 
     # Check if Infrahub is ready
@@ -148,42 +154,52 @@ def main(branch: str = "main") -> int:
         {
             "step": "[1/7]",
             "description": "Loading schemas",
-            "command": f"uv run infrahubctl schema load schemas --branch {branch}"
+            "command": f"uv run infrahubctl schema load schemas --branch {branch}",
+            "color": "blue"
         },
         {
             "step": "[2/7]",
             "description": "Loading menu definitions",
-            "command": f"uv run infrahubctl menu load menu --branch {branch}"
+            "command": f"uv run infrahubctl menu load menu --branch {branch}",
+            "color": "magenta"
         },
         {
             "step": "[3/7]",
             "description": "Loading bootstrap data (locations, platforms, roles, etc.)",
-            "command": f"uv run infrahubctl object load objects/bootstrap/ --branch {branch}"
+            "command": f"uv run infrahubctl object load objects/bootstrap/ --branch {branch}",
+            "color": "yellow"
         },
         {
             "step": "[4/7]",
             "description": "Loading security data (zones, policies, rules)",
-            "command": f"uv run infrahubctl object load objects/security/ --branch {branch}"
+            "command": f"uv run infrahubctl object load objects/security/ --branch {branch}",
+            "color": "green"
         },
         {
             "step": "[5/7]",
             "description": "Populating security relationships",
-            "command": "uv run python scripts/populate_security_relationships.py"
+            "command": "uv run python scripts/populate_security_relationships.py",
+            "color": "cyan"
         },
     ]
 
     # Execute all steps
-    for step_info in steps:
+    for i, step_info in enumerate(steps):
         if not run_command(
             step_info["command"],
             step_info["description"],
-            step_info["step"]
+            step_info["step"],
+            step_info["color"]
         ):
-            console.print("\n[red]Bootstrap failed![/red]")
+            console.print("\n[bold red]✗ Bootstrap failed![/bold red]")
             return 1
 
+        # Add visual separator after each step (except the last one)
+        if i < len(steps) - 1:
+            console.print(Rule(style=f"dim {step_info['color']}"))
+
     # Add repository (may already exist)
-    console.print("\n[cyan][6/7][/cyan] Adding demo repository")
+    console.print("\n[bold bright_magenta on black][6/7][/bold bright_magenta on black] [bold white]Adding demo repository[/bold white]")
     result = subprocess.run(
         "uv run infrahubctl repository add DEMO https://github.com/opsmill/infrahub-demo.git --ref main --read-only --ref main",
         shell=True,
@@ -192,39 +208,46 @@ def main(branch: str = "main") -> int:
     )
 
     if result.returncode == 0:
-        console.print("[green]✓[/green] Repository added")
+        console.print("[bold green]✓[/bold green] [green]Repository added[/green]")
     else:
         if "already exists" in result.stderr.lower() or "already exists" in result.stdout.lower():
-            console.print("[yellow]⚠[/yellow] Repository already exists, skipping...")
+            console.print("[bold yellow]⚠[/bold yellow] [yellow]Repository already exists, skipping...[/yellow]")
         else:
-            console.print("[red]✗[/red] Failed to add repository")
+            console.print("[bold red]✗[/bold red] [red]Failed to add repository[/red]")
             console.print(f"[dim]{result.stderr}[/dim]")
 
+    console.print(Rule(style="dim bright_magenta"))
+
     # Wait for repository sync
-    console.print("\n[cyan][7/7][/cyan] Waiting for repository sync")
+    console.print("\n[bold bright_yellow on black][7/7][/bold bright_yellow on black] [bold white]Waiting for repository sync[/bold white]")
     wait_for_repository_sync(120)
 
+    console.print(Rule(style="dim bright_yellow"))
+
     # Load event actions
-    console.print("\n[cyan]→[/cyan] Loading event actions")
+    console.print("\n[bold bright_cyan]→ Loading event actions[/bold bright_cyan]")
     if run_command(
         f"uv run infrahubctl object load objects/events/ --branch {branch}",
         "Event actions loading",
-        ""
+        "",
+        "bright_cyan"
     ):
-        console.print("[green]✓[/green] Event actions loaded successfully")
+        console.print("[bold green]✓[/bold green] [green]Event actions loaded successfully[/green]")
+
+    console.print(Rule(style="dim bright_cyan"))
 
     # Display completion message
     console.print()
     console.print(Panel(
-        f"[bold green]Bootstrap Complete![/bold green]\n\n"
+        f"[bold bright_green]🎉 Bootstrap Complete![/bold bright_green]\n\n"
         f"[dim]All data has been loaded into Infrahub[/dim]\n"
-        f"[dim]Branch:[/dim] [bold]{branch}[/bold]\n\n"
-        "[cyan]Next steps:[/cyan]\n"
-        "  • Demo a DC design: [bold]uv run invoke demo-dc-arista[/bold]\n"
-        "  • Create a Proposed Change",
-        title="Success",
-        border_style="green",
-        box=box.ROUNDED
+        f"[bright_cyan]Branch:[/bright_cyan] [bold yellow]{branch}[/bold yellow]\n\n"
+        "[bold bright_magenta]Next steps:[/bold bright_magenta]\n"
+        "  [green]•[/green] Demo a DC design: [bold bright_cyan]uv run invoke demo-dc-arista[/bold bright_cyan]\n"
+        "  [green]•[/green] Create a Proposed Change",
+        title="[bold bright_green]✓ Success[/bold bright_green]",
+        border_style="bright_green",
+        box=box.DOUBLE
     ))
 
     return 0

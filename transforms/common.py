@@ -111,9 +111,14 @@ def get_ospf(device_services: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
     for service in device_services:
         if service.get("typename") == "ServiceOSPF":
+            # Extract router_id address and strip CIDR notation if present
+            router_id = service.get("router_id", {}).get("address", "")
+            if router_id and "/" in router_id:
+                router_id = router_id.split("/")[0]
+
             ospf_config = {
                 "process_id": service.get("process_id", 1),
-                "router_id": service.get("router_id", {}).get("address", ""),
+                "router_id": router_id,
                 "area": service.get("area", {}).get("area"),
                 "reference_bandwidth": service.get("reference_bandwidth", 10000),
             }

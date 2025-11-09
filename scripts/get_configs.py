@@ -12,6 +12,7 @@ Usage:
 
 import argparse
 import asyncio
+import sys
 from pathlib import Path
 
 from infrahub_sdk import InfrahubClient
@@ -62,7 +63,7 @@ async def get_containerlab_topologies(client: InfrahubClient) -> list[str]:
     return saved_topologies
 
 
-async def get_device_configs(client: InfrahubClient) -> None:
+async def get_device_configs(client: InfrahubClient) -> int:
     """Fetch device configuration artifacts and save to files."""
     base_path = Path("./generated-configs/devices")
     base_path.mkdir(parents=True, exist_ok=True)
@@ -116,8 +117,10 @@ async def get_device_configs(client: InfrahubClient) -> None:
     if config_count == 0:
         console.print("  [yellow]No device configurations found[/yellow]")
 
+    return config_count
 
-async def get_topology_cabling(client: InfrahubClient) -> None:
+
+async def get_topology_cabling(client: InfrahubClient) -> int:
     """Fetch topology cabling matrix artifacts and save to files."""
     directory_path = Path("./generated-configs/cabling")
     directory_path.mkdir(parents=True, exist_ok=True)
@@ -152,8 +155,10 @@ async def get_topology_cabling(client: InfrahubClient) -> None:
     if cabling_count == 0:
         console.print("  [yellow]No cabling matrices found[/yellow]")
 
+    return cabling_count
 
-async def main(branch: str | None = None) -> None:
+
+async def main(branch: str | None = None) -> int:
     """Main function to fetch all artifacts."""
     # Connect to Infrahub with branch configuration
     branch_name = branch if branch else "main"
@@ -171,14 +176,43 @@ async def main(branch: str | None = None) -> None:
     else:
         client = InfrahubClient()
 
-    # Fetch all artifact types
+    # Fetch all artifact types and track results
     saved_topologies = await get_containerlab_topologies(client)
-    await get_device_configs(client)
-    await get_topology_cabling(client)
+    config_count = await get_device_configs(client)
+    cabling_count = await get_topology_cabling(client)
+
+    # Check if any artifacts were retrieved
+    topology_count = len(saved_topologies)
+    total_artifacts = topology_count + config_count + cabling_count
 
     console.print()
+
+    if total_artifacts == 0:
+        # Display error panel if no artifacts were found
+        console.print(Panel(
+            "[bold red]✗ Artifact Extraction Failed![/bold red]\n\n"
+            "[yellow]No artifacts were retrieved from Infrahub.[/yellow]\n\n"
+            "[dim]Possible causes:[/dim]\n"
+            "  • The branch may not have any generated artifacts yet\n"
+            "  • The topology generator may not have been run\n"
+            "  • Artifacts may have failed to generate\n\n"
+            "[cyan]Next steps:[/cyan]\n"
+            f"  • Check the branch exists: [bold]uv run infrahubctl branch list[/bold]\n"
+            f"  • Run the generator: [bold]uv run infrahubctl generator create_dc --branch {branch_name} name=\"<topology-name>\"[/bold]\n"
+            "  • Check Infrahub logs for errors",
+            title="[bold red]Error[/bold red]",
+            border_style="red",
+            box=box.DOUBLE
+        ))
+        return 1
+
+    # Display success panel if artifacts were found
     console.print(Panel(
-        "[bold green]Configuration extraction complete![/bold green]\n"
+        "[bold green]Configuration extraction complete![/bold green]\n\n"
+        f"[dim]Retrieved:[/dim]\n"
+        f"  • [cyan]{topology_count}[/cyan] containerlab topolog{'y' if topology_count == 1 else 'ies'}\n"
+        f"  • [cyan]{config_count}[/cyan] device configuration{'s' if config_count != 1 else ''}\n"
+        f"  • [cyan]{cabling_count}[/cyan] cabling matri{'x' if cabling_count == 1 else 'ces'}\n\n"
         f"[dim]Saved to:[/dim] [bold]./generated-configs/[/bold]",
         border_style="green",
         box=box.ROUNDED
@@ -214,6 +248,8 @@ async def main(branch: str | None = None) -> None:
         console.print(deploy_table)
         console.print()
 
+    return 0
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -228,4 +264,5 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    asyncio.run(main(branch=args.branch))
+    exit_code = asyncio.run(main(branch=args.branch))
+    sys.exit(exit_code)

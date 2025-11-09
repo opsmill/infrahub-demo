@@ -39,9 +39,13 @@ class Leaf(InfrahubTransform):
         if bgp_profiles:
             # Get common BGP settings from first profile
             first_profile = bgp_profiles[0]
+            # Extract router_id address and strip CIDR notation if present
+            router_id = first_profile.get("router_id", {}).get("address", "")
+            if router_id and "/" in router_id:
+                router_id = router_id.split("/")[0]
             bgp = {
                 "local_as": first_profile.get("local_as", {}).get("asn", ""),
-                "router_id": first_profile.get("router_id", ""),
+                "router_id": router_id,
                 "neighbors": [],
             }
             # Collect all neighbors from all profiles
