@@ -188,7 +188,7 @@ def demo_dc_arista(context: Context, branch: str = "add-dc3") -> None:
     console.print(f"\n[green]✓[/green] DC Arista topology loaded to branch '[bold green]{branch}[/bold green]'")
 
     # Wait for generator to finish creating the data
-    console.print(f"\n[yellow]→[/yellow] Waiting for generator to complete data creation...")
+    console.print("\n[yellow]→[/yellow] Waiting for generator to complete data creation...")
     wait_seconds = 60  # Wait 60 seconds for generator to process
 
     with Progress(
@@ -211,7 +211,7 @@ def demo_dc_arista(context: Context, branch: str = "add-dc3") -> None:
             time.sleep(1)
             progress.update(task, advance=1)
 
-    console.print(f"[green]✓[/green] Generator processing complete")
+    console.print("[green]✓[/green] Generator processing complete")
 
     # Create proposed change
     console.print(f"\n[bright_magenta]→[/bright_magenta] Creating proposed change for branch '[bold]{branch}[/bold]'...")
