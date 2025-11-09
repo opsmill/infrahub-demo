@@ -69,7 +69,7 @@ async def create_proposed_change(branch: str) -> int:
     except Exception as e:
         # If we can't verify the branch, just warn and continue
         console.print(f"[yellow]⚠[/yellow] Could not verify branch exists: {e}")
-        console.print(f"[dim]Continuing anyway...[/dim]")
+        console.print("[dim]Continuing anyway...[/dim]")
 
     # Create proposed change
     console.print("\n[yellow]→[/yellow] Creating proposed change...")

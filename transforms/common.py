@@ -5,6 +5,7 @@ This module provides data cleaning utilities to normalize and extract values
 from nested data structures returned by Infrahub APIs.
 """
 
+import html
 from collections import defaultdict
 from typing import Any
 
@@ -204,10 +205,15 @@ def get_interfaces(data: list) -> list[dict[str, Any]]:
             if s.get("typename") == "ServiceOSPF"
         ]
 
+        # Decode HTML entities in description (e.g., &gt; -> >)
+        description = iface.get("description")
+        if description:
+            description = html.unescape(description)
+
         iface_dict = {
             "name": name,
             "vlans": vlans,
-            "description": iface.get("description"),
+            "description": description,
             "status": iface.get("status"),
             "role": iface.get("role"),
             "interface_type": iface.get("interface_type"),

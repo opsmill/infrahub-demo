@@ -1,7 +1,7 @@
 from typing import Any
 
 from infrahub_sdk.transforms import InfrahubTransform
-from jinja2 import Environment, FileSystemLoader, select_autoescape
+from jinja2 import Environment, FileSystemLoader
 from netutils.utils import jinja2_convenience_function
 
 from .common import get_bgp_profile, get_data, get_interface_roles, get_loopbacks, get_ospf
@@ -20,7 +20,7 @@ class Spine(InfrahubTransform):
         template_path = f"{self.root_directory}/templates/configs/spines"
         env = Environment(
             loader=FileSystemLoader(template_path),
-            autoescape=select_autoescape(["j2"]),
+            autoescape=False,  # Disable autoescape for device configs (not HTML)
         )
         env.filters.update(jinja2_convenience_function())
 
