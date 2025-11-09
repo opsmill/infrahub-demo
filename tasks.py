@@ -4,6 +4,12 @@ import os
 import sys
 from pathlib import Path
 from invoke import task, Context  # type: ignore
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
+from rich import box
+
+console = Console()
 
 
 INFRAHUB_VERSION = os.getenv("INFRAHUB_VERSION", "stable")
@@ -36,7 +42,6 @@ DOCUMENTATION_DIRECTORY = CURRENT_DIRECTORY.parent / "docs"
 @task(name="list")
 def list_tasks(context: Context) -> None:
     """List all available invoke tasks with descriptions."""
-    # Import sys and inspect to get the current module
     import inspect
     current_module = inspect.getmodule(inspect.currentframe())
 
@@ -44,14 +49,10 @@ def list_tasks(context: Context) -> None:
 
     # Get all task objects from the current module
     for name, obj in inspect.getmembers(current_module):
-        # Check if the object is a task (has __wrapped__ or is a Task instance)
         if hasattr(obj, '__wrapped__') or (hasattr(obj, '__class__') and 'Task' in obj.__class__.__name__):
-            # Get the display name (check if task has a custom name)
             display_name = getattr(obj, 'name', name)
-            # Remove leading underscore from function names if present
             if display_name.startswith('_'):
                 continue
-            # Get the first line of the docstring as description
             if obj.__doc__:
                 description = obj.__doc__.strip().split('\n')[0]
             else:
@@ -61,34 +62,54 @@ def list_tasks(context: Context) -> None:
     # Sort by task name
     tasks_info.sort(key=lambda x: x[0])
 
-    # Print header
-    print("\nAvailable tasks:\n")
+    # Create a Rich table
+    table = Table(
+        title="Available Invoke Tasks",
+        box=box.ROUNDED,
+        show_header=True,
+        header_style="bold cyan"
+    )
+    table.add_column("Task", style="green", no_wrap=True)
+    table.add_column("Description", style="white")
 
-    # Calculate max task name length for alignment
-    max_name_len = max(len(name) for name, _ in tasks_info) if tasks_info else 0
-
-    # Print each task
     for name, desc in tasks_info:
-        print(f"  {name.ljust(max_name_len)}  {desc}")
+        table.add_row(name, desc)
 
-    print()
+    console.print()
+    console.print(table)
+    console.print()
 
 
 @task
 def info(context: Context) -> None:
     """Show current Infrahub configuration."""
     edition = "Enterprise" if INFRAHUB_ENTERPRISE else "Community"
-    print(f"Infrahub Edition: {edition}")
-    print(f"Version: {INFRAHUB_VERSION}")
-    print(f"Command: {COMPOSE_COMMAND}")
+
+    info_panel = Panel(
+        f"[cyan]Edition:[/cyan] {edition}\n"
+        f"[cyan]Version:[/cyan] {INFRAHUB_VERSION}\n"
+        f"[cyan]Command:[/cyan] [dim]{COMPOSE_COMMAND}[/dim]",
+        title="[bold]Infrahub Configuration[/bold]",
+        border_style="blue",
+        box=box.ROUNDED
+    )
+    console.print()
+    console.print(info_panel)
+    console.print()
 
 
 @task
 def start(context: Context) -> None:
     """Start all containers."""
     edition = "Enterprise" if INFRAHUB_ENTERPRISE else "Community"
-    print(f"Starting Infrahub {edition} ({INFRAHUB_VERSION})...")
+    console.print()
+    console.print(Panel(
+        f"[green]Starting Infrahub {edition}[/green] [dim]({INFRAHUB_VERSION})[/dim]",
+        border_style="green",
+        box=box.ROUNDED
+    ))
     context.run(f"{COMPOSE_COMMAND} up -d")
+    console.print("[green]✓[/green] Infrahub started successfully")
 
 
 @task(optional=["schema", "branch"])
@@ -124,75 +145,170 @@ def load_objects(
 @task(optional=["branch"])
 def bootstrap(context: Context, branch: str = "main") -> None:
     """Run the complete bootstrap process (schemas, menu, data, security, repository)."""
+    console.print()
+    console.print(Panel(
+        f"[bold blue]Infrahub Bootstrap[/bold blue]\n"
+        f"[dim]Branch:[/dim] {branch}\n"
+        f"[dim]This will load schemas, menu, bootstrap data, security, and repository[/dim]",
+        border_style="blue",
+        box=box.ROUNDED
+    ))
+    console.print()
     context.run(f"./scripts/bootstrap.sh {branch}")
+    console.print()
+    console.print("[green]✓[/green] Bootstrap completed successfully!")
+    console.print()
 
 
 @task(optional=["branch"], name="demo-dc-arista")
 def demo_dc_arista(context: Context, branch: str = "add-dc3") -> None:
     """Create branch and load Arista DC demo topology."""
-    print(f"Creating branch: {branch}")
+    console.print()
+    console.print(Panel(
+        f"[bold cyan]Arista Data Center Demo[/bold cyan]\n"
+        f"[dim]Branch:[/dim] {branch}",
+        border_style="cyan",
+        box=box.ROUNDED
+    ))
+
+    console.print(f"\n[cyan]→[/cyan] Creating branch: [bold]{branch}[/bold]")
     context.run(f"uv run infrahubctl branch create {branch}")
-    print(f"Loading DC Arista topology to branch: {branch}")
+
+    console.print(f"\n[cyan]→[/cyan] Loading DC Arista topology to branch: [bold]{branch}[/bold]")
     context.run(f"uv run infrahubctl object load objects/dc-arista-s.yml --branch {branch}")
-    print(f"✓ DC Arista topology loaded to branch '{branch}'")
+
+    console.print(f"\n[green]✓[/green] DC Arista topology loaded to branch '[bold green]{branch}[/bold green]'")
+    console.print()
 
 
 @task(optional=["branch", "topology"])
 def containerlab(context: Context, branch: str = "add-dc3", topology: str = "DC-3") -> None:
     """Generate configs and deploy containerlab topology."""
-    print(f"Generating configurations from branch: {branch}")
+    console.print()
+    console.print(Panel(
+        f"[bold magenta]Containerlab Deployment[/bold magenta]\n"
+        f"[dim]Branch:[/dim] {branch}\n"
+        f"[dim]Topology:[/dim] {topology}",
+        border_style="magenta",
+        box=box.ROUNDED
+    ))
+
+    console.print(f"\n[magenta]→[/magenta] Generating configurations from branch: [bold]{branch}[/bold]")
     context.run(f"uv run scripts/get_configs.py --branch {branch}")
 
     topology_file = f"generated-configs/clab/{topology}.clab.yml"
-    print(f"\nDeploying containerlab topology: {topology_file}")
+    console.print(f"\n[magenta]→[/magenta] Deploying containerlab topology: [bold]{topology_file}[/bold]")
     context.run(f"sudo -E containerlab deploy -t {topology_file}")
-    print(f"✓ Containerlab topology '{topology}' deployed successfully")
+
+    console.print(f"\n[green]✓[/green] Containerlab topology '[bold green]{topology}[/bold green]' deployed successfully")
+    console.print()
 
 
 @task
 def destroy(context: Context) -> None:
     """Destroy all containers."""
+    console.print()
+    console.print(Panel(
+        "[red]Destroying all containers and volumes[/red]",
+        border_style="red",
+        box=box.ROUNDED
+    ))
     context.run(f"{COMPOSE_COMMAND} down -v")
+    console.print("[green]✓[/green] All containers and volumes destroyed")
 
 
 @task
 def stop(context: Context) -> None:
     """Stop all containers."""
+    console.print()
+    console.print(Panel(
+        "[yellow]Stopping all containers[/yellow]",
+        border_style="yellow",
+        box=box.ROUNDED
+    ))
     context.run(f"{COMPOSE_COMMAND} down")
+    console.print("[green]✓[/green] All containers stopped")
 
 
 @task
 def restart(context: Context, component: str = "") -> None:
-    """Stop all containers."""
+    """Restart containers."""
     if component:
+        console.print()
+        console.print(Panel(
+            f"[yellow]Restarting component:[/yellow] [bold]{component}[/bold]",
+            border_style="yellow",
+            box=box.ROUNDED
+        ))
         context.run(f"{COMPOSE_COMMAND} restart {component}")
+        console.print(f"[green]✓[/green] Component '{component}' restarted")
         return
 
+    console.print()
+    console.print(Panel(
+        "[yellow]Restarting all containers[/yellow]",
+        border_style="yellow",
+        box=box.ROUNDED
+    ))
     context.run(f"{COMPOSE_COMMAND} restart")
+    console.print("[green]✓[/green] All containers restarted")
 
 
 @task
 def run_tests(context: Context) -> None:
     """Run all tests."""
+    console.print()
+    console.print(Panel(
+        "[bold cyan]Running Tests[/bold cyan]",
+        border_style="cyan",
+        box=box.ROUNDED
+    ))
     context.run("pytest -vv tests")
+    console.print("[green]✓[/green] Tests completed")
 
 
 @task
 def validate(context: Context) -> None:
     """Run all code quality tests."""
+    console.print()
+    console.print(Panel(
+        "[bold cyan]Running Code Validation[/bold cyan]\n"
+        "[dim]Ruff → Mypy → Pytest[/dim]",
+        border_style="cyan",
+        box=box.ROUNDED
+    ))
+
+    console.print("\n[cyan]→[/cyan] Running Ruff checks...")
     context.run("ruff check . --fix")
+
+    console.print("\n[cyan]→[/cyan] Running Mypy type checks...")
     context.run("mypy .")
+
+    console.print("\n[cyan]→[/cyan] Running Pytest...")
     context.run("pytest -vv tests")
+
+    console.print("\n[green]✓[/green] All validation checks completed!")
+    console.print()
 
 
 @task
 def format(context: Context) -> None:
     """Run RUFF to format all Python files."""
+    console.print()
+    console.print(Panel(
+        "[bold magenta]Formatting Python Code[/bold magenta]\n"
+        "[dim]Ruff Format → Ruff Fix[/dim]",
+        border_style="magenta",
+        box=box.ROUNDED
+    ))
 
     exec_cmds = ["ruff format .", "ruff check . --fix"]
     with context.cd(MAIN_DIRECTORY_PATH):
         for cmd in exec_cmds:
             context.run(cmd)
+
+    console.print("[green]✓[/green] Code formatting completed")
+    console.print()
 
 
 @task
@@ -225,18 +341,46 @@ def lint_ruff(context: Context) -> None:
 @task(name="lint")
 def lint_all(context: Context) -> None:
     """Run all linters."""
+    console.print()
+    console.print(Panel(
+        "[bold yellow]Running All Linters[/bold yellow]\n"
+        "[dim]YAML → Ruff → Mypy[/dim]",
+        border_style="yellow",
+        box=box.ROUNDED
+    ))
+
+    console.print("\n[yellow]→[/yellow] Running yamllint...")
     lint_yaml(context)
+
+    console.print("\n[yellow]→[/yellow] Running ruff...")
     lint_ruff(context)
+
+    console.print("\n[yellow]→[/yellow] Running mypy...")
     lint_mypy(context)
+
+    console.print("\n[green]✓[/green] All linters completed!")
+    console.print()
 
 
 @task(name="docs")
 def docs_build(context: Context) -> None:
     """Build documentation website."""
+    console.print()
+    console.print(Panel(
+        "[bold blue]Building Documentation Website[/bold blue]\n"
+        f"[dim]Directory:[/dim] {DOCUMENTATION_DIRECTORY}",
+        border_style="blue",
+        box=box.ROUNDED
+    ))
+
     exec_cmd = "npm run build"
 
     with context.cd(DOCUMENTATION_DIRECTORY):
         output = context.run(exec_cmd)
 
     if output and output.exited != 0:
+        console.print("[red]✗[/red] Documentation build failed")
         sys.exit(-1)
+
+    console.print("[green]✓[/green] Documentation built successfully")
+    console.print()

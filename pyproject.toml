@@ -15,6 +15,7 @@ dependencies = [
     "mypy>=1.15.0",
     "pytest>=8.3.5,<9.0.0",
     "pytest-asyncio>=0.26.0",
+    "rich>=13.9.4",
     "ruff>=0.14.1",
     "types-pyyaml>=6.0.12.20250809",
     "yamllint>=1.37.1",
