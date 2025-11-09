@@ -32,6 +32,7 @@ packages = []
 pretty = true
 ignore_missing_imports = true
 disallow_untyped_defs = true
+exclude = ["scripts/debug/"]
 
 [[tool.mypy.overrides]]
 module = ["untyped_package.*"]
