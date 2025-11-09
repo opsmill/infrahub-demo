@@ -33,7 +33,7 @@ topology:
       {% set mgmt_ip = device.node.primary_address.node.address.value.split('/') %}
       mgmt-ipv4: {{ mgmt_ip[0] }}
       {% endif %}
-      startup-config: generated-configs/devices/{{ device.node.name.value }}.cfg
+      startup-config: ../devices/{{ device.node.name.value }}.cfg
     {% endif %}
     {% endfor %}
 

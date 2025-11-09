@@ -55,7 +55,7 @@ class Leaf(InfrahubTransform):
                     bgp["neighbors"].append(neighbor)
 
         config = {
-            "name": data.get("name"),
+            "hostname": data.get("name"),
             "bgp": bgp,
             "ospf": ospf,
             "interfaces": get_interfaces(data.get("interfaces")),
