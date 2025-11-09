@@ -50,7 +50,7 @@ INFRAHUB_ADDRESS = "http://localhost:8000"
 
 def check_infrahub_ready(max_retries: int = 30, sleep_time: int = 2) -> bool:
     """Check if Infrahub is ready to accept requests."""
-    console.print("\n[bold cyan]→ Checking if Infrahub is ready...[/bold cyan]")
+    console.print()  # Add blank line for spacing
 
     with Progress(
         SpinnerColumn(spinner_name="dots12", style="bold bright_magenta"),
@@ -67,7 +67,7 @@ def check_infrahub_ready(max_retries: int = 30, sleep_time: int = 2) -> bool:
         TimeElapsedColumn(),
         console=console,
     ) as progress:
-        task = progress.add_task("⏳ Waiting for Infrahub", total=max_retries)
+        task = progress.add_task("→ Checking if Infrahub is ready", total=max_retries)
 
         for attempt in range(max_retries):
             try:
@@ -120,7 +120,7 @@ def run_command(command: str, description: str, step: str, color: str = "cyan", 
 
 def wait_for_repository_sync(seconds: int = 120) -> None:
     """Wait for repository synchronization with progress bar."""
-    console.print(f"\n[bold yellow]⏳ Waiting for repository sync ({seconds} seconds)...[/bold yellow]")
+    console.print()  # Add blank line for spacing
 
     with Progress(
         SpinnerColumn(spinner_name="dots12", style="bold bright_yellow"),
@@ -139,7 +139,7 @@ def wait_for_repository_sync(seconds: int = 120) -> None:
         TimeRemainingColumn(),
         console=console,
     ) as progress:
-        task = progress.add_task("🔄 Syncing repository", total=seconds)
+        task = progress.add_task(f"⏳ Waiting for repository sync ({seconds}s)", total=seconds)
 
         for _ in range(seconds):
             time.sleep(1)

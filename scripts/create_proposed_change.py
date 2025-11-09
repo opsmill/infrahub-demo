@@ -60,7 +60,12 @@ async def create_proposed_change(branch: str) -> int:
 
     try:
         branches = await client.branch.all()
-        branch_names = [b.name for b in branches]
+
+        # Handle both cases: branches as objects or as strings
+        if branches and hasattr(branches[0], 'name'):
+            branch_names = [b.name for b in branches]
+        else:
+            branch_names = list(branches)
 
         if branch not in branch_names:
             console.print(f"[red]✗ Branch '[bold]{branch}[/bold]' does not exist[/red]")
