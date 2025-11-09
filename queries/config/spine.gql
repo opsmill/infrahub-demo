@@ -75,7 +75,6 @@ query spine_config($device: String!) {
                     send_community { value }
                     send_community_extended { value }
                     route_reflector_client { value }
-                    password { value }
                     maximum_routes { value }
                     local_pref { value }
                   }
@@ -152,7 +151,6 @@ query spine_config($device: String!) {
                         metric{value}
                         mode{value}
                         authentication_mode{value}
-                        authentication_key{value}
                         }
                       }
                     }
