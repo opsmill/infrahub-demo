@@ -46,7 +46,7 @@ services:
     build:
       context: .
       dockerfile: service_catalog/Dockerfile
-    container_name: infrahub-service-catalog
+    container_name: service-catalog
     ports:
       - "8501:8501"
     environment:

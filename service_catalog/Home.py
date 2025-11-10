@@ -9,7 +9,6 @@ import streamlit as st
 from utils import (
     DEFAULT_BRANCH,
     INFRAHUB_ADDRESS,
-    INFRAHUB_UI_ADDRESS,
     InfrahubClient,
     display_error,
     display_logo,
@@ -39,9 +38,6 @@ if "selected_branch" not in st.session_state:
 if "infrahub_url" not in st.session_state:
     st.session_state.infrahub_url = INFRAHUB_ADDRESS
 
-if "infrahub_ui_url" not in st.session_state:
-    st.session_state.infrahub_ui_url = INFRAHUB_UI_ADDRESS
-
 
 def main():
     """Main function to render the landing page."""
@@ -50,10 +46,7 @@ def main():
     display_logo()
     
     # Initialize API client
-    client = InfrahubClient(
-        st.session_state.infrahub_url,
-        ui_url=st.session_state.infrahub_ui_url
-    )
+    client = InfrahubClient(st.session_state.infrahub_url)
     
     # Page title
     st.title("Infrahub Service Catalog")
@@ -186,7 +179,7 @@ def main():
     # Footer
     st.markdown("---")
     st.markdown(
-        f"Connected to Infrahub at `{st.session_state.infrahub_ui_url}` | "
+        f"Connected to Infrahub at `{st.session_state.infrahub_url}` | "
         f"Branch: `{st.session_state.selected_branch}`"
     )
 

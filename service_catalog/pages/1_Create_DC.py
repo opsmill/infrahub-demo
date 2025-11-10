@@ -13,7 +13,6 @@ from utils import (
     DEFAULT_BRANCH,
     GENERATOR_WAIT_TIME,
     INFRAHUB_ADDRESS,
-    INFRAHUB_UI_ADDRESS,
     InfrahubClient,
     display_error,
     display_logo,
@@ -36,9 +35,6 @@ if "selected_branch" not in st.session_state:
 
 if "infrahub_url" not in st.session_state:
     st.session_state.infrahub_url = INFRAHUB_ADDRESS
-
-if "infrahub_ui_url" not in st.session_state:
-    st.session_state.infrahub_ui_url = INFRAHUB_UI_ADDRESS
 
 if "form_data" not in st.session_state:
     st.session_state.form_data = {}
@@ -582,10 +578,7 @@ def main():
                 }
                 
                 # Initialize API client
-                client = InfrahubClient(
-                    st.session_state.infrahub_url,
-                    ui_url=st.session_state.infrahub_ui_url
-                )
+                client = InfrahubClient(st.session_state.infrahub_url)
                 
                 # Execute DC creation workflow
                 handle_dc_creation(client, form_data)

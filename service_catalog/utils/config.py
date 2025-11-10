@@ -4,8 +4,7 @@ import os
 from typing import Final
 
 # Load environment variables
-INFRAHUB_ADDRESS: Final[str] = os.getenv("INFRAHUB_ADDRESS", "http://infrahub-server:8000")
-INFRAHUB_UI_ADDRESS: Final[str] = os.getenv("INFRAHUB_UI_ADDRESS", os.getenv("INFRAHUB_ADDRESS", "http://localhost:8000"))
+INFRAHUB_ADDRESS: Final[str] = os.getenv("INFRAHUB_ADDRESS", "http://localhost:8000")
 STREAMLIT_PORT: Final[int] = int(os.getenv("STREAMLIT_PORT", "8501"))
 DEFAULT_BRANCH: Final[str] = os.getenv("DEFAULT_BRANCH", "main")
 GENERATOR_WAIT_TIME: Final[int] = int(os.getenv("GENERATOR_WAIT_TIME", "60"))

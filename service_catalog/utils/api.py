@@ -38,16 +38,14 @@ class InfrahubGraphQLError(InfrahubAPIError):
 class InfrahubClient:
     """Client for interacting with the Infrahub API."""
     
-    def __init__(self, base_url: str, timeout: int = 30, ui_url: Optional[str] = None):
+    def __init__(self, base_url: str, timeout: int = 30):
         """Initialize the Infrahub API client.
         
         Args:
-            base_url: Base URL of the Infrahub instance for API calls (e.g., "http://infrahub-server:8000")
+            base_url: Base URL of the Infrahub instance (e.g., "http://localhost:8000")
             timeout: Request timeout in seconds (default: 30)
-            ui_url: Optional UI URL for generating user-facing links (defaults to base_url)
         """
         self.base_url = base_url.rstrip("/")
-        self.ui_url = (ui_url or base_url).rstrip("/")
         self.timeout = timeout
         self.session = requests.Session()
         
@@ -556,4 +554,4 @@ class InfrahubClient:
         Returns:
             Full URL to the proposed change in the UI
         """
-        return f"{self.ui_url}/proposed-changes/{pc_id}"
+        return f"{self.base_url}/proposed-changes/{pc_id}"

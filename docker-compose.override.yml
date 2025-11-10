@@ -1,7 +1,7 @@
 services:
   database:
     environment:
-      # Increase transaction memory limit from 4.1 GiB to 8 GiB
+      # Increase transaction memory limit from 4 GiB to 8 GiB
       - NEO4J_dbms_memory_transaction_total_max=8g
       # Also increase heap and page cache for better performance
       - NEO4J_dbms_memory_heap_initial__size=2g
@@ -12,12 +12,11 @@ services:
     build:
       context: ./service_catalog
       dockerfile: Dockerfile
-    container_name: infrahub-service-catalog
+    container_name: service-catalog
     ports:
       - "8501:8501"
     environment:
-      - INFRAHUB_ADDRESS=http://infrahub-server:8000
-      - INFRAHUB_UI_ADDRESS=http://localhost:8000
+      - INFRAHUB_ADDRESS=${INFRAHUB_ADDRESS:-http://localhost:8000}
       - DEFAULT_BRANCH=main
       - GENERATOR_WAIT_TIME=60
     volumes:

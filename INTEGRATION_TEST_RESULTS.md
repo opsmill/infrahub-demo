@@ -16,7 +16,7 @@ All integration and end-to-end verification tasks completed successfully. The St
 - ✅ Health check endpoint returns 200 OK
 
 ### Container Details
-- **Container Name**: infrahub-service-catalog
+- **Container Name**: service-catalog
 - **Status**: Up and healthy
 - **Ports**: 0.0.0.0:8501->8501/tcp
 - **Network**: infrahub_default
@@ -139,7 +139,7 @@ services:
     build:
       context: ./service_catalog
       dockerfile: Dockerfile
-    container_name: infrahub-service-catalog
+    container_name: service-catalog
     ports:
       - "8501:8501"
     environment:

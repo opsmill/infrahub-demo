@@ -16,6 +16,7 @@ console = Console()
 
 INFRAHUB_VERSION = os.getenv("INFRAHUB_VERSION", "stable")
 INFRAHUB_ENTERPRISE = os.getenv("INFRAHUB_ENTERPRISE", "false").lower() == "true"
+INFRAHUB_SERVICE_CATALOG = os.getenv("INFRAHUB_SERVICE_CATALOG", "false").lower() == "true"
 MAIN_DIRECTORY_PATH = Path(__file__).parent
 
 
@@ -104,14 +105,27 @@ def info(context: Context) -> None:
 def start(context: Context) -> None:
     """Start all containers."""
     edition = "Enterprise" if INFRAHUB_ENTERPRISE else "Community"
+
+    # Build the compose command with optional service catalog profile
+    compose_cmd = COMPOSE_COMMAND
+    if INFRAHUB_SERVICE_CATALOG:
+        compose_cmd = f"{compose_cmd} --profile service-catalog"
+
     console.print()
+    status_msg = f"[green]Starting Infrahub {edition}[/green] [dim]({INFRAHUB_VERSION})[/dim]"
+    if INFRAHUB_SERVICE_CATALOG:
+        status_msg += "\n[cyan]Service Catalog:[/cyan] Enabled"
+
     console.print(Panel(
-        f"[green]Starting Infrahub {edition}[/green] [dim]({INFRAHUB_VERSION})[/dim]",
+        status_msg,
         border_style="green",
         box=box.SIMPLE
     ))
-    context.run(f"{COMPOSE_COMMAND} up -d")
+    context.run(f"{compose_cmd} up -d")
+
     console.print("[green]✓[/green] Infrahub started successfully")
+    if INFRAHUB_SERVICE_CATALOG:
+        console.print("[green]✓[/green] Service Catalog available at http://localhost:8501")
 
 
 @task(optional=["schema", "branch"])
