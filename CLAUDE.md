@@ -35,7 +35,7 @@ uv run invoke restart <component>
 uv run infrahubctl schema load schemas --branch main
 
 # Load menu
-uv run infrahubctl menu load menu --branch main
+uv run infrahubctl menu load menus --branch main
 
 # Load bootstrap data
 uv run infrahubctl object load objects/bootstrap --branch main
@@ -332,7 +332,7 @@ uv run invoke start
 uv run infrahubctl schema load schemas
 
 # 3. Load menu
-uv run infrahubctl menu load menu
+uv run infrahubctl menu load menus
 
 # 4. Load bootstrap data
 uv run infrahubctl object load objects/bootstrap
@@ -374,7 +374,7 @@ uv run infrahubctl object load objects/dc-cisco-s --branch my-branch
 - `generators/` - Topology generators (DC, POP, segment)
 - `generators/common.py` - Shared generator utilities
 - `generators/schema_protocols.py` - Type protocols for schemas
-- `menu/` - InfraHub menu definitions
+- `menus/` - InfraHub menu definitions
 - `queries/config/` - Configuration queries (leaf_config, spine_config, etc.)
 - `queries/topology/` - Topology queries
 - `queries/validation/` - Validation queries

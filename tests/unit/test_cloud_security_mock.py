@@ -325,7 +325,7 @@ menu:
 
         mock_exists.return_value = True
 
-        with open("menu/menu.yml", "r") as f:
+        with open("menus/menu-full.yml", "r") as f:
             content = yaml.safe_load(f.read())
 
         menu_str = str(content)

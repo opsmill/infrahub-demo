@@ -193,7 +193,7 @@ def main(branch: str = "main") -> int:
         {
             "step": "[2/7]",
             "description": "Loading menu definitions",
-            "command": f"uv run infrahubctl menu load menu --branch {branch}",
+            "command": f"uv run infrahubctl menu load menus --branch {branch}",
             "color": "magenta",
             "icon": "📑",
         },

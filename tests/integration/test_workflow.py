@@ -62,7 +62,7 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
         logging.info("Starting test: test_02_load_menu")
 
         load_menu = self.execute_command(
-            "infrahubctl menu load menu",
+            "infrahubctl menu load menus",
             address=client_main.config.address,
         )
 

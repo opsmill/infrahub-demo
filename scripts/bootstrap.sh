@@ -43,7 +43,7 @@ echo "✓ Schemas loaded successfully"
 echo ""
 
 echo "[2/7] Loading menu definitions..."
-uv run infrahubctl menu load menu --branch $BRANCH
+uv run infrahubctl menu load menus --branch $BRANCH
 echo "✓ Menu loaded successfully"
 echo ""
 

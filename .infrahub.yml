@@ -182,4 +182,4 @@ queries:
 schemas:
   - schemas/
 menus:
-  - menu/menu.yml
+  - menus/menu-full.yml
