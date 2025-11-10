@@ -26,7 +26,7 @@ All components are registered in `.infrahub.yml`, which acts as the configuratio
 
 ## Project structure
 
-```
+```text
 infrahub-demo/
 ├── .infrahub.yml              # Component registration
 ├── checks/                    # Validation checks
@@ -35,13 +35,18 @@ infrahub-demo/
 │   ├── edge.py
 │   └── loadbalancer.py
 ├── objects/                      # Demo data
-│   ├── bootstrap/            # Initial data (locations, platforms, roles)
+│   ├── bootstrap/            # Initial data (18 files: locations, platforms, roles, devices, etc.)
 │   ├── security/             # Security zones, policies, rules
 │   ├── cloud_security/       # Cloud security examples
+│   ├── events/               # Event action definitions
 │   ├── dc-cisco-s.yml            # DC-2 design data (Cisco)
 │   ├── dc-arista-s.yml           # DC-3 design data (Arista)
 │   ├── dc-sonic-border-leafs.yml # DC-4 design data (SONiC with border leafs)
-│   └── dc-juniper-s.yml          # DC-5 design data (Juniper)
+│   ├── dc-juniper-s.yml          # DC-5 design data (Juniper)
+│   ├── dc-2.yml              # Additional DC-2 variant
+│   ├── dc-3.yml              # Additional DC-3 variant
+│   ├── pop-1.yml             # POP-1 design data
+│   └── pop-2.yml             # POP-2 design data
 ├── generators/               # Topology generators
 │   ├── generate_dc.py        # Data center generator
 │   ├── generate_pop.py       # POP generator
@@ -49,7 +54,8 @@ infrahub-demo/
 │   ├── common.py             # Shared utilities
 │   └── schema_protocols.py   # Type protocols
 ├── menus/                    # UI menu definitions
-│   └── menu-full.yml
+│   └── menu-full.yml         # Complete menu
+
 ├── queries/                  # GraphQL queries
 │   ├── config/              # Configuration queries
 │   ├── topology/            # Topology queries
@@ -66,9 +72,20 @@ infrahub-demo/
 │       ├── security/
 │       ├── service/
 │       └── topology/
+├── service_catalog/         # Streamlit Service Catalog application
+│   ├── pages/               # Streamlit pages
+│   │   └── 1_Create_DC.py  # DC creation UI
+│   ├── utils/               # Utility modules
+│   │   ├── api.py           # Infrahub API client
+│   │   ├── config.py        # Configuration
+│   │   └── ui.py            # UI helpers
+│   ├── Home.py              # Main application page
+│   └── Dockerfile           # Container definition
 ├── scripts/                  # Automation scripts
-│   ├── bootstrap.sh         # Complete setup
-│   └── demo.sh              # Demo execution
+│   ├── bootstrap.py              # Complete setup script
+│   ├── populate_security_relationships.py  # Security data relationships
+│   ├── create_proposed_change.py    # Create proposed changes
+│   └── get_configs.py               # Retrieve device configurations
 ├── templates/               # Jinja2 config templates
 ├── transforms/              # Config transforms
 │   ├── leaf.py

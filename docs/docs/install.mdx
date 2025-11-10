@@ -61,15 +61,131 @@ This creates a virtual environment and installs all necessary packages including
 
 ## Step 4: set up environment variables
 
-Create environment variables for connecting to Infrahub. You can either export them directly or create a `.env` file:
+Configure environment variables for connecting to Infrahub and customizing the demo environment. Copy the example file and customize as needed:
 
 ```bash
-export INFRAHUB_ADDRESS="http://localhost:8000"
-export INFRAHUB_API_TOKEN="06438eb2-8019-4776-878c-0941b1f1d1ec"
+cp .env.example .env
+```
+
+Then edit the `.env` file or export the variables directly in your shell.
+
+### Core Infrahub variables
+
+These variables configure connectivity to the Infrahub API:
+
+```bash
+# Infrahub API server address
+# Used by CLI tools and local scripts to connect to Infrahub
+# Default: http://localhost:8000
+INFRAHUB_ADDRESS=http://localhost:8000
+
+# Infrahub API authentication token
+# Generate a token in the Infrahub UI under Settings > API Tokens
+# For demo purposes, use the provided token below
+INFRAHUB_API_TOKEN=06438eb2-8019-4776-878c-0941b1f1d1ec
+
+# Infrahub UI URL for browser links
+# Used by the Service Catalog to generate clickable links to Infrahub UI pages
+# Should be the URL accessible from your browser
+# Default: http://localhost:8000
+INFRAHUB_UI_URL=http://localhost:8000
 ```
 
 :::info
-The API token above is a demo token for local development only. Do not use this in production environments.
+The API token `06438eb2-8019-4776-878c-0941b1f1d1ec` is a demo token for local development only. Do not use this in production environments. Generate a new token in the Infrahub UI under Settings > API Tokens for production use.
+:::
+
+### Infrahub version and features
+
+Control which version of Infrahub to run and which features to enable:
+
+```bash
+# Infrahub version to use
+# Specify the version of Infrahub to run (for example, 1.5.0b2, stable, latest)
+# Default: 1.5.0b2
+INFRAHUB_VERSION=1.5.0b2
+
+# Enable Infrahub Enterprise features
+# Set to "true" to enable enterprise features, "false" for community edition
+# Default: true
+INFRAHUB_ENTERPRISE=true
+
+# Opt out of Infrahub telemetry
+# Set to "true" to disable telemetry data collection
+# Default: true
+INFRAHUB_TELEMETRY_OPTOUT=true
+```
+
+### Service catalog configuration
+
+Enable and configure the optional Service Catalog Streamlit application:
+
+```bash
+# Enable the Service Catalog Streamlit application
+# Set to "true" to start the service catalog container with 'uv run invoke start'
+# Set to "false" (default) to run only the core Infrahub services
+# The service catalog provides a web UI for managing data center deployments
+INFRAHUB_SERVICE_CATALOG=false
+
+# Default branch to use when the service catalog application starts
+# Default: main
+DEFAULT_BRANCH=main
+
+# Time to wait (in seconds) for the Infrahub generator to complete after creating a DC
+# Increase this value if your generators take longer to complete
+# Default: 60
+GENERATOR_WAIT_TIME=60
+
+# API request timeout in seconds
+# Maximum time to wait for API requests to complete
+# Default: 30
+API_TIMEOUT=30
+
+# Number of retry attempts for failed API requests
+# Default: 3
+API_RETRY_COUNT=3
+```
+
+### Containerlab configuration
+
+Configure ContainerLab for virtual network device simulation:
+
+```bash
+# Docker image for Arista cEOS (Container EOS)
+# Used for network device simulation in containerlab topologies
+# Required if you plan to use containerlab for virtual lab deployment
+CEOS_DOCKER_IMAGE=registry.opsmill.io/external/ceos-image:4.29.0.2F
+```
+
+### Managing environment variables with direnv
+
+[direnv](https://direnv.net/) is a helpful tool for automatically loading environment variables from `.env` files when you enter the project directory. While not required, it streamlines the development workflow.
+
+To use direnv:
+
+1. Install direnv following the instructions at [direnv.net](https://direnv.net/docs/installation.html)
+2. Create a `.envrc` file in the project root:
+
+   ```bash
+   dotenv
+   ```
+
+3. Allow direnv to load the file:
+
+   ```bash
+   direnv allow
+   ```
+
+Now your environment variables will load automatically when you `cd` into the project directory.
+
+:::tip
+Other alternatives for managing environment variables include:
+
+- Using your shell's profile file (`.bashrc`, `.zshrc`)
+- Docker Compose environment files (`docker-compose.override.yml`)
+- Shell scripts that source the `.env` file
+- IDE/editor plugins for environment variable management
+
 :::
 
 ## Step 5: start Infrahub
@@ -132,7 +248,7 @@ If you prefer to run each step individually:
 uv run infrahubctl schema load schemas
 
 # 2. Load menu definitions
-uv run infrahubctl menu load menu
+uv run infrahubctl menu load menus/menu-full.yml
 
 # 3. Load bootstrap data (locations, device types, platforms)
 uv run infrahubctl object load objects/bootstrap
@@ -140,10 +256,13 @@ uv run infrahubctl object load objects/bootstrap
 # 4. Load security data (optional)
 uv run infrahubctl object load objects/security/
 
-# 5. Add the demo repository
+# 5. Populate security relationships (optional, required if you loaded security data)
+uv run python scripts/populate_security_relationships.py
+
+# 6. Add the demo repository
 uv run infrahubctl repository add DEMO https://github.com/opsmill/infrahub-demo.git --read-only --ref main
 
-# 6. Load event actions (optional, enables automatic generator execution)
+# 7. Load event actions (optional, enables automatic generator execution)
 uv run infrahubctl object load objects/events/
 ```
 

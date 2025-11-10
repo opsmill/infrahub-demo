@@ -35,3 +35,106 @@ spec:
           - name: ge-0/0/3
             role: leaf
             status: free
+
+---
+apiVersion: infrahub.app/v1
+kind: Object
+spec:
+  kind: DcimGenericDevice
+  data:
+    - name: cisco-switch-01
+      role: leaf
+      device_type: N9K-C93108TC-FX
+      platform: Cisco NX-OS
+      location:
+        kind: LocationMetro
+        data:
+          name: London
+          shortname: lon
+      status: active
+      member_of_groups:
+        - leafs
+      interfaces:
+        kind: DcimPhysicalInterface
+        data:
+          - name: mgmt0
+            role: management
+            status: free
+          - name: Ethernet1/[1-4]
+            role: customer
+            status: free
+
+    - name: juniper-switch-01
+      role: spine
+      device_type: QFX5220-32CD
+      platform: Juniper JunOS
+      location:
+        kind: LocationMetro
+        data:
+          name: Frankfurt
+          shortname: fra
+      status: active
+      member_of_groups:
+        - spines
+      interfaces:
+        kind: DcimPhysicalInterface
+        data:
+          - name: fxp0
+            role: management
+            status: free
+          - name: et-0/0/[0-3]
+            role: leaf
+            status: free
+
+    - name: arista-switch-01
+      role: spine
+      device_type: DCS-7280DR3-24-F
+      platform: Arista EOS
+      location:
+        kind: LocationMetro
+        data:
+          name: Barcelona
+          shortname: bcn
+      status: active
+      member_of_groups:
+        - spines
+      interfaces:
+        kind: DcimPhysicalInterface
+        data:
+          - name: Management1
+            role: management
+            status: free
+          - name: Ethernet[1-4]
+            role: leaf
+            status: free
+
+    - name: edgecore-switch-01
+      role: leaf
+      device_type: 5912-54X-O-AC-F
+      platform: Sonic OS
+      location:
+        kind: LocationMetro
+        data:
+          name: Chicago
+          shortname: chi
+      status: active
+      member_of_groups:
+        - leafs
+      interfaces:
+        kind: DcimPhysicalInterface
+        data:
+          - name: eth0
+            role: management
+            status: free
+          - name: Ethernet0
+            role: customer
+            status: free
+          - name: Ethernet4
+            role: customer
+            status: free
+          - name: Ethernet8
+            role: customer
+            status: free
+          - name: Ethernet12
+            role: customer
+            status: free

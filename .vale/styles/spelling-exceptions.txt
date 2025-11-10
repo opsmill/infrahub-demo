@@ -122,6 +122,7 @@ reusability
 schema_mapping
 sdk
 snake_case
+Streamlit
 subcommand
 sudo
 subnet

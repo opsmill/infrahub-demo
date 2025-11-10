@@ -34,7 +34,7 @@ uv run invoke restart <component>
 # Load schemas
 uv run infrahubctl schema load schemas --branch main
 
-# Load menu
+# Load menu (full menu with all options)
 uv run infrahubctl menu load menus/menu-full.yml --branch main
 
 # Load bootstrap data
@@ -97,6 +97,7 @@ uv run invoke validate
 ```bash
 # Bootstrap Infrahub (Python version with Rich UI)
 uv run invoke bootstrap
+uv run python scripts/bootstrap.py              # Direct invocation
 
 # Demo DC Arista topology (creates branch, loads data, creates proposed change)
 uv run invoke demo-dc-arista
@@ -331,7 +332,7 @@ uv run invoke start
 # 2. Load schemas
 uv run infrahubctl schema load schemas
 
-# 3. Load menu
+# 3. Load menu (full menu with all navigation options)
 uv run infrahubctl menu load menus/menu-full.yml
 
 # 4. Load bootstrap data
@@ -346,46 +347,109 @@ uv run infrahubctl repository add DEMO https://github.com/opsmill/infrahub-demo.
 # 7. Load event actions (optional)
 uv run infrahubctl object load objects/events/
 
-# Or use the bootstrap script
+# Or use the bootstrap script (Python version with Rich UI and progress tracking)
 uv run invoke bootstrap
+uv run python scripts/bootstrap.py
 ```
 
 ## Demo Scenarios
 
 ### Data Center Demo
 ```bash
-# Automated approach
-./scripts/demo.sh design dc-cisco-s
+# Automated approach (via invoke task)
+uv run invoke demo-dc-arista
 
 # Manual approach
 uv run infrahubctl branch create my-branch
-uv run infrahubctl object load objects/dc-cisco-s --branch my-branch
+uv run infrahubctl object load objects/dc-arista-s.yml --branch my-branch
 # Then run generator via InfraHub UI: Actions → Generator Definitions → create_dc
+```
+
+### Available Demo Data Files
+- `objects/dc-arista-s.yml` - Arista EOS data center
+- `objects/dc-cisco-s.yml` - Cisco NX-OS data center
+- `objects/dc-cisco-s-border-leafs.yml` - Cisco with border leafs
+- `objects/dc-juniper-s.yml` - Juniper data center
+- `objects/dc-sonic-border-leafs.yml` - SONiC with border leafs
+- `objects/pop-1.yml` - Point of presence 1
+- `objects/pop-2.yml` - Point of presence 2
+
+## Service Catalog
+
+The project includes a Streamlit-based service catalog application:
+
+**Location:** `service_catalog/`
+
+**Features:**
+- Rich visual interface for infrastructure resources
+- Branch selection capability
+- Data center and colocation center listings
+- Service request creation with progress tracking
+- Real-time status updates
+
+**Running the Service Catalog:**
+```bash
+# Ensure INFRAHUB_SERVICE_CATALOG=true in .env or docker-compose.override.yml
+# The service catalog runs automatically when enabled
+# Access at: http://localhost:8501
 ```
 
 ## Project Structure Details
 
 - `checks/` - Validation checks for spine, leaf, edge, loadbalancer devices
-- `objects/bootstrap/` - Initial data (locations, platforms, roles)
-- `objects/dc-arista-s.yml`, `dc-cisco-s.yml`, `dc-sonic-border-leafs.yml`, `dc-juniper-s.yml`, etc. - Demo scenario data
+- `objects/bootstrap/` - Initial data (18 files including locations, platforms, roles, devices, docs)
+  - `00_groups.yml` - User groups and permissions
+  - `01_locations.yml` - Geographic locations (metros, buildings)
+  - `02_providers.yml` - Service providers
+  - `03_clients.yml` - Client organizations
+  - `04_manufacturers.yml` - Hardware manufacturers
+  - `05_platforms.yml` - Network operating systems
+  - `06_device_types.yml` - Device hardware models
+  - `09_virtual_device_templates.yml` - Virtual device templates
+  - `10_physical_device_templates.yml` - Physical device templates
+  - `11_device_templates_console.yml` - Console configuration templates
+  - `12_prefixes.yml` - IP address prefixes
+  - `13_asns.yml` - AS numbers
+  - `14_design_elements.yml` - Design components
+  - `15_designs.yml` - Network designs
+  - `16_asn_pools.yml` - AS number pools
+  - `17_ip_prefix_pools.yml` - IP prefix pools
+  - `18_devices.yml` - Pre-configured devices (corp-firewall, cisco-switch-01, etc.)
+  - `19_docs.yml` - Documentation links
+- `objects/dc-*.yml` - Demo scenario data files (Arista, Cisco, Juniper, SONiC)
 - `objects/security/` - Security-related demo data
 - `objects/cloud_security/` - Cloud security examples
 - `objects/events/` - Event action definitions
+- `objects/lb/` - Load balancer configurations
 - `generators/` - Topology generators (DC, POP, segment)
 - `generators/common.py` - Shared generator utilities
 - `generators/schema_protocols.py` - Type protocols for schemas
 - `menus/` - InfraHub menu definitions
+  - `menu-full.yml` - Complete menu with all navigation options
+  - `menu-demo-dc.yml` - Simplified menu for datacenter demos (excludes Documentation, Security Management, Routing Management, LB Management)
 - `queries/config/` - Configuration queries (leaf_config, spine_config, etc.)
 - `queries/topology/` - Topology queries
 - `queries/validation/` - Validation queries
 - `schemas/base/` - Base schema models (dcim, ipam, location, topology)
 - `schemas/extensions/` - Extended schemas
 - `scripts/` - User-facing automation scripts:
-  - `bootstrap.py` - Python bootstrap script with Rich UI
+  - `bootstrap.py` - Python bootstrap script with Rich UI and progress tracking
   - `create_proposed_change.py` - Create Infrahub Proposed Changes
   - `get_configs.py` - Extract device configs and topologies from artifacts
   - `populate_security_relationships.py` - Populate security zone relationships
+  - `clab.sh` - Containerlab operations
+  - `demo.sh` - Demo scenario runner
+  - `generate.sh` - Generator helper script
+  - `render.sh` - Template rendering helper
+  - `repo.sh` - Repository management helper
+  - `transform.sh` - Transform execution helper
+  - `validate.sh` - Validation helper
 - `scripts/debug/` - Debug scripts (excluded from git tracking)
+- `service_catalog/` - Streamlit-based service catalog application
+  - `Home.py` - Main landing page
+  - `pages/` - Additional pages
+  - `utils/` - Utility functions and API client
+  - `assets/` - Static assets (logos, images)
 - `templates/` - Jinja2 configuration templates
   - `templates/configs/leafs/` - Leaf device templates (arista_eos.j2, dell_sonic.j2, etc.)
   - `templates/configs/spines/` - Spine device templates (arista_eos.j2, dell_sonic.j2, etc.)
@@ -435,6 +499,7 @@ query GetDeviceConfig($device_name: String!) {
 9. **HTML entities in descriptions**: Use `get_interface_roles()` which handles HTML decoding automatically
 10. **Template expects different data structure**: Spine templates expect `interface_roles`, leaf templates expect `interfaces.all_physical`
 11. **Missing type stubs**: Install type stubs with `uv pip install types-<package>` when mypy reports import errors
+12. **Wrong menu path**: Use `menus/menu-full.yml` not `menu/menu.yml`
 
 ## Debugging Transforms and Artifacts
 
