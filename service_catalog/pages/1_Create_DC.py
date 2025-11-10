@@ -204,7 +204,6 @@ def render_progress_tracker() -> None:
             progress_md += f"⏸️ {step_name}\n\n"
 
     st.markdown(progress_md)
-    st.markdown("---")
 
 
 def execute_dc_creation_step(client: InfrahubClient) -> None:
@@ -340,22 +339,13 @@ def main() -> None:
     st.title("Create Data Center")
 
     # Check if DC creation is in progress
-    if "dc_creation" in st.session_state and st.session_state.dc_creation.get("active"):
-        # Initialize API client
-        client = InfrahubClient(
-            st.session_state.infrahub_url,
-            api_token=INFRAHUB_API_TOKEN or None
-        )
-
-        # Render progress tracker
-        render_progress_tracker()
-
-        # Execute current step
-        execute_dc_creation_step(client)
-        return
+    dc_creation_active = "dc_creation" in st.session_state and st.session_state.dc_creation.get("active")
 
     # Normal form display
-    st.markdown("Fill in the form below to create a new Data Center in Infrahub.")
+    if not dc_creation_active:
+        st.markdown("Fill in the form below to create a new Data Center in Infrahub.")
+    else:
+        st.info("📋 Datacenter creation in progress... Form is read-only during execution.")
 
     # Initialize API client to fetch locations
     client = InfrahubClient(
@@ -444,6 +434,7 @@ def main() -> None:
                 "Name *",
                 placeholder="e.g., DC-4",
                 help="Unique name for the data center",
+                disabled=dc_creation_active,
             )
 
             # Prepare location options from fetched locations
@@ -457,6 +448,7 @@ def main() -> None:
                 "Location *",
                 options=location_names,
                 help="Physical location of the data center",
+                disabled=dc_creation_active,
             )
 
             # Get the location ID for the selected name
@@ -466,6 +458,7 @@ def main() -> None:
                 "Strategy *",
                 options=["ospf-ibgp", "isis-ibgp", "ospf-ebgp"],
                 help="Routing strategy for the data center",
+                disabled=dc_creation_active,
             )
 
             # Prepare provider options
@@ -479,6 +472,7 @@ def main() -> None:
                 "Provider *",
                 options=provider_names,
                 help="Infrastructure provider",
+                disabled=dc_creation_active,
             )
 
             # Get the provider ID for the selected name
@@ -489,6 +483,7 @@ def main() -> None:
                 "Description",
                 placeholder="e.g., London Data Center",
                 help="Optional description of the data center",
+                disabled=dc_creation_active,
             )
 
             # Prepare design options
@@ -502,13 +497,14 @@ def main() -> None:
                 "Design *",
                 options=design_names,
                 help="Network design template",
+                disabled=dc_creation_active,
             )
 
             # Get the design ID for the selected name
             design_id = design_map.get(design_name) if design_name else None
 
             emulation = st.checkbox(
-                "Emulation", value=True, help="Enable emulation mode"
+                "Emulation", value=True, help="Enable emulation mode", disabled=dc_creation_active
             )
 
         # Subnet configuration
@@ -535,7 +531,7 @@ def main() -> None:
             options=option_list,
             key="mgmt_prefix_select",
             help="Select an active prefix for management subnet",
-            disabled=not prefix_options,
+            disabled=dc_creation_active or not prefix_options,
         )
         mgmt_prefix_id = prefix_options.get(mgmt_prefix_display) if prefix_options else None
 
@@ -546,7 +542,7 @@ def main() -> None:
             options=option_list,
             key="cust_prefix_select",
             help="Select an active prefix for customer subnet",
-            disabled=not prefix_options,
+            disabled=dc_creation_active or not prefix_options,
         )
         cust_prefix_id = prefix_options.get(cust_prefix_display) if prefix_options else None
 
@@ -557,14 +553,14 @@ def main() -> None:
             options=option_list,
             key="tech_prefix_select",
             help="Select an active prefix for technical subnet",
-            disabled=not prefix_options,
+            disabled=dc_creation_active or not prefix_options,
         )
         tech_prefix_id = prefix_options.get(tech_prefix_display) if prefix_options else None
 
         # Submit button
         st.markdown("---")
         submitted = st.form_submit_button(
-            "Create Data Center", type="primary", use_container_width=True
+            "Create Data Center", type="primary", use_container_width=True, disabled=dc_creation_active
         )
 
         if submitted:
@@ -612,6 +608,18 @@ def main() -> None:
 
                 # Execute DC creation workflow (reuse the client from initialization)
                 handle_dc_creation(client, form_data)
+
+    # After the form, check if DC creation is in progress and show progress at bottom
+    if dc_creation_active:
+        st.markdown("---")
+        st.markdown("## 🔄 Datacenter Creation Progress")
+
+        # Execute current step
+        execute_dc_creation_step(client)
+
+        # Render progress tracker at the bottom
+        st.markdown("---")
+        render_progress_tracker()
 
 
 if __name__ == "__main__":
