@@ -2,9 +2,7 @@
 
 from typing import Any, Dict, List, Optional
 
-import requests
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
+from infrahub_sdk import Config, InfrahubClientSync
 
 
 class InfrahubAPIError(Exception):
@@ -37,123 +35,53 @@ class InfrahubGraphQLError(InfrahubAPIError):
 
 
 class InfrahubClient:
-    """Client for interacting with the Infrahub API."""
+    """Client for interacting with the Infrahub API using the official SDK."""
 
     def __init__(self, base_url: str, api_token: Optional[str] = None, timeout: int = 30):
         """Initialize the Infrahub API client.
 
         Args:
             base_url: Base URL of the Infrahub instance (e.g., "http://localhost:8000")
-            api_token: Optional API token for authentication
+            api_token: Optional API token for authentication (not currently used by SDK)
             timeout: Request timeout in seconds (default: 30)
         """
         self.base_url = base_url.rstrip("/")
         self.api_token = api_token
         self.timeout = timeout
-        self.session = requests.Session()
 
-        # Configure retry strategy for transient errors
-        retry_strategy = Retry(
-            total=3,
-            backoff_factor=1,  # Will result in delays of 1s, 2s, 4s
-            status_forcelist=[429, 500, 502, 503, 504],
-            allowed_methods=["GET", "POST"],
-        )
-        adapter = HTTPAdapter(max_retries=retry_strategy)
-        self.session.mount("http://", adapter)
-        self.session.mount("https://", adapter)
-
-    def _make_request(
-        self,
-        method: str,
-        url: str,
-        headers: Optional[Dict[str, str]] = None,
-        json_data: Optional[Dict[str, Any]] = None,
-        params: Optional[Dict[str, str]] = None,
-    ) -> requests.Response:
-        """Make an HTTP request with error handling.
-
-        Args:
-            method: HTTP method (GET, POST, etc.)
-            url: Full URL to request
-            headers: Optional request headers
-            json_data: Optional JSON data for POST requests
-            params: Optional query parameters
-
-        Returns:
-            Response object
-
-        Raises:
-            InfrahubConnectionError: If connection fails
-            InfrahubHTTPError: If HTTP error occurs
-        """
-        try:
-            response = self.session.request(
-                method=method,
-                url=url,
-                headers=headers,
-                json=json_data,
-                params=params,
-                timeout=self.timeout,
-            )
-            response.raise_for_status()
-            return response
-        except requests.exceptions.ConnectionError as e:
-            raise InfrahubConnectionError(
-                f"Unable to connect to Infrahub at {self.base_url}. "
-                f"Please check that Infrahub is running."
-            ) from e
-        except requests.exceptions.Timeout as e:
-            raise InfrahubConnectionError(
-                f"Request to Infrahub timed out after {self.timeout} seconds."
-            ) from e
-        except requests.exceptions.HTTPError as e:
-            status_code = e.response.status_code if e.response else 0
-            response_text = e.response.text if e.response else ""
-            raise InfrahubHTTPError(
-                f"HTTP {status_code} error from Infrahub: {str(e)}",
-                status_code=status_code,
-                response_text=response_text,
-            ) from e
+        # Initialize the official Infrahub SDK client
+        config = Config(timeout=timeout, api_token=api_token)
+        self._client = InfrahubClientSync(address=base_url, config=config)
 
     def get_branches(self) -> List[Dict[str, Any]]:
-        """Fetch all branches from Infrahub via GraphQL API.
+        """Fetch all branches from Infrahub.
 
         Returns:
-            List of branch dictionaries with id, name, description, etc.
+            List of branch dictionaries with keys: name, id, is_default, etc.
 
         Raises:
             InfrahubConnectionError: If connection fails
-            InfrahubHTTPError: If HTTP error occurs
-            InfrahubGraphQLError: If GraphQL error occurs
+            InfrahubAPIError: If API error occurs
         """
-        query = """
-        query GetBranches {
-          Branch {
-            id
-            name
-            description
-            is_default
-            sync_with_git
-          }
-        }
-        """
-
-        result = self.execute_graphql(query)
-
-        # Extract branches from GraphQL response
-        branches = result.get("data", {}).get("Branch", [])
-
-        return branches
+        try:
+            branches_dict = self._client.branch.all()
+            # Convert to list of dicts for compatibility
+            branches = []
+            for branch_name, branch_data in branches_dict.items():
+                branches.append({
+                    "name": branch_name,
+                    "id": branch_data.id,
+                    "is_default": branch_data.is_default,
+                    "sync_with_git": branch_data.sync_with_git,
+                })
+            return branches
+        except Exception as e:
+            raise InfrahubConnectionError(f"Failed to fetch branches: {str(e)}")
 
     def get_objects(
         self, object_type: str, branch: str = "main"
     ) -> List[Dict[str, Any]]:
-        """Fetch objects of a given type from Infrahub via GraphQL API.
-
-        This is a generic method. For specific object types like TopologyDataCenter,
-        use the dedicated methods (get_datacenters, get_colocation_centers) which
-        fetch all required fields.
+        """Fetch objects of a specific type from Infrahub.
 
         Args:
             object_type: Type of object to fetch (e.g., "TopologyDataCenter")
@@ -164,8 +92,7 @@ class InfrahubClient:
 
         Raises:
             InfrahubConnectionError: If connection fails
-            InfrahubHTTPError: If HTTP error occurs
-            InfrahubGraphQLError: If GraphQL error occurs
+            InfrahubAPIError: If API error occurs
         """
         # Use specific methods for known types
         if object_type == "TopologyDataCenter":
@@ -174,27 +101,12 @@ class InfrahubClient:
             return self.get_colocation_centers(branch)
 
         # Generic query for other types
-        query = f"""
-        query GetObjects {{
-          {object_type} {{
-            edges {{
-              node {{
-                id
-                display_label
-                __typename
-              }}
-            }}
-          }}
-        }}
-        """
-
-        result = self.execute_graphql(query, branch=branch)
-
-        # Extract objects from GraphQL response
-        edges = result.get("data", {}).get(object_type, {}).get("edges", [])
-        objects = [edge["node"] for edge in edges]
-
-        return objects
+        try:
+            objects = self._client.filters(kind=object_type, branch=branch)
+            # Convert SDK objects to dicts
+            return [self._sdk_object_to_dict(obj) for obj in objects]
+        except Exception as e:
+            raise InfrahubAPIError(f"Failed to fetch {object_type}: {str(e)}")
 
     def get_datacenters(self, branch: str = "main") -> List[Dict[str, Any]]:
         """Fetch TopologyDataCenter objects with all required fields.
@@ -207,51 +119,47 @@ class InfrahubClient:
 
         Raises:
             InfrahubConnectionError: If connection fails
-            InfrahubHTTPError: If HTTP error occurs
-            InfrahubGraphQLError: If GraphQL error occurs
+            InfrahubAPIError: If API error occurs
         """
-        query = """
-        query GetDataCenters {
-          TopologyDataCenter {
-            edges {
-              node {
-                id
-                name {
-                  value
+        try:
+            datacenters = self._client.filters(
+                kind="TopologyDataCenter",
+                branch=branch,
+                prefetch_relationships=True
+            )
+
+            result = []
+            for dc in datacenters:
+                dc_dict = {
+                    "id": dc.id,
+                    "name": {"value": getattr(dc.name, "value", None)},
+                    "description": {"value": getattr(dc.description, "value", None) if hasattr(dc, "description") else None},
+                    "strategy": {"value": getattr(dc.strategy, "value", None) if hasattr(dc, "strategy") else None},
                 }
-                description {
-                  value
-                }
-                strategy {
-                  value
-                }
-                location {
-                  node {
-                    id
-                    display_label
-                  }
-                }
-                design {
-                  node {
-                    id
-                    name {
-                      value
+
+                # Add relationships if they exist
+                if hasattr(dc, "location") and dc.location.peer:
+                    dc_dict["location"] = {
+                        "node": {
+                            "id": dc.location.peer.id,
+                            "display_label": str(dc.location.peer)
+                        }
                     }
-                  }
-                }
-              }
-            }
-          }
-        }
-        """
 
-        result = self.execute_graphql(query, branch=branch)
+                if hasattr(dc, "design") and dc.design.peer:
+                    design_peer = dc.design.peer
+                    dc_dict["design"] = {
+                        "node": {
+                            "id": design_peer.id,
+                            "name": {"value": getattr(design_peer.name, "value", None) if hasattr(design_peer, "name") else None}
+                        }
+                    }
 
-        # Extract datacenters from GraphQL response
-        edges = result.get("data", {}).get("TopologyDataCenter", {}).get("edges", [])
-        datacenters = [edge["node"] for edge in edges]
+                result.append(dc_dict)
 
-        return datacenters
+            return result
+        except Exception as e:
+            raise InfrahubAPIError(f"Failed to fetch datacenters: {str(e)}")
 
     def get_colocation_centers(self, branch: str = "main") -> List[Dict[str, Any]]:
         """Fetch TopologyColocationCenter objects with all required fields.
@@ -264,45 +172,185 @@ class InfrahubClient:
 
         Raises:
             InfrahubConnectionError: If connection fails
-            InfrahubHTTPError: If HTTP error occurs
-            InfrahubGraphQLError: If GraphQL error occurs
+            InfrahubAPIError: If API error occurs
         """
-        query = """
-        query GetColocationCenters {
-          TopologyColocationCenter {
-            edges {
-              node {
-                id
-                name {
-                  value
+        try:
+            colocations = self._client.filters(
+                kind="TopologyColocationCenter",
+                branch=branch,
+                prefetch_relationships=True
+            )
+
+            result = []
+            for colo in colocations:
+                colo_dict = {
+                    "id": colo.id,
+                    "name": {"value": getattr(colo.name, "value", None)},
+                    "description": {"value": getattr(colo.description, "value", None) if hasattr(colo, "description") else None},
                 }
-                description {
-                  value
+
+                # Add relationships if they exist
+                if hasattr(colo, "location") and colo.location.peer:
+                    colo_dict["location"] = {
+                        "node": {
+                            "id": colo.location.peer.id,
+                            "display_label": str(colo.location.peer)
+                        }
+                    }
+
+                if hasattr(colo, "provider"):
+                    colo_dict["provider"] = {"value": getattr(colo.provider, "value", None)}
+
+                result.append(colo_dict)
+
+            return result
+        except Exception as e:
+            raise InfrahubAPIError(f"Failed to fetch colocation centers: {str(e)}")
+
+    def get_locations(self, branch: str = "main") -> List[Dict[str, Any]]:
+        """Fetch LocationMetro objects.
+
+        Args:
+            branch: Branch name to query (default: "main")
+
+        Returns:
+            List of location dictionaries with id and name
+
+        Raises:
+            InfrahubConnectionError: If connection fails
+            InfrahubAPIError: If API error occurs
+        """
+        try:
+            locations = self._client.filters(
+                kind="LocationMetro",
+                branch=branch,
+                prefetch_relationships=False
+            )
+
+            result = []
+            for loc in locations:
+                loc_dict = {
+                    "id": loc.id,
+                    "name": {"value": getattr(loc.name, "value", None)},
                 }
-                location {
-                  node {
-                    id
-                    display_label
-                  }
+
+                result.append(loc_dict)
+
+            return result
+        except Exception as e:
+            raise InfrahubAPIError(f"Failed to fetch locations: {str(e)}")
+
+    def get_providers(self, branch: str = "main") -> List[Dict[str, Any]]:
+        """Fetch OrganizationProvider objects.
+
+        Args:
+            branch: Branch name to query (default: "main")
+
+        Returns:
+            List of provider dictionaries with id and name
+
+        Raises:
+            InfrahubConnectionError: If connection fails
+            InfrahubAPIError: If API error occurs
+        """
+        try:
+            providers = self._client.filters(
+                kind="OrganizationProvider",
+                branch=branch,
+                prefetch_relationships=False
+            )
+
+            result = []
+            for provider in providers:
+                provider_dict = {
+                    "id": provider.id,
+                    "name": {"value": getattr(provider.name, "value", None)},
                 }
-                provider {
-                  value
+
+                result.append(provider_dict)
+
+            return result
+        except Exception as e:
+            raise InfrahubAPIError(f"Failed to fetch providers: {str(e)}")
+
+    def get_designs(self, branch: str = "main") -> List[Dict[str, Any]]:
+        """Fetch DesignTopology objects.
+
+        Args:
+            branch: Branch name to query (default: "main")
+
+        Returns:
+            List of design dictionaries with id and name
+
+        Raises:
+            InfrahubConnectionError: If connection fails
+            InfrahubAPIError: If API error occurs
+        """
+        try:
+            designs = self._client.filters(
+                kind="DesignTopology",
+                branch=branch,
+                prefetch_relationships=False
+            )
+
+            result = []
+            for design in designs:
+                design_dict = {
+                    "id": design.id,
+                    "name": {"value": getattr(design.name, "value", None)},
                 }
-              }
+
+                result.append(design_dict)
+
+            return result
+        except Exception as e:
+            raise InfrahubAPIError(f"Failed to fetch designs: {str(e)}")
+
+    def get_active_prefixes(self, branch: str = "main") -> List[Dict[str, Any]]:
+        """Fetch active IpamPrefix objects.
+
+        Args:
+            branch: Branch name to query (default: "main")
+
+        Returns:
+            List of prefix dictionaries with id, prefix, and status
+
+        Raises:
+            InfrahubConnectionError: If connection fails
+            InfrahubAPIError: If API error occurs
+        """
+        try:
+            # Use GraphQL to filter for active prefixes
+            query = """
+            query GetActivePrefixes {
+                IpamPrefix(status__value: "active") {
+                    edges {
+                        node {
+                            id
+                            prefix { value }
+                            status { value }
+                        }
+                    }
+                }
             }
-          }
-        }
-        """
+            """
 
-        result = self.execute_graphql(query, branch=branch)
+            result = self.execute_graphql(query, branch=branch)
 
-        # Extract colocation centers from GraphQL response
-        edges = (
-            result.get("data", {}).get("TopologyColocationCenter", {}).get("edges", [])
-        )
-        colocations = [edge["node"] for edge in edges]
+            prefixes = []
+            edges = result.get("IpamPrefix", {}).get("edges", [])
 
-        return colocations
+            for edge in edges:
+                node = edge.get("node", {})
+                prefixes.append({
+                    "id": node.get("id"),
+                    "prefix": {"value": node.get("prefix", {}).get("value")},
+                    "status": {"value": node.get("status", {}).get("value")},
+                })
+
+            return prefixes
+        except Exception as e:
+            raise InfrahubAPIError(f"Failed to fetch active prefixes: {str(e)}")
 
     def get_proposed_changes(self, branch: str = "main") -> List[Dict[str, Any]]:
         """Fetch proposed changes for a branch.
@@ -315,77 +363,27 @@ class InfrahubClient:
 
         Raises:
             InfrahubConnectionError: If connection fails
-            InfrahubHTTPError: If HTTP error occurs
-            InfrahubGraphQLError: If GraphQL error occurs
+            InfrahubAPIError: If API error occurs
         """
-        query = """
-        query GetProposedChanges {
-          CoreProposedChange {
-            edges {
-              node {
-                id
-                name {
-                  value
+        try:
+            pcs = self._client.filters(kind="CoreProposedChange", branch=branch)
+
+            result = []
+            for pc in pcs:
+                pc_dict = {
+                    "id": pc.id,
+                    "name": {"value": getattr(pc.name, "value", None)},
+                    "state": {"value": getattr(pc.state, "value", None)},
                 }
-                state {
-                  value
-                }
-                source_branch {
-                  value
-                }
-              }
-            }
-          }
-        }
-        """
 
-        result = self.execute_graphql(query, branch=branch)
+                if hasattr(pc, "source_branch"):
+                    pc_dict["source_branch"] = {"value": getattr(pc.source_branch, "value", None)}
 
-        # Extract proposed changes from GraphQL response
-        edges = result.get("data", {}).get("CoreProposedChange", {}).get("edges", [])
-        proposed_changes = [edge["node"] for edge in edges]
+                result.append(pc_dict)
 
-        return proposed_changes
-
-    def get_datacenters_from_proposed_changes(
-        self, branch: str = "main"
-    ) -> List[Dict[str, Any]]:
-        """Fetch TopologyDataCenter objects from proposed changes on a branch.
-
-        This method queries for data centers that may be part of open proposed changes
-        and haven't been merged yet. It adds a "_proposed" flag to distinguish them.
-
-        Args:
-            branch: Branch name to query (default: "main")
-
-        Returns:
-            List of datacenter dictionaries from proposed changes
-
-        Raises:
-            InfrahubConnectionError: If connection fails
-            InfrahubHTTPError: If HTTP error occurs
-            InfrahubGraphQLError: If GraphQL error occurs
-        """
-        # First, get proposed changes for this branch
-        proposed_changes = self.get_proposed_changes(branch)
-
-        # Filter for open proposed changes on this branch
-        open_pcs = [
-            pc
-            for pc in proposed_changes
-            if pc.get("state", {}).get("value") == "open"
-            and pc.get("source_branch", {}).get("value") == branch
-        ]
-
-        if not open_pcs:
-            return []
-
-        # For now, we'll query the branch directly with a flag to get uncommitted objects
-        # In Infrahub, objects created on a branch are visible via GraphQL queries on that branch
-        # even if they're part of an open proposed change
-        # So we actually don't need special handling - the issue is likely elsewhere
-
-        return []
+            return result
+        except Exception as e:
+            raise InfrahubAPIError(f"Failed to fetch proposed changes: {str(e)}")
 
     def execute_graphql(
         self,
@@ -405,31 +403,17 @@ class InfrahubClient:
 
         Raises:
             InfrahubConnectionError: If connection fails
-            InfrahubHTTPError: If HTTP error occurs
             InfrahubGraphQLError: If GraphQL error occurs
         """
-        url = f"{self.base_url}/graphql"
-        headers = {"Content-Type": "application/json", "X-INFRAHUB-BRANCH": branch}
-
-        # Add authentication if API token is provided
-        if self.api_token:
-            headers["X-INFRAHUB-KEY"] = self.api_token
-
-        payload: Dict[str, Any] = {"query": query}
-        if variables:
-            payload["variables"] = variables
-
-        response = self._make_request("POST", url, headers=headers, json_data=payload)
-        result = response.json()
-
-        # Check for GraphQL errors
-        if "errors" in result:
-            error_messages = [err.get("message", str(err)) for err in result["errors"]]
-            raise InfrahubGraphQLError(
-                f"GraphQL errors: {'; '.join(error_messages)}", errors=result["errors"]
+        try:
+            result = self._client.execute_graphql(
+                query=query,
+                variables=variables,
+                branch_name=branch
             )
-
-        return result
+            return result
+        except Exception as e:
+            raise InfrahubGraphQLError(f"GraphQL error: {str(e)}", [])
 
     def create_branch(
         self, branch_name: str, from_branch: str = "main", sync_with_git: bool = False
@@ -442,185 +426,183 @@ class InfrahubClient:
             sync_with_git: Whether to sync with git (default: False)
 
         Returns:
-            Dictionary with branch creation result
+            Dictionary with branch information
 
         Raises:
             InfrahubConnectionError: If connection fails
-            InfrahubHTTPError: If HTTP error occurs
-            InfrahubGraphQLError: If GraphQL error occurs
+            InfrahubAPIError: If API error occurs
         """
-        mutation = """
-        mutation CreateBranch($name: String!, $sync_with_git: Boolean) {
-          BranchCreate(data: {name: $name, sync_with_git: $sync_with_git}) {
-            ok
-            object {
-              id
-              name
+        try:
+            branch = self._client.branch.create(
+                branch_name=branch_name,
+                sync_with_git=sync_with_git
+            )
+            return {
+                "name": branch.name,
+                "id": branch.id,
+                "is_default": branch.is_default
             }
-          }
-        }
-        """
+        except Exception as e:
+            raise InfrahubAPIError(f"Failed to create branch: {str(e)}")
 
-        variables = {"name": branch_name, "sync_with_git": sync_with_git}
-
-        result = self.execute_graphql(mutation, variables=variables, branch=from_branch)
-
-        # Check if mutation was successful
-        branch_create = result.get("data", {}).get("BranchCreate", {})
-        if not branch_create.get("ok"):
-            raise InfrahubAPIError(f"Failed to create branch '{branch_name}'")
-
-        return branch_create.get("object", {})
-
-    def create_datacenter(self, branch: str, dc_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Create a new DataCenter in Infrahub.
+    def create_datacenter(
+        self, branch: str, data: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Create a TopologyDataCenter object.
 
         Args:
-            branch: Branch to create the datacenter in
-            dc_data: Dictionary containing datacenter attributes:
+            branch: Branch to create the object in
+            data: Datacenter data dictionary with structure:
                 - name: str
-                - location: str
-                - description: str (optional)
+                - location: str (ID)
+                - description: str
                 - strategy: str
-                - design: str (design ID)
-                - emulation: bool (optional)
+                - design: str
+                - emulation: bool
                 - provider: str
-                - management_subnet: dict with prefix, status, role
-                - customer_subnet: dict with prefix, status, role
-                - technical_subnet: dict with prefix, status, role
-                - member_of_groups: list of group IDs (optional)
+                - management_subnet: str (prefix ID)
+                - customer_subnet: str (prefix ID)
+                - technical_subnet: str (prefix ID)
+                - member_of_groups: List[str]
 
         Returns:
-            Dictionary with datacenter creation result
+            Created datacenter dictionary
 
         Raises:
             InfrahubConnectionError: If connection fails
-            InfrahubHTTPError: If HTTP error occurs
-            InfrahubGraphQLError: If GraphQL error occurs
+            InfrahubAPIError: If API error occurs
         """
-        mutation = """
-        mutation CreateDataCenter(
-          $name: String!,
-          $location: String!,
-          $description: String,
-          $strategy: String!,
-          $design: String!,
-          $emulation: Boolean,
-          $provider: String!,
-          $management_subnet: RelatedIPPrefixInput!,
-          $customer_subnet: RelatedIPPrefixInput!,
-          $technical_subnet: RelatedIPPrefixInput!,
-          $member_of_groups: [String]
-        ) {
-          TopologyDataCenterCreate(data: {
-            name: {value: $name},
-            location: {value: $location},
-            description: {value: $description},
-            strategy: {value: $strategy},
-            design: {id: $design},
-            emulation: {value: $emulation},
-            provider: {value: $provider},
-            management_subnet: $management_subnet,
-            customer_subnet: $customer_subnet,
-            technical_subnet: $technical_subnet,
-            member_of_groups: $member_of_groups
-          }) {
-            ok
-            object {
-              id
-              name {
-                value
-              }
+        try:
+            # Create datacenter with references to existing prefixes
+            dc_mutation = """
+            mutation CreateDataCenter(
+                $name: String!,
+                $location: String!,
+                $description: String,
+                $strategy: String!,
+                $design: String!,
+                $emulation: Boolean,
+                $provider: String!,
+                $mgmt_prefix_id: String!,
+                $cust_prefix_id: String!,
+                $tech_prefix_id: String!,
+                $groups: [RelatedNodeInput]
+            ) {
+                TopologyDataCenterUpsert(
+                    data: {
+                        name: { value: $name }
+                        location: { id: $location }
+                        description: { value: $description }
+                        strategy: { value: $strategy }
+                        design: { id: $design }
+                        emulation: { value: $emulation }
+                        provider: { id: $provider }
+                        management_subnet: { id: $mgmt_prefix_id }
+                        customer_subnet: { id: $cust_prefix_id }
+                        technical_subnet: { id: $tech_prefix_id }
+                        member_of_groups: $groups
+                    }
+                ) {
+                    ok
+                    object {
+                        id
+                        name { value }
+                    }
+                }
             }
-          }
-        }
-        """
+            """
 
-        # Prepare variables from dc_data
-        variables = {
-            "name": dc_data["name"],
-            "location": dc_data["location"],
-            "description": dc_data.get("description", ""),
-            "strategy": dc_data["strategy"],
-            "design": dc_data["design"],
-            "emulation": dc_data.get("emulation", False),
-            "provider": dc_data["provider"],
-            "management_subnet": dc_data["management_subnet"],
-            "customer_subnet": dc_data["customer_subnet"],
-            "technical_subnet": dc_data["technical_subnet"],
-        }
+            # Convert group strings to RelatedNodeInput format
+            groups = [{"id": group} for group in data.get("member_of_groups", [])]
 
-        # Add optional member_of_groups if provided
-        if "member_of_groups" in dc_data:
-            variables["member_of_groups"] = dc_data["member_of_groups"]
+            dc_variables = {
+                "name": data["name"],
+                "location": data["location"],
+                "description": data.get("description", ""),
+                "strategy": data["strategy"],
+                "design": data["design"],
+                "emulation": data.get("emulation", False),
+                "provider": data["provider"],
+                "mgmt_prefix_id": data["management_subnet"],
+                "cust_prefix_id": data["customer_subnet"],
+                "tech_prefix_id": data["technical_subnet"],
+                "groups": groups,
+            }
 
-        result = self.execute_graphql(mutation, variables=variables, branch=branch)
+            # Create the datacenter
+            dc_result = self.execute_graphql(dc_mutation, dc_variables, branch)
 
-        # Check if mutation was successful
-        dc_create = result.get("data", {}).get("TopologyDataCenterCreate", {})
-        if not dc_create.get("ok"):
-            raise InfrahubAPIError(f"Failed to create datacenter '{dc_data['name']}'")
+            # Extract datacenter info from result
+            if dc_result.get("TopologyDataCenterUpsert", {}).get("ok"):
+                dc_obj = dc_result["TopologyDataCenterUpsert"]["object"]
+                return {
+                    "id": dc_obj["id"],
+                    "name": dc_obj["name"]
+                }
+            else:
+                raise InfrahubAPIError(f"Failed to create datacenter: {dc_result}")
 
-        return dc_create.get("object", {})
+        except Exception as e:
+            raise InfrahubAPIError(f"Failed to create datacenter: {str(e)}")
 
     def create_proposed_change(
-        self, branch: str, name: str, description: str = ""
+        self, branch: str, name: str, description: str, destination_branch: str = "main"
     ) -> Dict[str, Any]:
-        """Create a Proposed Change for a branch.
+        """Create a proposed change for a branch.
 
         Args:
-            branch: Source branch for the proposed change
-            name: Name of the proposed change
-            description: Description of the proposed change (optional)
+            branch: Branch name (source branch)
+            name: Proposed change name
+            description: Proposed change description
+            destination_branch: Target branch for the proposed change (default: "main")
 
         Returns:
-            Dictionary with proposed change creation result
+            Dictionary with proposed change information
 
         Raises:
             InfrahubConnectionError: If connection fails
-            InfrahubHTTPError: If HTTP error occurs
-            InfrahubGraphQLError: If GraphQL error occurs
+            InfrahubAPIError: If API error occurs
         """
-        mutation = """
-        mutation CreateProposedChange(
-          $name: String!,
-          $description: String,
-          $source_branch: String!
-        ) {
-          CoreProposedChangeCreate(data: {
-            name: {value: $name},
-            description: {value: $description},
-            source_branch: {value: $source_branch}
-          }) {
-            ok
-            object {
-              id
-              name {
-                value
-              }
+        try:
+            pc = self._client.create(
+                kind="CoreProposedChange",
+                branch=branch,
+                name=name,
+                description=description,
+                source_branch=branch,
+                destination_branch=destination_branch
+            )
+            pc.save(allow_upsert=True)
+
+            return {
+                "id": pc.id,
+                "name": name
             }
-          }
-        }
-        """
-
-        variables = {"name": name, "description": description, "source_branch": branch}
-
-        result = self.execute_graphql(mutation, variables=variables, branch=branch)
-
-        # Check if mutation was successful
-        pc_create = result.get("data", {}).get("CoreProposedChangeCreate", {})
-        if not pc_create.get("ok"):
-            raise InfrahubAPIError(f"Failed to create proposed change '{name}'")
-
-        return pc_create.get("object", {})
+        except Exception as e:
+            raise InfrahubAPIError(f"Failed to create proposed change: {str(e)}")
 
     def get_proposed_change_url(self, pc_id: str) -> str:
-        """Generate URL to a Proposed Change in the Infrahub UI.
+        """Get the URL for a proposed change.
 
         Args:
-            pc_id: ID of the proposed change
+            pc_id: Proposed change ID
 
         Returns:
-            Full URL to the proposed change in the UI
+            URL string for the proposed change
         """
         return f"{self.base_url}/proposed-changes/{pc_id}"
+
+    def _sdk_object_to_dict(self, obj: Any) -> Dict[str, Any]:
+        """Convert an SDK object to a dictionary.
+
+        Args:
+            obj: SDK object
+
+        Returns:
+            Dictionary representation
+        """
+        return {
+            "id": obj.id,
+            "display_label": str(obj),
+            "__typename": obj._schema.kind if hasattr(obj, "_schema") else None
+        }

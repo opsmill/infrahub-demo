@@ -8,6 +8,7 @@ from .config import (
     GENERATOR_WAIT_TIME,
     INFRAHUB_ADDRESS,
     INFRAHUB_API_TOKEN,
+    INFRAHUB_UI_URL,
     STREAMLIT_PORT,
 )
 from .ui import (
@@ -24,6 +25,7 @@ __all__ = [
     "InfrahubClient",
     "INFRAHUB_ADDRESS",
     "INFRAHUB_API_TOKEN",
+    "INFRAHUB_UI_URL",
     "STREAMLIT_PORT",
     "DEFAULT_BRANCH",
     "GENERATOR_WAIT_TIME",

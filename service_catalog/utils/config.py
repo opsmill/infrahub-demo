@@ -5,6 +5,7 @@ from typing import Final
 
 # Load environment variables
 INFRAHUB_ADDRESS: Final[str] = os.getenv("INFRAHUB_ADDRESS", "http://localhost:8000")
+INFRAHUB_UI_URL: Final[str] = os.getenv("INFRAHUB_UI_URL", "http://localhost:8000")
 INFRAHUB_API_TOKEN: Final[str] = os.getenv("INFRAHUB_API_TOKEN", "")
 STREAMLIT_PORT: Final[int] = int(os.getenv("STREAMLIT_PORT", "8501"))
 DEFAULT_BRANCH: Final[str] = os.getenv("DEFAULT_BRANCH", "main")

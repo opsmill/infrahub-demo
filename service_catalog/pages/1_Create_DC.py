@@ -120,243 +120,214 @@ def wait_for_generator(duration: int = 60) -> None:
     """
     import time
 
-    progress_bar = st.progress(0)
-    status_text = st.empty()
+    progress_bar = st.progress(0, text="Starting generator wait...")
+    time_display = st.empty()
 
     for i in range(duration + 1):
         # Calculate progress (0.0 to 1.0)
         progress = i / duration
+        percentage = int(progress * 100)
 
-        # Update progress bar
-        progress_bar.progress(progress)
+        # Update progress bar with text
+        progress_bar.progress(
+            progress,
+            text=f"Generator running... {percentage}% complete"
+        )
 
         # Update status text
         remaining = duration - i
-        status_text.text(
-            f"Waiting for generator to complete... {remaining} seconds remaining"
+        elapsed = i
+
+        # Show time information with better formatting
+        time_display.markdown(
+            f"**Time:** {elapsed}s elapsed / {remaining}s remaining ({duration}s total)"
         )
 
         # Wait 1 second (except on last iteration)
         if i < duration:
             time.sleep(1)
 
-    # Clear status text and show completion
-    status_text.text("Generator wait complete!")
+    # Show completion
+    progress_bar.progress(1.0, text="✓ Generator wait complete!")
+    time_display.markdown("**✓ Generator processing time completed**")
+
+    # Brief pause to show completion
+    time.sleep(1)
+
+    # Clean up
     progress_bar.empty()
-    status_text.empty()
+    time_display.empty()
 
 
-def handle_dc_creation(client: InfrahubClient, form_data: Dict[str, Any]) -> None:
-    """Orchestrate the DC creation workflow.
-
-    This function handles the complete workflow:
-    1. Validate form inputs
-    2. Generate branch name
-    3. Create branch
-    4. Create datacenter
-    5. Wait for generator
-    6. Create proposed change
-    7. Display success message with PC URL
-
-    Args:
-        client: InfrahubClient instance
-        form_data: Dictionary containing form data
-    """
+def initialize_dc_creation_state(form_data: Dict[str, Any]) -> None:
+    """Initialize session state for DC creation workflow."""
     dc_name = form_data["name"]
-
-    # Generate branch name: "add-{dc_name}" (lowercase, replace spaces with hyphens)
     branch_name = f"add-{dc_name.lower().replace(' ', '-')}"
 
-    branch_created = False
-    dc_created = False
+    st.session_state.dc_creation = {
+        "active": True,
+        "step": 1,
+        "dc_name": dc_name,
+        "branch_name": branch_name,
+        "form_data": form_data,
+        "branch_created": False,
+        "dc_created": False,
+        "pc_created": False,
+        "error": None,
+        "pc_url": None,
+    }
+
+
+def render_progress_tracker() -> None:
+    """Render the progress tracker based on current state."""
+    if "dc_creation" not in st.session_state or not st.session_state.dc_creation.get("active"):
+        return
+
+    state = st.session_state.dc_creation
+    current_step = state["step"]
+
+    steps = [
+        "Creating branch",
+        "Creating datacenter",
+        "Waiting for generator",
+        "Creating proposed change",
+        "Complete"
+    ]
+
+    progress_md = "### Progress\n\n"
+    for i, step_name in enumerate(steps, 1):
+        if i < current_step:
+            progress_md += f"✓ {step_name}\n\n"
+        elif i == current_step:
+            progress_md += f"⏳ **{step_name}**\n\n"
+        else:
+            progress_md += f"⏸️ {step_name}\n\n"
+
+    st.markdown(progress_md)
+    st.markdown("---")
+
+
+def execute_dc_creation_step(client: InfrahubClient) -> None:
+    """Execute the current step of DC creation workflow."""
+    state = st.session_state.dc_creation
+    step = state["step"]
+    branch_name = state["branch_name"]
+    dc_name = state["dc_name"]
+    form_data = state["form_data"]
 
     try:
-        # Step 1: Create branch
-        with st.status("Creating branch...", expanded=True) as status:
-            try:
+        if step == 1:
+            # Step 1: Create branch
+            with st.status("Creating branch...", expanded=True) as status:
                 st.write(f"Creating branch: {branch_name}")
                 branch = client.create_branch(branch_name, from_branch="main")
-                branch_created = True
                 st.write(f"✓ Branch created: {branch['name']}")
                 status.update(label="Branch created!", state="complete")
-            except InfrahubConnectionError as e:
-                status.update(label="Branch creation failed!", state="error")
-                display_error(
-                    "Unable to connect to Infrahub",
-                    f"Failed to create branch '{branch_name}'.\n\n{str(e)}",
-                )
-                st.stop()
-            except InfrahubHTTPError as e:
-                status.update(label="Branch creation failed!", state="error")
-                display_error(
-                    f"HTTP Error {e.status_code} while creating branch",
-                    f"Failed to create branch '{branch_name}'.\n\n{str(e)}\n\nResponse: {e.response_text}",
-                )
-                st.stop()
-            except InfrahubGraphQLError as e:
-                status.update(label="Branch creation failed!", state="error")
-                display_error(
-                    "GraphQL Error while creating branch",
-                    f"Failed to create branch '{branch_name}'.\n\n{str(e)}",
-                )
-                st.stop()
-            except InfrahubAPIError as e:
-                status.update(label="Branch creation failed!", state="error")
-                display_error(
-                    "Failed to create branch", f"Branch: {branch_name}\n\n{str(e)}"
-                )
-                st.stop()
+                state["branch_created"] = True
+                state["step"] = 2
+                st.rerun()
 
-        # Step 2: Prepare datacenter data
-        # Need to get design ID - for now we'll use the design name as ID
-        # In production, you'd query Infrahub for the actual design ID
-        dc_data = {
-            "name": form_data["name"],
-            "location": form_data["location"],
-            "description": form_data.get("description", ""),
-            "strategy": form_data["strategy"],
-            "design": form_data[
-                "design"
-            ],  # This should be an ID, but we'll use name for now
-            "emulation": form_data.get("emulation", False),
-            "provider": form_data["provider"],
-            "management_subnet": {
-                "data": {
-                    "prefix": form_data["management_subnet"]["prefix"],
-                    "status": form_data["management_subnet"]["status"],
-                    "role": form_data["management_subnet"]["role"],
-                }
-            },
-            "customer_subnet": {
-                "data": {
-                    "prefix": form_data["customer_subnet"]["prefix"],
-                    "status": form_data["customer_subnet"]["status"],
-                    "role": form_data["customer_subnet"]["role"],
-                }
-            },
-            "technical_subnet": {
-                "data": {
-                    "prefix": form_data["technical_subnet"]["prefix"],
-                    "status": form_data["technical_subnet"]["status"],
-                    "role": form_data["technical_subnet"]["role"],
-                }
-            },
-            "member_of_groups": ["topologies_dc", "topologies_clab"],
-        }
+        elif step == 2:
+            # Step 2: Create datacenter
+            dc_data = {
+                "name": form_data["name"],
+                "location": form_data["location"],
+                "description": form_data.get("description", ""),
+                "strategy": form_data["strategy"],
+                "design": form_data["design"],
+                "emulation": form_data.get("emulation", False),
+                "provider": form_data["provider"],
+                "management_subnet": form_data["management_subnet"],
+                "customer_subnet": form_data["customer_subnet"],
+                "technical_subnet": form_data["technical_subnet"],
+                "member_of_groups": form_data.get("member_of_groups", ["topologies_dc", "topologies_clab"]),
+            }
 
-        # Step 3: Create datacenter
-        with st.status("Loading data...", expanded=True) as status:
-            try:
+            with st.status("Creating datacenter...", expanded=True) as status:
                 st.write(f"Creating datacenter: {dc_name}")
                 dc = client.create_datacenter(branch_name, dc_data)
-                dc_created = True
                 st.write(f"✓ Datacenter created: {dc['name']['value']}")
-                status.update(label="Data loaded!", state="complete")
-            except InfrahubConnectionError as e:
-                status.update(label="Data loading failed!", state="error")
-                display_error(
-                    "Unable to connect to Infrahub",
-                    f"Failed to load datacenter data to branch '{branch_name}'.\n\n"
-                    f"{str(e)}\n\n"
-                    f"The branch '{branch_name}' was created but is empty. "
-                    f"You may need to manually investigate or delete this branch.",
-                )
-                st.stop()
-            except InfrahubHTTPError as e:
-                status.update(label="Data loading failed!", state="error")
-                display_error(
-                    f"HTTP Error {e.status_code} while loading data",
-                    f"Failed to load datacenter data to branch '{branch_name}'.\n\n"
-                    f"{str(e)}\n\nResponse: {e.response_text}\n\n"
-                    f"The branch '{branch_name}' was created but is empty. "
-                    f"You may need to manually investigate or delete this branch.",
-                )
-                st.stop()
-            except InfrahubGraphQLError as e:
-                status.update(label="Data loading failed!", state="error")
-                display_error(
-                    "GraphQL Error while loading data",
-                    f"Failed to load datacenter data to branch '{branch_name}'.\n\n"
-                    f"{str(e)}\n\n"
-                    f"The branch '{branch_name}' was created but is empty. "
-                    f"You may need to manually investigate or delete this branch.",
-                )
-                st.stop()
-            except InfrahubAPIError as e:
-                status.update(label="Data loading failed!", state="error")
-                display_error(
-                    "Failed to load datacenter data",
-                    f"Branch: {branch_name}\n\n{str(e)}\n\n"
-                    f"The branch '{branch_name}' was created but is empty. "
-                    f"You may need to manually investigate or delete this branch.",
-                )
-                st.stop()
+                status.update(label="Datacenter created!", state="complete")
+                state["dc_created"] = True
+                state["step"] = 3
+                st.rerun()
 
-        # Step 4: Wait for generator
-        with st.status("Waiting for generator...", expanded=True) as status:
-            st.write(
-                f"Waiting {GENERATOR_WAIT_TIME} seconds for generator to complete..."
-            )
-            wait_for_generator(GENERATOR_WAIT_TIME)
-            st.write("✓ Generator wait complete")
-            status.update(label="Generator complete!", state="complete")
+        elif step == 3:
+            # Step 3: Wait for generator
+            with st.status("Waiting for generator...", expanded=True) as status:
+                st.write(f"Waiting {GENERATOR_WAIT_TIME} seconds for generator to complete...")
+                wait_for_generator(GENERATOR_WAIT_TIME)
+                st.write("✓ Generator wait complete")
+                status.update(label="Generator complete!", state="complete")
+                state["step"] = 4
+                st.rerun()
 
-        # Step 5: Create proposed change
-        with st.status("Creating Proposed Change...", expanded=True) as status:
-            try:
+        elif step == 4:
+            # Step 4: Create proposed change
+            with st.status("Creating Proposed Change...", expanded=True) as status:
                 pc_name = f"Add Data Center: {dc_name}"
-                pc_description = f"Proposed change to add new data center {dc_name} in {form_data['location']}"
+                pc_description = f"Proposed change to add new data center {dc_name} in {form_data.get('location_name', form_data['location'])}"
                 st.write(f"Creating Proposed Change: {pc_name}")
                 pc = client.create_proposed_change(branch_name, pc_name, pc_description)
                 pc_id = pc["id"]
                 pc_url = client.get_proposed_change_url(pc_id)
                 st.write("✓ Proposed Change created")
                 status.update(label="Proposed Change created!", state="complete")
-            except (
-                InfrahubConnectionError,
-                InfrahubHTTPError,
-                InfrahubGraphQLError,
-                InfrahubAPIError,
-            ) as e:
-                status.update(label="Proposed Change creation failed!", state="error")
-                display_error(
-                    "Failed to create Proposed Change",
-                    f"The datacenter '{dc_name}' was created successfully in branch '{branch_name}', "
-                    f"but the Proposed Change could not be created.\n\n"
-                    f"Error: {str(e)}\n\n"
-                    f"You can manually create a Proposed Change for branch '{branch_name}' in the Infrahub UI.",
-                )
-                # Don't stop - show partial success
-                st.warning(
-                    f"⚠️ Data Center '{dc_name}' was created in branch '{branch_name}', "
-                    f"but you'll need to manually create a Proposed Change."
-                )
-                return
+                state["pc_created"] = True
+                state["pc_url"] = pc_url
+                state["step"] = 5
+                st.rerun()
 
-        # Step 6: Display success message
-        st.markdown("---")
-        display_success(f"Data Center '{dc_name}' created successfully!")
+        elif step == 5:
+            # Step 5: Complete - show success message
+            state["active"] = False
+            st.markdown("---")
+            display_success(f"Data Center '{dc_name}' created successfully!")
 
-        st.markdown(f"""
-        ### Next Steps
-        
-        Your data center has been created in branch `{branch_name}` and a Proposed Change has been created.
-        
-        **Proposed Change URL:**  
-        [{pc_url}]({pc_url})
-        
-        Click the link above to review and merge your changes in Infrahub.
-        """)
+            st.markdown(f"""
+            ### Next Steps
 
-    except Exception as e:
-        # Catch any unexpected errors
-        display_error(
-            "Unexpected error during DC creation",
-            f"An unexpected error occurred: {str(e)}\n\n"
-            f"Branch created: {branch_created}\n"
-            f"Datacenter created: {dc_created}\n\n"
-            f"If the branch was created, you may need to manually investigate or delete branch '{branch_name}'.",
-        )
+            Your data center has been created in branch `{branch_name}` and a Proposed Change has been created.
+
+            **Proposed Change URL:**
+            [{state['pc_url']}]({state['pc_url']})
+
+            Click the link above to review and merge your changes in Infrahub.
+            """)
+
+    except (InfrahubConnectionError, InfrahubHTTPError, InfrahubGraphQLError, InfrahubAPIError) as e:
+        state["error"] = str(e)
+        state["active"] = False
+
+        if step == 1:
+            display_error("Failed to create branch", f"Branch: {branch_name}\n\n{str(e)}")
+        elif step == 2:
+            display_error(
+                "Failed to create datacenter",
+                f"The branch '{branch_name}' was created but the datacenter could not be created.\n\n{str(e)}"
+            )
+        elif step == 4:
+            display_error(
+                "Failed to create Proposed Change",
+                f"The datacenter '{dc_name}' was created successfully in branch '{branch_name}', "
+                f"but the Proposed Change could not be created.\n\n{str(e)}\n\n"
+                f"You can manually create a Proposed Change for branch '{branch_name}' in the Infrahub UI."
+            )
+            st.warning(
+                f"⚠️ Data Center '{dc_name}' was created in branch '{branch_name}', "
+                f"but you'll need to manually create a Proposed Change."
+            )
+
+
+def handle_dc_creation(client: InfrahubClient, form_data: Dict[str, Any]) -> None:
+    """Initialize the DC creation workflow.
+
+    Args:
+        client: InfrahubClient instance
+        form_data: Dictionary containing form data
+    """
+    initialize_dc_creation_state(form_data)
+    st.rerun()
 
 
 def main() -> None:
@@ -367,7 +338,83 @@ def main() -> None:
 
     # Page title
     st.title("Create Data Center")
+
+    # Check if DC creation is in progress
+    if "dc_creation" in st.session_state and st.session_state.dc_creation.get("active"):
+        # Initialize API client
+        client = InfrahubClient(
+            st.session_state.infrahub_url,
+            api_token=INFRAHUB_API_TOKEN or None
+        )
+
+        # Render progress tracker
+        render_progress_tracker()
+
+        # Execute current step
+        execute_dc_creation_step(client)
+        return
+
+    # Normal form display
     st.markdown("Fill in the form below to create a new Data Center in Infrahub.")
+
+    # Initialize API client to fetch locations
+    client = InfrahubClient(
+        st.session_state.infrahub_url,
+        api_token=INFRAHUB_API_TOKEN or None
+    )
+
+    # Fetch locations (cache in session state)
+    if "locations" not in st.session_state:
+        with st.spinner("Loading locations..."):
+            try:
+                st.session_state.locations = client.get_locations()
+            except Exception as e:
+                display_error(
+                    "Unable to load locations",
+                    f"Failed to fetch LocationMetro objects from Infrahub.\n\n{str(e)}",
+                )
+                st.stop()
+
+    # Fetch providers (cache in session state)
+    if "providers" not in st.session_state:
+        with st.spinner("Loading providers..."):
+            try:
+                st.session_state.providers = client.get_providers()
+            except Exception as e:
+                display_error(
+                    "Unable to load providers",
+                    f"Failed to fetch OrganizationProvider objects from Infrahub.\n\n{str(e)}",
+                )
+                st.stop()
+
+    # Fetch designs (cache in session state)
+    if "designs" not in st.session_state:
+        with st.spinner("Loading designs..."):
+            try:
+                st.session_state.designs = client.get_designs()
+            except Exception as e:
+                display_error(
+                    "Unable to load designs",
+                    f"Failed to fetch DesignTopologyDesign objects from Infrahub.\n\n{str(e)}",
+                )
+                st.stop()
+
+    # Fetch active prefixes (always refresh, don't cache)
+    with st.spinner("Loading active prefixes..."):
+        try:
+            st.session_state.active_prefixes = client.get_active_prefixes()
+            if not st.session_state.active_prefixes:
+                st.warning(
+                    "⚠️ No active IpamPrefix objects found in Infrahub. "
+                    "You'll need to create some prefixes with status='active' before creating a datacenter. "
+                    "Querying branch: main"
+                )
+        except Exception as e:
+            display_error(
+                "Unable to load active prefixes",
+                f"Failed to fetch active IpamPrefix objects from Infrahub.\n\n{str(e)}",
+            )
+            st.stop()
 
     # Load DC template (cache in session state)
     if st.session_state.dc_template is None:
@@ -399,11 +446,21 @@ def main() -> None:
                 help="Unique name for the data center",
             )
 
-            location = st.text_input(
+            # Prepare location options from fetched locations
+            location_names = [loc.get("name", {}).get("value") for loc in st.session_state.locations]
+            location_map = {
+                loc.get("name", {}).get("value"): loc.get("id")
+                for loc in st.session_state.locations
+            }
+
+            location_name = st.selectbox(
                 "Location *",
-                placeholder="e.g., London",
+                options=location_names,
                 help="Physical location of the data center",
             )
+
+            # Get the location ID for the selected name
+            location_id = location_map.get(location_name) if location_name else None
 
             strategy = st.selectbox(
                 "Strategy *",
@@ -411,11 +468,21 @@ def main() -> None:
                 help="Routing strategy for the data center",
             )
 
-            provider = st.selectbox(
+            # Prepare provider options
+            provider_names = [p.get("name", {}).get("value") for p in st.session_state.providers]
+            provider_map = {
+                p.get("name", {}).get("value"): p.get("id")
+                for p in st.session_state.providers
+            }
+
+            provider_name = st.selectbox(
                 "Provider *",
-                options=["Technology Partner", "Cloud Provider", "Colocation"],
+                options=provider_names,
                 help="Infrastructure provider",
             )
+
+            # Get the provider ID for the selected name
+            provider_id = provider_map.get(provider_name) if provider_name else None
 
         with col2:
             description = st.text_area(
@@ -424,16 +491,21 @@ def main() -> None:
                 help="Optional description of the data center",
             )
 
-            design = st.selectbox(
+            # Prepare design options
+            design_names = [d.get("name", {}).get("value") for d in st.session_state.designs]
+            design_map = {
+                d.get("name", {}).get("value"): d.get("id")
+                for d in st.session_state.designs
+            }
+
+            design_name = st.selectbox(
                 "Design *",
-                options=[
-                    "PHYSICAL DC ARISTA S",
-                    "PHYSICAL DC CISCO S",
-                    "PHYSICAL DC JUNIPER S",
-                    "PHYSICAL DC SONIC S",
-                ],
+                options=design_names,
                 help="Network design template",
             )
+
+            # Get the design ID for the selected name
+            design_id = design_map.get(design_name) if design_name else None
 
             emulation = st.checkbox(
                 "Emulation", value=True, help="Enable emulation mode"
@@ -442,90 +514,52 @@ def main() -> None:
         # Subnet configuration
         st.markdown("---")
         st.subheader("Subnet Configuration")
+        st.markdown("Select existing active prefixes for each subnet type")
+
+        # Prepare prefix options - display as "prefix"
+        prefix_options = {}
+        prefix_map = {}
+        for prefix in st.session_state.active_prefixes:
+            prefix_value = prefix.get("prefix", {}).get("value")
+            prefix_id = prefix.get("id")
+            display_text = prefix_value
+            prefix_options[display_text] = prefix_id
+            prefix_map[prefix_id] = {"prefix": prefix_value}
+
+        option_list = list(prefix_options.keys()) if prefix_options else ["No active prefixes available"]
 
         # Management Subnet
         st.markdown("**Management Subnet**")
-        col1, col2, col3 = st.columns(3)
-
-        with col1:
-            mgmt_prefix = st.text_input(
-                "Prefix *",
-                placeholder="e.g., 172.20.4.0/24",
-                key="mgmt_prefix",
-                help="Management subnet prefix in CIDR notation",
-            )
-
-        with col2:
-            mgmt_status = st.selectbox(
-                "Status *",
-                options=["active", "reserved", "deprecated"],
-                key="mgmt_status",
-                help="Status of the management subnet",
-            )
-
-        with col3:
-            mgmt_role = st.selectbox(
-                "Role *",
-                options=["management", "infrastructure", "services"],
-                key="mgmt_role",
-                help="Role of the management subnet",
-            )
+        mgmt_prefix_display = st.selectbox(
+            "Select Management Prefix *",
+            options=option_list,
+            key="mgmt_prefix_select",
+            help="Select an active prefix for management subnet",
+            disabled=not prefix_options,
+        )
+        mgmt_prefix_id = prefix_options.get(mgmt_prefix_display) if prefix_options else None
 
         # Customer Subnet
         st.markdown("**Customer Subnet**")
-        col1, col2, col3 = st.columns(3)
-
-        with col1:
-            cust_prefix = st.text_input(
-                "Prefix *",
-                placeholder="e.g., 10.4.0.0/16",
-                key="cust_prefix",
-                help="Customer subnet prefix in CIDR notation",
-            )
-
-        with col2:
-            cust_status = st.selectbox(
-                "Status *",
-                options=["active", "reserved", "deprecated"],
-                key="cust_status",
-                help="Status of the customer subnet",
-            )
-
-        with col3:
-            cust_role = st.selectbox(
-                "Role *",
-                options=["supernet", "customer", "services"],
-                key="cust_role",
-                help="Role of the customer subnet",
-            )
+        cust_prefix_display = st.selectbox(
+            "Select Customer Prefix *",
+            options=option_list,
+            key="cust_prefix_select",
+            help="Select an active prefix for customer subnet",
+            disabled=not prefix_options,
+        )
+        cust_prefix_id = prefix_options.get(cust_prefix_display) if prefix_options else None
 
         # Technical Subnet
         st.markdown("**Technical Subnet**")
-        col1, col2, col3 = st.columns(3)
-
-        with col1:
-            tech_prefix = st.text_input(
-                "Prefix *",
-                placeholder="e.g., 1.4.0.0/24",
-                key="tech_prefix",
-                help="Technical subnet prefix in CIDR notation",
-            )
-
-        with col2:
-            tech_status = st.selectbox(
-                "Status *",
-                options=["active", "reserved", "deprecated"],
-                key="tech_status",
-                help="Status of the technical subnet",
-            )
-
-        with col3:
-            tech_role = st.selectbox(
-                "Role *",
-                options=["loopback", "infrastructure", "services"],
-                key="tech_role",
-                help="Role of the technical subnet",
-            )
+        tech_prefix_display = st.selectbox(
+            "Select Technical Prefix *",
+            options=option_list,
+            key="tech_prefix_select",
+            help="Select an active prefix for technical subnet",
+            disabled=not prefix_options,
+        )
+        tech_prefix_id = prefix_options.get(tech_prefix_display) if prefix_options else None
 
         # Submit button
         st.markdown("---")
@@ -539,32 +573,20 @@ def main() -> None:
 
             if not name:
                 errors.append("Name is required")
-            if not location:
+            if not location_id:
                 errors.append("Location is required")
             if not strategy:
                 errors.append("Strategy is required")
-            if not design:
+            if not design_id:
                 errors.append("Design is required")
-            if not provider:
+            if not provider_id:
                 errors.append("Provider is required")
-            if not mgmt_prefix:
-                errors.append("Management subnet prefix is required")
-            if not mgmt_status:
-                errors.append("Management subnet status is required")
-            if not mgmt_role:
-                errors.append("Management subnet role is required")
-            if not cust_prefix:
-                errors.append("Customer subnet prefix is required")
-            if not cust_status:
-                errors.append("Customer subnet status is required")
-            if not cust_role:
-                errors.append("Customer subnet role is required")
-            if not tech_prefix:
-                errors.append("Technical subnet prefix is required")
-            if not tech_status:
-                errors.append("Technical subnet status is required")
-            if not tech_role:
-                errors.append("Technical subnet role is required")
+            if not mgmt_prefix_id:
+                errors.append("Management subnet is required")
+            if not cust_prefix_id:
+                errors.append("Customer subnet is required")
+            if not tech_prefix_id:
+                errors.append("Technical subnet is required")
 
             if errors:
                 display_error(
@@ -575,36 +597,20 @@ def main() -> None:
                 # Store form data in session state for processing
                 form_data = {
                     "name": name,
-                    "location": location,
+                    "location": location_id,
+                    "location_name": location_name,  # Store name for display in messages
                     "description": description,
                     "strategy": strategy,
-                    "design": design,
+                    "design": design_id,
                     "emulation": emulation,
-                    "provider": provider,
-                    "management_subnet": {
-                        "prefix": mgmt_prefix,
-                        "status": mgmt_status,
-                        "role": mgmt_role,
-                    },
-                    "customer_subnet": {
-                        "prefix": cust_prefix,
-                        "status": cust_status,
-                        "role": cust_role,
-                    },
-                    "technical_subnet": {
-                        "prefix": tech_prefix,
-                        "status": tech_status,
-                        "role": tech_role,
-                    },
+                    "provider": provider_id,
+                    "management_subnet": mgmt_prefix_id,
+                    "customer_subnet": cust_prefix_id,
+                    "technical_subnet": tech_prefix_id,
+                    "member_of_groups": ["topologies_dc", "topologies_clab"],
                 }
 
-                # Initialize API client
-                client = InfrahubClient(
-                    st.session_state.infrahub_url,
-                    api_token=INFRAHUB_API_TOKEN or None
-                )
-
-                # Execute DC creation workflow
+                # Execute DC creation workflow (reuse the client from initialization)
                 handle_dc_creation(client, form_data)
 
 

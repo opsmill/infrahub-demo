@@ -10,6 +10,7 @@ from utils import (
     DEFAULT_BRANCH,
     INFRAHUB_ADDRESS,
     INFRAHUB_API_TOKEN,
+    INFRAHUB_UI_URL,
     InfrahubClient,
     display_error,
     display_logo,
@@ -129,8 +130,23 @@ def main() -> None:
 
         if datacenters:
             # Format and display datacenter table
-            dc_df = format_datacenter_table(datacenters)
-            st.dataframe(dc_df, width="stretch", hide_index=True)
+            dc_df = format_datacenter_table(
+                datacenters,
+                base_url=INFRAHUB_UI_URL,
+                branch=st.session_state.selected_branch
+            )
+            st.dataframe(
+                dc_df,
+                width="stretch",
+                hide_index=True,
+                column_config={
+                    "Link": st.column_config.LinkColumn(
+                        "View in Infrahub",
+                        help="Open this datacenter in the Infrahub UI",
+                        display_text="Open"
+                    )
+                }
+            )
             st.caption(f"Found {len(datacenters)} data center(s)")
         else:
             st.info("No data centers found in this branch.")
@@ -140,7 +156,7 @@ def main() -> None:
                 with st.expander("🔍 Debug Information"):
                     st.markdown("**Query Details:**")
                     st.code(f"Branch: {st.session_state.selected_branch}")
-                    st.code(f"Object Type: TopologyDataCenter")
+                    st.code("Object Type: TopologyDataCenter")
                     st.code(f"Infrahub Address: {client.base_url}")
 
                     # Check for proposed changes
@@ -176,11 +192,11 @@ def main() -> None:
                         }
                         """
                         result = client.execute_graphql(device_query, branch=st.session_state.selected_branch)
-                        device_count = result.get("data", {}).get("DcimGenericDevice", {}).get("count", 0)
+                        device_count = result.get("DcimGenericDevice", {}).get("count", 0)
                         st.write(f"- DcimGenericDevice: {device_count} object(s)")
 
                         if device_count > 0:
-                            devices = result.get("data", {}).get("DcimGenericDevice", {}).get("edges", [])
+                            devices = result.get("DcimGenericDevice", {}).get("edges", [])
                             for device in devices[:5]:  # Show first 5
                                 dev_name = device.get("node", {}).get("name", {}).get("value", "Unknown")
                                 st.write(f"  - {dev_name}")

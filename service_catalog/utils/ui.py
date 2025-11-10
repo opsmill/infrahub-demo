@@ -95,7 +95,9 @@ def display_progress(message: str, progress: float) -> None:
     st.progress(progress)
 
 
-def format_datacenter_table(datacenters: List[Dict[str, Any]]) -> pd.DataFrame:
+def format_datacenter_table(
+    datacenters: List[Dict[str, Any]], base_url: str = "http://localhost:8000", branch: str = "main"
+) -> pd.DataFrame:
     """Format datacenter data as a pandas DataFrame for table display.
 
     Extracts relevant fields from the Infrahub API response and formats
@@ -103,20 +105,23 @@ def format_datacenter_table(datacenters: List[Dict[str, Any]]) -> pd.DataFrame:
 
     Args:
         datacenters: List of datacenter objects from Infrahub API.
+        base_url: Base URL of the Infrahub instance for generating links.
+        branch: Branch name to include in the link.
 
     Returns:
         pd.DataFrame: Formatted DataFrame with columns: Name, Location,
-            Description, Strategy, Design.
+            Description, Strategy, Design, Link.
     """
     if not datacenters:
         return pd.DataFrame(
-            columns=["Name", "Location", "Description", "Strategy", "Design"]
+            columns=["Name", "Location", "Description", "Strategy", "Design", "Link"]
         )
 
     formatted_data = []
     for dc in datacenters:
         # Extract nested values safely
         name = dc.get("name", {}).get("value", "N/A")
+        dc_id = dc.get("id", "")
 
         # Location is a relationship (node)
         location_node = dc.get("location", {}).get("node", {})
@@ -131,6 +136,9 @@ def format_datacenter_table(datacenters: List[Dict[str, Any]]) -> pd.DataFrame:
             design_node.get("name", {}).get("value", "N/A") if design_node else "N/A"
         )
 
+        # Construct Infrahub UI link
+        link = f"{base_url}/objects/TopologyDataCenter/{dc_id}?branch={branch}" if dc_id else "N/A"
+
         formatted_data.append(
             {
                 "Name": name,
@@ -138,6 +146,7 @@ def format_datacenter_table(datacenters: List[Dict[str, Any]]) -> pd.DataFrame:
                 "Description": description,
                 "Strategy": strategy,
                 "Design": design,
+                "Link": link,
             }
         )
 
