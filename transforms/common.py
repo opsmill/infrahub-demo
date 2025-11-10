@@ -255,7 +255,11 @@ def get_interface_roles(data: list) -> dict[str, list[dict[str, Any]]]:
             iface_copy["ip_address"] = ""
 
         # Categorize by role
-        if role == "loopback" or "loopback" in name_lower or name_lower.startswith("lo"):
+        if (
+            role == "loopback"
+            or "loopback" in name_lower
+            or name_lower.startswith("lo")
+        ):
             roles["loopback"].append(iface_copy)
         elif role in ("uplink", "spine"):
             roles["uplink"].append(iface_copy)
@@ -270,6 +274,8 @@ def get_interface_roles(data: list) -> dict[str, list[dict[str, Any]]]:
 
     # Create aggregate lists
     roles["all_downlink"] = roles["downlink"] + roles["customer"]
-    roles["all_physical"] = roles["uplink"] + roles["downlink"] + roles["customer"] + roles["other"]
+    roles["all_physical"] = (
+        roles["uplink"] + roles["downlink"] + roles["customer"] + roles["other"]
+    )
 
     return dict(roles)

@@ -33,5 +33,7 @@ spec:
     # USED: Colocation/datacenter provider - used in objects/pop-1.yml and objects/pop-2.yml
     - name: "Equinix"
 
-    # USED: Generic provider - used in objects/dc-arista-s.yml, objects/dc-cisco-s.yml, objects/dc-juniper-s.yml, objects/dc-sonic-border-leafs.yml, objects/dc-cisco-s-border-leafs.yml
+    # USED: Generic provider - used in objects/dc-arista-s.yml, objects/dc-cisco-s.yml,
+    # objects/dc-juniper-s.yml, objects/dc-sonic-border-leafs.yml,
+    # objects/dc-cisco-s-border-leafs.yml
     - name: "Technology Partner"

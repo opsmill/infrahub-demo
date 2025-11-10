@@ -99,7 +99,9 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
             f"Security data load failed: {load_security.stdout}\n{load_security.stderr}"
         )
 
-    @pytest.mark.skip(reason="Repository sync fails due to group resolution issue during import")
+    @pytest.mark.skip(
+        reason="Repository sync fails due to group resolution issue during import"
+    )
     async def test_05_add_repository(
         self, async_client_main: InfrahubClient, remote_repos_dir: str
     ) -> None:
@@ -207,7 +209,9 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
         assert dc2.name.value == "DC-2", f"Expected DC-2, got {dc2.name.value}"
         logging.info("DC-2 topology verified: %s", dc2.name.value)
 
-    @pytest.mark.skip(reason="Repository not loaded - generator definitions not available")
+    @pytest.mark.skip(
+        reason="Repository not loaded - generator definitions not available"
+    )
     async def test_09_run_generator(
         self, async_client_main: InfrahubClient, default_branch: str
     ) -> None:

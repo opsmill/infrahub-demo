@@ -41,11 +41,13 @@ class JuniperFirewall(InfrahubTransform):
             if intf_role == "management":
                 management_interface = intf_name
 
-            template_data["interfaces"].append({
-                "name": intf_name,
-                "role": intf_role,
-                "ip_address": ip_addr,
-            })
+            template_data["interfaces"].append(
+                {
+                    "name": intf_name,
+                    "role": intf_role,
+                    "ip_address": ip_addr,
+                }
+            )
 
         template_data["management_interface"] = management_interface or "fxp0"
 
@@ -71,13 +73,19 @@ class JuniperFirewall(InfrahubTransform):
 
                 # Extract zones
                 if rule.get("source_zone", {}).get("node"):
-                    rule_data["source_zone"] = rule["source_zone"]["node"]["name"]["value"]
+                    rule_data["source_zone"] = rule["source_zone"]["node"]["name"][
+                        "value"
+                    ]
 
                 if rule.get("destination_zone", {}).get("node"):
-                    rule_data["destination_zone"] = rule["destination_zone"]["node"]["name"]["value"]
+                    rule_data["destination_zone"] = rule["destination_zone"]["node"][
+                        "name"
+                    ]["value"]
 
                 # Extract source addresses from address groups
-                for addr_group_edge in rule.get("source_addresses", {}).get("edges", []):
+                for addr_group_edge in rule.get("source_addresses", {}).get(
+                    "edges", []
+                ):
                     addr_group = addr_group_edge["node"]
 
                     # Process IP addresses in the group
@@ -123,7 +131,9 @@ class JuniperFirewall(InfrahubTransform):
                             }
 
                 # Extract destination addresses from address groups
-                for addr_group_edge in rule.get("destination_addresses", {}).get("edges", []):
+                for addr_group_edge in rule.get("destination_addresses", {}).get(
+                    "edges", []
+                ):
                     addr_group = addr_group_edge["node"]
 
                     # Process IP addresses in the group
@@ -190,7 +200,10 @@ class JuniperFirewall(InfrahubTransform):
 
                 # Organize rules by zone pairs
                 if rule_data["source_zone"] and rule_data["destination_zone"]:
-                    zone_pair = (rule_data["source_zone"], rule_data["destination_zone"])
+                    zone_pair = (
+                        rule_data["source_zone"],
+                        rule_data["destination_zone"],
+                    )
                     if zone_pair not in template_data["zone_pairs"]:
                         template_data["zone_pairs"][zone_pair] = []
                     template_data["zone_pairs"][zone_pair].append(rule_data)

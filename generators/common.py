@@ -161,7 +161,9 @@ class TopologyCreator:
 
         # Add juniper_firewall group if any firewall roles are present
         firewall_roles = {"dc_firewall", "edge_firewall"}
-        if any(item["role"] in firewall_roles for item in self.data["design"]["elements"]):
+        if any(
+            item["role"] in firewall_roles for item in self.data["design"]["elements"]
+        ):
             roles.append("juniper_firewall")
 
         await self.client.filters(
@@ -434,7 +436,9 @@ class TopologyCreator:
                 if hasattr(template, "peers") and template.peers:
                     peer = template.peers[0]
                     if hasattr(peer, "hfid") and peer.hfid:
-                        return peer.hfid[0] if isinstance(peer.hfid, list) else peer.hfid
+                        return (
+                            peer.hfid[0] if isinstance(peer.hfid, list) else peer.hfid
+                        )
         except (AttributeError, IndexError, TypeError):
             pass
 
@@ -458,7 +462,9 @@ class TopologyCreator:
                 ]
             else:
                 # Skip devices where we can't determine the template
-                self.log.debug(f"Skipping {device.name.value} - could not determine template")
+                self.log.debug(
+                    f"Skipping {device.name.value} - could not determine template"
+                )
                 interfaces[device.name.value] = []
 
         device_key = "oob" if connection_type == "management" else "console"

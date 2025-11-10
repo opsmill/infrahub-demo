@@ -19,13 +19,19 @@ async def populate_address_groups(client: InfrahubClient) -> None:
     print("\n📦 Populating Address Group Relationships...")
 
     # Populate web-servers group
-    web_servers_group = await client.get(kind="SecurityAddressGroup", name__value="web-servers")
+    web_servers_group = await client.get(
+        kind="SecurityAddressGroup", name__value="web-servers"
+    )
     if web_servers_group:
         print(f"  Found: {web_servers_group.name.value}")
         await web_servers_group.ip_addresses.fetch()
 
-        web_server_01 = await client.get(kind="SecurityIPAddress", name__value="web-server-01")
-        web_server_02 = await client.get(kind="SecurityIPAddress", name__value="web-server-02")
+        web_server_01 = await client.get(
+            kind="SecurityIPAddress", name__value="web-server-01"
+        )
+        web_server_02 = await client.get(
+            kind="SecurityIPAddress", name__value="web-server-02"
+        )
 
         if web_server_01 and web_server_02:
             web_servers_group.ip_addresses.add(web_server_01.id)
@@ -38,12 +44,16 @@ async def populate_address_groups(client: InfrahubClient) -> None:
         print("  ⚠️  Could not find web-servers group")
 
     # Populate internet group
-    internet_group = await client.get(kind="SecurityAddressGroup", name__value="internet")
+    internet_group = await client.get(
+        kind="SecurityAddressGroup", name__value="internet"
+    )
     if internet_group:
         print(f"  Found: {internet_group.name.value}")
         await internet_group.prefixes.fetch()
 
-        internet_prefix = await client.get(kind="SecurityPrefix", name__value="internet")
+        internet_prefix = await client.get(
+            kind="SecurityPrefix", name__value="internet"
+        )
 
         if internet_prefix:
             internet_group.prefixes.add(internet_prefix.id)
@@ -60,7 +70,9 @@ async def populate_service_groups(client: InfrahubClient) -> None:
     print("\n🔧 Populating Service Group Relationships...")
 
     # Populate web-services group
-    web_services_group = await client.get(kind="SecurityServiceGroup", name__value="web-services")
+    web_services_group = await client.get(
+        kind="SecurityServiceGroup", name__value="web-services"
+    )
     if web_services_group:
         print(f"  Found: {web_services_group.name.value}")
         await web_services_group.services.fetch()
@@ -82,12 +94,16 @@ async def populate_firewall_policies(client: InfrahubClient) -> None:
     print("\n🛡️  Populating Firewall Policy Relationships...")
 
     # Populate corporate-firewall-policy
-    corporate_policy = await client.get(kind="SecurityPolicy", name__value="corporate-firewall-policy")
+    corporate_policy = await client.get(
+        kind="SecurityPolicy", name__value="corporate-firewall-policy"
+    )
     if corporate_policy:
         print(f"  Found: {corporate_policy.name.value}")
         await corporate_policy.firewalls.fetch()
 
-        corp_firewall = await client.get(kind="SecurityFirewall", name__value="corp-firewall")
+        corp_firewall = await client.get(
+            kind="SecurityFirewall", name__value="corp-firewall"
+        )
 
         if corp_firewall:
             corporate_policy.firewalls.add(corp_firewall.id)
@@ -105,7 +121,9 @@ async def populate_policy_rules(client: InfrahubClient) -> None:
 
     try:
         # Populate allow-web-traffic rule
-        allow_web_rule = await client.get(kind="SecurityPolicyRule", name__value="allow-web-traffic")
+        allow_web_rule = await client.get(
+            kind="SecurityPolicyRule", name__value="allow-web-traffic"
+        )
         if allow_web_rule:
             print(f"  Found: {allow_web_rule.name.value}")
 
@@ -117,27 +135,35 @@ async def populate_policy_rules(client: InfrahubClient) -> None:
 
             # Get the address groups
             try:
-                internet_group = await client.get(kind="SecurityAddressGroup", name__value="internet")
+                internet_group = await client.get(
+                    kind="SecurityAddressGroup", name__value="internet"
+                )
             except Exception as e:
                 print(f"  ⚠️  Error getting internet group: {e}")
                 internet_group = None
 
             try:
-                web_servers_group = await client.get(kind="SecurityAddressGroup", name__value="web-servers")
+                web_servers_group = await client.get(
+                    kind="SecurityAddressGroup", name__value="web-servers"
+                )
             except Exception as e:
                 print(f"  ⚠️  Error getting web-servers group: {e}")
                 web_servers_group = None
 
             # Get the service group
             try:
-                web_services_group = await client.get(kind="SecurityServiceGroup", name__value="web-services")
+                web_services_group = await client.get(
+                    kind="SecurityServiceGroup", name__value="web-services"
+                )
             except Exception as e:
                 print(f"  ⚠️  Error getting web-services group: {e}")
                 web_services_group = None
 
             # Get the application
             try:
-                web_browsing_app = await client.get(kind="SecurityApplication", name__value="web-browsing")
+                web_browsing_app = await client.get(
+                    kind="SecurityApplication", name__value="web-browsing"
+                )
             except Exception as e:
                 print(f"  ⚠️  Error getting web-browsing application: {e}")
                 web_browsing_app = None
@@ -152,7 +178,9 @@ async def populate_policy_rules(client: InfrahubClient) -> None:
                 allow_web_rule.applications.add(web_browsing_app.id)
 
             await allow_web_rule.save()
-            print("  ✅ Added source addresses, destination addresses, services, and applications")
+            print(
+                "  ✅ Added source addresses, destination addresses, services, and applications"
+            )
         else:
             print("  ⚠️  Could not find allow-web-traffic rule")
     except Exception as e:
@@ -166,7 +194,9 @@ async def main() -> int:
     try:
         config = Config(
             address=os.getenv("INFRAHUB_ADDRESS", "http://localhost:8000"),
-            api_token=os.getenv("INFRAHUB_API_TOKEN", "06438eb2-8019-4776-878c-0941b1f1d1ec")
+            api_token=os.getenv(
+                "INFRAHUB_API_TOKEN", "06438eb2-8019-4776-878c-0941b1f1d1ec"
+            ),
         )
         client = InfrahubClient(config=config)
 

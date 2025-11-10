@@ -4,7 +4,13 @@ from infrahub_sdk.transforms import InfrahubTransform
 from jinja2 import Environment, FileSystemLoader
 from netutils.utils import jinja2_convenience_function
 
-from .common import get_bgp_profile, get_data, get_interface_roles, get_loopbacks, get_ospf
+from .common import (
+    get_bgp_profile,
+    get_data,
+    get_interface_roles,
+    get_loopbacks,
+    get_ospf,
+)
 
 
 class Spine(InfrahubTransform):

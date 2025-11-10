@@ -35,28 +35,34 @@ async def create_proposed_change(branch: str) -> int:
         0 on success, 1 on failure
     """
     console.print()
-    console.print(Panel(
-        f"[bold bright_magenta]🚀 Creating Infrahub Proposed Change[/bold bright_magenta]\n\n"
-        f"[bright_cyan]Source Branch:[/bright_cyan] [bold yellow]{branch}[/bold yellow]\n"
-        f"[bright_cyan]Target Branch:[/bright_cyan] [bold green]main[/bold green]",
-        border_style="bright_magenta",
-        box=box.SIMPLE,
-        title="[bold bright_white]Proposed Change[/bold bright_white]",
-        title_align="left"
-    ))
+    console.print(
+        Panel(
+            f"[bold bright_magenta]🚀 Creating Infrahub Proposed Change[/bold bright_magenta]\n\n"
+            f"[bright_cyan]Source Branch:[/bright_cyan] [bold yellow]{branch}[/bold yellow]\n"
+            f"[bright_cyan]Target Branch:[/bright_cyan] [bold green]main[/bold green]",
+            border_style="bright_magenta",
+            box=box.SIMPLE,
+            title="[bold bright_white]Proposed Change[/bold bright_white]",
+            title_align="left",
+        )
+    )
 
     # Connect to Infrahub
     console.print("\n[cyan]→[/cyan] Connecting to Infrahub...")
 
     try:
         client = InfrahubClient()
-        console.print(f"[green]✓[/green] Connected to Infrahub at [bold]{client.address}[/bold]")
+        console.print(
+            f"[green]✓[/green] Connected to Infrahub at [bold]{client.address}[/bold]"
+        )
     except Exception as e:
         console.print(f"[red]✗ Failed to connect to Infrahub:[/red] {e}")
         return 1
 
     # Check if branch exists
-    console.print(f"\n[cyan]→[/cyan] Checking if branch [bold]{branch}[/bold] exists...")
+    console.print(
+        f"\n[cyan]→[/cyan] Checking if branch [bold]{branch}[/bold] exists..."
+    )
 
     try:
         # Try to get the specific branch to verify it exists
@@ -87,10 +93,12 @@ async def create_proposed_change(branch: str) -> int:
                 kind="CoreProposedChange",
                 data={
                     "name": {"value": f"Proposed change for {branch}"},
-                    "description": {"value": f"Automated proposed change created for branch {branch}"},
+                    "description": {
+                        "value": f"Automated proposed change created for branch {branch}"
+                    },
                     "source_branch": {"value": branch},
                     "destination_branch": {"value": "main"},
-                }
+                },
             )
 
             await proposed_change.save()
@@ -106,9 +114,11 @@ async def create_proposed_change(branch: str) -> int:
             show_header=True,
             header_style="bold bright_cyan",
             border_style="bright_green",
-            padding=(0, 1)
+            padding=(0, 1),
         )
-        details_table.add_column("Property", style="bright_cyan", no_wrap=True, width=20)
+        details_table.add_column(
+            "Property", style="bright_cyan", no_wrap=True, width=20
+        )
         details_table.add_column("Value", style="bright_white", width=50)
 
         details_table.add_row("ID", f"[bold yellow]{proposed_change.id}[/bold yellow]")
@@ -118,24 +128,34 @@ async def create_proposed_change(branch: str) -> int:
 
         # Handle state - it might be None for newly created proposed changes
         state_value = "open"
-        if hasattr(proposed_change, 'state') and proposed_change.state:
-            state_value = proposed_change.state.value if hasattr(proposed_change.state, 'value') else str(proposed_change.state)
-        details_table.add_row("State", f"[bold bright_magenta]{state_value}[/bold bright_magenta]")
+        if hasattr(proposed_change, "state") and proposed_change.state:
+            state_value = (
+                proposed_change.state.value
+                if hasattr(proposed_change.state, "value")
+                else str(proposed_change.state)
+            )
+        details_table.add_row(
+            "State", f"[bold bright_magenta]{state_value}[/bold bright_magenta]"
+        )
 
         console.print(details_table)
         console.print()
 
         # Show URL
         pc_url = f"{client.address}/proposed-changes/{proposed_change.id}"
-        console.print(Panel(
-            f"[bold bright_white]View Proposed Change:[/bold bright_white]\n\n"
-            f"[bright_blue]{pc_url}[/bright_blue]",
-            border_style="bright_green",
-            box=box.SIMPLE
-        ))
+        console.print(
+            Panel(
+                f"[bold bright_white]View Proposed Change:[/bold bright_white]\n\n"
+                f"[bright_blue]{pc_url}[/bright_blue]",
+                border_style="bright_green",
+                box=box.SIMPLE,
+            )
+        )
 
         console.print()
-        console.print("[bold bright_green]🎉 Success![/bold bright_green] Proposed change is ready for review.\n")
+        console.print(
+            "[bold bright_green]🎉 Success![/bold bright_green] Proposed change is ready for review.\n"
+        )
 
         return 0
 
@@ -144,8 +164,12 @@ async def create_proposed_change(branch: str) -> int:
 
         # Show helpful error information
         if "already exists" in str(e).lower():
-            console.print("\n[yellow]💡 Tip:[/yellow] A proposed change for this branch may already exist.")
-            console.print("   Check the Infrahub UI or delete the existing proposed change first.")
+            console.print(
+                "\n[yellow]💡 Tip:[/yellow] A proposed change for this branch may already exist."
+            )
+            console.print(
+                "   Check the Infrahub UI or delete the existing proposed change first."
+            )
 
         return 1
 
@@ -171,7 +195,7 @@ Examples:
   # Using invoke
   uv run invoke create-pc
   uv run invoke create-pc --branch my-feature-branch
-        """
+        """,
     )
     parser.add_argument(
         "--branch",

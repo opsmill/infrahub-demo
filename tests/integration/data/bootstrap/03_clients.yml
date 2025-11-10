@@ -6,8 +6,10 @@ spec:
   data: []
     # UNUSED: All customers are not referenced in any loaded objects
     # The "owner" field in ASN objects references providers (OrganizationProvider), not customers
-    # The ServiceVirtualFabric schema has a customer relationship, but no ServiceVirtualFabric objects are loaded in bootstrap
-    # The Topology schema has an optional owner relationship, but it's not used in loaded demo scenarios
+    # The ServiceVirtualFabric schema has a customer relationship,
+    # but no ServiceVirtualFabric objects are loaded in bootstrap
+    # The Topology schema has an optional owner relationship,
+    # but it's not used in loaded demo scenarios
     # - name: "Customer 1"
     #   customer_id: "CUST001"
     # - name: "Customer 2"

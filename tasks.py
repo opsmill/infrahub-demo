@@ -8,7 +8,13 @@ from invoke import task, Context  # type: ignore
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
-from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeElapsedColumn
+from rich.progress import (
+    Progress,
+    SpinnerColumn,
+    TextColumn,
+    BarColumn,
+    TimeElapsedColumn,
+)
 from rich import box
 
 console = Console()
@@ -16,7 +22,9 @@ console = Console()
 
 INFRAHUB_VERSION = os.getenv("INFRAHUB_VERSION", "stable")
 INFRAHUB_ENTERPRISE = os.getenv("INFRAHUB_ENTERPRISE", "false").lower() == "true"
-INFRAHUB_SERVICE_CATALOG = os.getenv("INFRAHUB_SERVICE_CATALOG", "false").lower() == "true"
+INFRAHUB_SERVICE_CATALOG = (
+    os.getenv("INFRAHUB_SERVICE_CATALOG", "false").lower() == "true"
+)
 MAIN_DIRECTORY_PATH = Path(__file__).parent
 
 
@@ -46,18 +54,21 @@ DOCUMENTATION_DIRECTORY = CURRENT_DIRECTORY.parent / "docs"
 def list_tasks(context: Context) -> None:
     """List all available invoke tasks with descriptions."""
     import inspect
+
     current_module = inspect.getmodule(inspect.currentframe())
 
     tasks_info = []
 
     # Get all task objects from the current module
     for name, obj in inspect.getmembers(current_module):
-        if hasattr(obj, '__wrapped__') or (hasattr(obj, '__class__') and 'Task' in obj.__class__.__name__):
-            display_name = getattr(obj, 'name', name)
-            if display_name.startswith('_'):
+        if hasattr(obj, "__wrapped__") or (
+            hasattr(obj, "__class__") and "Task" in obj.__class__.__name__
+        ):
+            display_name = getattr(obj, "name", name)
+            if display_name.startswith("_"):
                 continue
             if obj.__doc__:
-                description = obj.__doc__.strip().split('\n')[0]
+                description = obj.__doc__.strip().split("\n")[0]
             else:
                 description = "No description available"
             tasks_info.append((display_name, description))
@@ -70,7 +81,7 @@ def list_tasks(context: Context) -> None:
         title="Available Invoke Tasks",
         box=box.SIMPLE,
         show_header=True,
-        header_style="bold cyan"
+        header_style="bold cyan",
     )
     table.add_column("Task", style="green", no_wrap=True)
     table.add_column("Description", style="white")
@@ -94,7 +105,7 @@ def info(context: Context) -> None:
         f"[cyan]Command:[/cyan] [dim]{COMPOSE_COMMAND}[/dim]",
         title="[bold]Infrahub Configuration[/bold]",
         border_style="blue",
-        box=box.SIMPLE
+        box=box.SIMPLE,
     )
     console.print()
     console.print(info_panel)
@@ -112,24 +123,24 @@ def start(context: Context, rebuild: bool = False) -> None:
         compose_cmd = f"{compose_cmd} --profile service-catalog"
 
     console.print()
-    status_msg = f"[green]Starting Infrahub {edition}[/green] [dim]({INFRAHUB_VERSION})[/dim]"
+    status_msg = (
+        f"[green]Starting Infrahub {edition}[/green] [dim]({INFRAHUB_VERSION})[/dim]"
+    )
     if INFRAHUB_SERVICE_CATALOG:
         status_msg += "\n[cyan]Service Catalog:[/cyan] Enabled"
     if rebuild:
         status_msg += "\n[yellow]Rebuild:[/yellow] Enabled"
 
-    console.print(Panel(
-        status_msg,
-        border_style="green",
-        box=box.SIMPLE
-    ))
+    console.print(Panel(status_msg, border_style="green", box=box.SIMPLE))
 
     build_flag = "--build" if rebuild else ""
     context.run(f"{compose_cmd} up -d {build_flag}")
 
     console.print("[green]✓[/green] Infrahub started successfully")
     if INFRAHUB_SERVICE_CATALOG:
-        console.print("[green]✓[/green] Service Catalog available at http://localhost:8501")
+        console.print(
+            "[green]✓[/green] Service Catalog available at http://localhost:8501"
+        )
 
 
 @task(optional=["schema", "branch"])
@@ -166,13 +177,15 @@ def load_objects(
 def bootstrap_bash(context: Context, branch: str = "main") -> None:
     """Run the complete bootstrap process (bash version)."""
     console.print()
-    console.print(Panel(
-        f"[bold blue]Infrahub Bootstrap (Bash)[/bold blue]\n"
-        f"[dim]Branch:[/dim] {branch}\n"
-        f"[dim]This will load schemas, menu, bootstrap data, security, and repository[/dim]",
-        border_style="blue",
-        box=box.SIMPLE
-    ))
+    console.print(
+        Panel(
+            f"[bold blue]Infrahub Bootstrap (Bash)[/bold blue]\n"
+            f"[dim]Branch:[/dim] {branch}\n"
+            f"[dim]This will load schemas, menu, bootstrap data, security, and repository[/dim]",
+            border_style="blue",
+            box=box.SIMPLE,
+        )
+    )
     console.print()
     context.run(f"./scripts/bootstrap.sh {branch}")
     console.print()
@@ -190,23 +203,33 @@ def bootstrap_py(context: Context, branch: str = "main") -> None:
 def demo_dc_arista(context: Context, branch: str = "add-dc3") -> None:
     """Create branch and load Arista DC demo topology."""
     console.print()
-    console.print(Panel(
-        f"[bold cyan]Arista Data Center Demo[/bold cyan]\n"
-        f"[dim]Branch:[/dim] {branch}",
-        border_style="cyan",
-        box=box.SIMPLE
-    ))
+    console.print(
+        Panel(
+            f"[bold cyan]Arista Data Center Demo[/bold cyan]\n"
+            f"[dim]Branch:[/dim] {branch}",
+            border_style="cyan",
+            box=box.SIMPLE,
+        )
+    )
 
     console.print(f"\n[cyan]→[/cyan] Creating branch: [bold]{branch}[/bold]")
     context.run(f"uv run infrahubctl branch create {branch}")
 
-    console.print(f"\n[cyan]→[/cyan] Loading DC Arista topology to branch: [bold]{branch}[/bold]")
-    context.run(f"uv run infrahubctl object load objects/dc-arista-s.yml --branch {branch}")
+    console.print(
+        f"\n[cyan]→[/cyan] Loading DC Arista topology to branch: [bold]{branch}[/bold]"
+    )
+    context.run(
+        f"uv run infrahubctl object load objects/dc-arista-s.yml --branch {branch}"
+    )
 
-    console.print(f"\n[green]✓[/green] DC Arista topology loaded to branch '[bold green]{branch}[/bold green]'")
+    console.print(
+        f"\n[green]✓[/green] DC Arista topology loaded to branch '[bold green]{branch}[/bold green]'"
+    )
 
     # Wait for generator to finish creating the data
-    console.print("\n[yellow]→[/yellow] Waiting for generator to complete data creation...")
+    console.print(
+        "\n[yellow]→[/yellow] Waiting for generator to complete data creation..."
+    )
     wait_seconds = 60  # Wait 60 seconds for generator to process
 
     with Progress(
@@ -217,7 +240,7 @@ def demo_dc_arista(context: Context, branch: str = "add-dc3") -> None:
             style="yellow",
             complete_style="bright_green",
             finished_style="bold bright_green",
-            pulse_style="bright_yellow"
+            pulse_style="bright_yellow",
         ),
         TextColumn("[bold bright_cyan]{task.percentage:>3.0f}%"),
         TextColumn("•", style="dim"),
@@ -232,8 +255,12 @@ def demo_dc_arista(context: Context, branch: str = "add-dc3") -> None:
     console.print("[green]✓[/green] Generator processing complete")
 
     # Create proposed change
-    console.print(f"\n[bright_magenta]→[/bright_magenta] Creating proposed change for branch '[bold]{branch}[/bold]'...")
-    context.run(f"uv run python scripts/create_proposed_change.py --branch {branch}", pty=True)
+    console.print(
+        f"\n[bright_magenta]→[/bright_magenta] Creating proposed change for branch '[bold]{branch}[/bold]'..."
+    )
+    context.run(
+        f"uv run python scripts/create_proposed_change.py --branch {branch}", pty=True
+    )
 
     console.print()
 
@@ -241,29 +268,41 @@ def demo_dc_arista(context: Context, branch: str = "add-dc3") -> None:
 @task(optional=["branch"], name="create-pc")
 def create_proposed_change(context: Context, branch: str = "add-dc3") -> None:
     """Create an Infrahub Proposed Change for a branch."""
-    context.run(f"uv run python scripts/create_proposed_change.py --branch {branch}", pty=True)
+    context.run(
+        f"uv run python scripts/create_proposed_change.py --branch {branch}", pty=True
+    )
 
 
 @task(optional=["branch", "topology"])
-def containerlab(context: Context, branch: str = "add-dc3", topology: str = "DC-3") -> None:
+def containerlab(
+    context: Context, branch: str = "add-dc3", topology: str = "DC-3"
+) -> None:
     """Generate configs and deploy containerlab topology."""
     console.print()
-    console.print(Panel(
-        f"[bold magenta]Containerlab Deployment[/bold magenta]\n"
-        f"[dim]Branch:[/dim] {branch}\n"
-        f"[dim]Topology:[/dim] {topology}",
-        border_style="magenta",
-        box=box.SIMPLE
-    ))
+    console.print(
+        Panel(
+            f"[bold magenta]Containerlab Deployment[/bold magenta]\n"
+            f"[dim]Branch:[/dim] {branch}\n"
+            f"[dim]Topology:[/dim] {topology}",
+            border_style="magenta",
+            box=box.SIMPLE,
+        )
+    )
 
-    console.print(f"\n[magenta]→[/magenta] Generating configurations from branch: [bold]{branch}[/bold]")
+    console.print(
+        f"\n[magenta]→[/magenta] Generating configurations from branch: [bold]{branch}[/bold]"
+    )
     context.run(f"uv run scripts/get_configs.py --branch {branch}", pty=True)
 
     topology_file = f"generated-configs/clab/{topology}.clab.yml"
-    console.print(f"\n[magenta]→[/magenta] Deploying containerlab topology: [bold]{topology_file}[/bold]")
+    console.print(
+        f"\n[magenta]→[/magenta] Deploying containerlab topology: [bold]{topology_file}[/bold]"
+    )
     context.run(f"sudo -E containerlab deploy -t {topology_file}")
 
-    console.print(f"\n[green]✓[/green] Containerlab topology '[bold green]{topology}[/bold green]' deployed successfully")
+    console.print(
+        f"\n[green]✓[/green] Containerlab topology '[bold green]{topology}[/bold green]' deployed successfully"
+    )
     console.print()
 
 
@@ -271,11 +310,13 @@ def containerlab(context: Context, branch: str = "add-dc3", topology: str = "DC-
 def destroy(context: Context) -> None:
     """Destroy all containers."""
     console.print()
-    console.print(Panel(
-        "[red]Destroying all containers and volumes[/red]",
-        border_style="red",
-        box=box.SIMPLE
-    ))
+    console.print(
+        Panel(
+            "[red]Destroying all containers and volumes[/red]",
+            border_style="red",
+            box=box.SIMPLE,
+        )
+    )
     context.run(f"{COMPOSE_COMMAND} down -v")
     console.print("[green]✓[/green] All containers and volumes destroyed")
 
@@ -284,11 +325,13 @@ def destroy(context: Context) -> None:
 def stop(context: Context) -> None:
     """Stop all containers."""
     console.print()
-    console.print(Panel(
-        "[yellow]Stopping all containers[/yellow]",
-        border_style="yellow",
-        box=box.SIMPLE
-    ))
+    console.print(
+        Panel(
+            "[yellow]Stopping all containers[/yellow]",
+            border_style="yellow",
+            box=box.SIMPLE,
+        )
+    )
     context.run(f"{COMPOSE_COMMAND} down")
     console.print("[green]✓[/green] All containers stopped")
 
@@ -298,21 +341,25 @@ def restart(context: Context, component: str = "") -> None:
     """Restart containers."""
     if component:
         console.print()
-        console.print(Panel(
-            f"[yellow]Restarting component:[/yellow] [bold]{component}[/bold]",
-            border_style="yellow",
-            box=box.SIMPLE
-        ))
+        console.print(
+            Panel(
+                f"[yellow]Restarting component:[/yellow] [bold]{component}[/bold]",
+                border_style="yellow",
+                box=box.SIMPLE,
+            )
+        )
         context.run(f"{COMPOSE_COMMAND} restart {component}")
         console.print(f"[green]✓[/green] Component '{component}' restarted")
         return
 
     console.print()
-    console.print(Panel(
-        "[yellow]Restarting all containers[/yellow]",
-        border_style="yellow",
-        box=box.SIMPLE
-    ))
+    console.print(
+        Panel(
+            "[yellow]Restarting all containers[/yellow]",
+            border_style="yellow",
+            box=box.SIMPLE,
+        )
+    )
     context.run(f"{COMPOSE_COMMAND} restart")
     console.print("[green]✓[/green] All containers restarted")
 
@@ -321,11 +368,11 @@ def restart(context: Context, component: str = "") -> None:
 def run_tests(context: Context) -> None:
     """Run all tests."""
     console.print()
-    console.print(Panel(
-        "[bold cyan]Running Tests[/bold cyan]",
-        border_style="cyan",
-        box=box.SIMPLE
-    ))
+    console.print(
+        Panel(
+            "[bold cyan]Running Tests[/bold cyan]", border_style="cyan", box=box.SIMPLE
+        )
+    )
     context.run("pytest -vv tests")
     console.print("[green]✓[/green] Tests completed")
 
@@ -334,12 +381,14 @@ def run_tests(context: Context) -> None:
 def validate(context: Context) -> None:
     """Run all code quality tests."""
     console.print()
-    console.print(Panel(
-        "[bold cyan]Running Code Validation[/bold cyan]\n"
-        "[dim]Ruff → Mypy → Pytest[/dim]",
-        border_style="cyan",
-        box=box.SIMPLE
-    ))
+    console.print(
+        Panel(
+            "[bold cyan]Running Code Validation[/bold cyan]\n"
+            "[dim]Ruff → Mypy → Pytest[/dim]",
+            border_style="cyan",
+            box=box.SIMPLE,
+        )
+    )
 
     console.print("\n[cyan]→[/cyan] Running Ruff checks...")
     context.run("ruff check . --fix")
@@ -358,12 +407,14 @@ def validate(context: Context) -> None:
 def format(context: Context) -> None:
     """Run RUFF to format all Python files."""
     console.print()
-    console.print(Panel(
-        "[bold magenta]Formatting Python Code[/bold magenta]\n"
-        "[dim]Ruff Format → Ruff Fix[/dim]",
-        border_style="magenta",
-        box=box.SIMPLE
-    ))
+    console.print(
+        Panel(
+            "[bold magenta]Formatting Python Code[/bold magenta]\n"
+            "[dim]Ruff Format → Ruff Fix[/dim]",
+            border_style="magenta",
+            box=box.SIMPLE,
+        )
+    )
 
     exec_cmds = ["ruff format .", "ruff check . --fix"]
     with context.cd(MAIN_DIRECTORY_PATH):
@@ -405,12 +456,14 @@ def lint_ruff(context: Context) -> None:
 def lint_all(context: Context) -> None:
     """Run all linters."""
     console.print()
-    console.print(Panel(
-        "[bold yellow]Running All Linters[/bold yellow]\n"
-        "[dim]YAML → Ruff → Mypy[/dim]",
-        border_style="yellow",
-        box=box.SIMPLE
-    ))
+    console.print(
+        Panel(
+            "[bold yellow]Running All Linters[/bold yellow]\n"
+            "[dim]YAML → Ruff → Mypy[/dim]",
+            border_style="yellow",
+            box=box.SIMPLE,
+        )
+    )
 
     console.print("\n[yellow]→[/yellow] Running yamllint...")
     lint_yaml(context)
@@ -429,12 +482,14 @@ def lint_all(context: Context) -> None:
 def docs_build(context: Context) -> None:
     """Build documentation website."""
     console.print()
-    console.print(Panel(
-        "[bold blue]Building Documentation Website[/bold blue]\n"
-        f"[dim]Directory:[/dim] {DOCUMENTATION_DIRECTORY}",
-        border_style="blue",
-        box=box.SIMPLE
-    ))
+    console.print(
+        Panel(
+            "[bold blue]Building Documentation Website[/bold blue]\n"
+            f"[dim]Directory:[/dim] {DOCUMENTATION_DIRECTORY}",
+            border_style="blue",
+            box=box.SIMPLE,
+        )
+    )
 
     exec_cmd = "npm run build"
 
