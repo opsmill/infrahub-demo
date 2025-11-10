@@ -1,0 +1,93 @@
+query GetDataCenters {
+  TopologyDataCenter {
+    edges {
+      node {
+        id
+        name {
+          value
+        }
+        description {
+          value
+        }
+        emulation {
+          value
+        }
+        strategy {
+          value
+        }
+        location {
+          node {
+            id
+            name {
+              value
+            }
+          }
+        }
+        design {
+          node {
+            id
+            name {
+              value
+            }
+            type {
+              value
+            }
+          }
+        }
+        management_subnet {
+          node {
+            id
+            prefix {
+              value
+            }
+          }
+        }
+        customer_subnet {
+          node {
+            id
+            prefix {
+              value
+            }
+          }
+        }
+        technical_subnet {
+          node {
+            id
+            prefix {
+              value
+            }
+          }
+        }
+        public_subnet {
+          node {
+            id
+            prefix {
+              value
+            }
+          }
+        }
+        provider {
+          node {
+            id
+            name {
+              value
+            }
+          }
+        }
+        devices {
+          edges {
+            node {
+              id
+              name {
+                value
+              }
+              role {
+                value
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

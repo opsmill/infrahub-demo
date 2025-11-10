@@ -1,0 +1,32 @@
+services:
+  database:
+    environment:
+      # Increase transaction memory limit from 4.1 GiB to 8 GiB
+      - NEO4J_dbms_memory_transaction_total_max=8g
+      # Also increase heap and page cache for better performance
+      - NEO4J_dbms_memory_heap_initial__size=2g
+      - NEO4J_dbms_memory_heap_max__size=4g
+      - NEO4J_dbms_memory_pagecache_size=2g
+
+  streamlit-service-catalog:
+    build:
+      context: ./service_catalog
+      dockerfile: Dockerfile
+    container_name: infrahub-service-catalog
+    ports:
+      - "8501:8501"
+    environment:
+      - INFRAHUB_ADDRESS=http://infrahub-server:8000
+      - INFRAHUB_UI_ADDRESS=http://localhost:8000
+      - DEFAULT_BRANCH=main
+      - GENERATOR_WAIT_TIME=60
+    volumes:
+      - ./service_catalog:/app
+      - ./objects:/objects:ro
+      - ./docs/static/img:/app/assets:ro
+    depends_on:
+      - infrahub-server
+    profiles:
+      - service-catalog
+    networks:
+      - default

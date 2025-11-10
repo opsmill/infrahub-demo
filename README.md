@@ -21,6 +21,37 @@ This repository is demoing the key Infrahub features for an example data center 
 
 Documentation for loading and using this demo is available on the Infrahub docs site [docs.infrahub.app/demo2/](https://docs.infrahub.app/demo2/)
 
+## Service Catalog
+
+This repository includes an optional Streamlit-based Service Catalog that provides a user-friendly web interface for viewing and creating data center infrastructure in Infrahub.
+
+### Features
+
+- View lists of Data Centers and Colocation Centers with branch selection
+- Create new Data Centers through a form-based interface
+- Automatic branch creation and Proposed Change generation
+- Workflow automation for infrastructure provisioning
+
+### Quick Start
+
+To start Infrahub with the Service Catalog enabled:
+
+```bash
+docker-compose --profile service-catalog up
+```
+
+The Service Catalog will be accessible at `http://localhost:8501`
+
+To start Infrahub without the Service Catalog:
+
+```bash
+docker-compose up
+```
+
+### Documentation
+
+For detailed setup instructions, configuration options, and usage guide, see [SERVICE_CATALOG.md](SERVICE_CATALOG.md).
+
 ## License
 
 This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.

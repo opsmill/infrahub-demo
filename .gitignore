@@ -14,9 +14,10 @@ __pycache__
 **/.DS_Store
 **/.pytest_cache
 **/.ruff_cache
-docker-compose.override.yml
 docker-compose.yml
 generated-configs/
 infrahub_demo.egg-info
 queries/config/spine_test.gql
 scripts/debug/
+service_catalog/.streamlit/
+.kiro/

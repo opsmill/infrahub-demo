@@ -310,7 +310,6 @@ nodes:
     namespace: Network
     description: "Represents a DNS server in the network."
     label: "DNS Server"
-    generate_profile: true
     icon: "eos-icons:dns"
     menu_placement: "NetworkManagementServer"
     human_friendly_id:
