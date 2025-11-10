@@ -101,9 +101,9 @@ def info(context: Context) -> None:
     console.print()
 
 
-@task
-def start(context: Context) -> None:
-    """Start all containers."""
+@task(optional=["rebuild"])
+def start(context: Context, rebuild: bool = False) -> None:
+    """Start all containers (use --rebuild to force rebuild images)."""
     edition = "Enterprise" if INFRAHUB_ENTERPRISE else "Community"
 
     # Build the compose command with optional service catalog profile
@@ -115,13 +115,17 @@ def start(context: Context) -> None:
     status_msg = f"[green]Starting Infrahub {edition}[/green] [dim]({INFRAHUB_VERSION})[/dim]"
     if INFRAHUB_SERVICE_CATALOG:
         status_msg += "\n[cyan]Service Catalog:[/cyan] Enabled"
+    if rebuild:
+        status_msg += "\n[yellow]Rebuild:[/yellow] Enabled"
 
     console.print(Panel(
         status_msg,
         border_style="green",
         box=box.SIMPLE
     ))
-    context.run(f"{compose_cmd} up -d")
+
+    build_flag = "--build" if rebuild else ""
+    context.run(f"{compose_cmd} up -d {build_flag}")
 
     console.print("[green]✓[/green] Infrahub started successfully")
     if INFRAHUB_SERVICE_CATALOG:
