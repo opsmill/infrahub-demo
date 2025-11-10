@@ -2,8 +2,6 @@
 """
 Bootstrap Infrahub with schemas, data, and configurations.
 
-This is a Python equivalent of scripts/bootstrap.sh with enhanced Rich UI formatting.
-
 This script loads all necessary data into Infrahub including:
 - Schemas
 - Menu definitions
@@ -12,23 +10,17 @@ This script loads all necessary data into Infrahub including:
 - Demo repository
 - Event actions
 
-Advantages over bash version:
+Features:
 - Beautiful progress bars with time elapsed
 - Better error handling and reporting
-- More structured code with type hints
+- Structured code with type hints
 - Rich-formatted panels and status messages
 - Visual progress indicators for long-running operations
 
 Usage:
     python scripts/bootstrap.py              # Use main branch
     python scripts/bootstrap.py --branch dev # Use specific branch
-    uv run invoke bootstrap-py               # Via invoke (Python version)
-    uv run invoke bootstrap                  # Via invoke (Bash version)
-
-Performance comparison:
-    To compare performance between bash and Python versions:
-    time ./scripts/bootstrap.sh
-    time uv run python scripts/bootstrap.py
+    uv run invoke bootstrap                  # Via invoke task
 """
 
 import argparse

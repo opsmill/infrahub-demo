@@ -173,26 +173,6 @@ def load_objects(
     context.run(f"infrahubctl object load {path} --branch {branch}")
 
 
-@task(optional=["branch"], name="bootstrap-bash")
-def bootstrap_bash(context: Context, branch: str = "main") -> None:
-    """Run the complete bootstrap process (bash version)."""
-    console.print()
-    console.print(
-        Panel(
-            f"[bold blue]Infrahub Bootstrap (Bash)[/bold blue]\n"
-            f"[dim]Branch:[/dim] {branch}\n"
-            f"[dim]This will load schemas, menu, bootstrap data, security, and repository[/dim]",
-            border_style="blue",
-            box=box.SIMPLE,
-        )
-    )
-    console.print()
-    context.run(f"./scripts/bootstrap.sh {branch}")
-    console.print()
-    console.print("[green]✓[/green] Bootstrap completed successfully!")
-    console.print()
-
-
 @task(optional=["branch"], name="bootstrap")
 def bootstrap_py(context: Context, branch: str = "main") -> None:
     """Run the complete bootstrap process (Python version with Rich UI)."""

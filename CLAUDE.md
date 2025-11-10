@@ -347,7 +347,7 @@ uv run infrahubctl repository add DEMO https://github.com/opsmill/infrahub-demo.
 uv run infrahubctl object load objects/events/
 
 # Or use the bootstrap script
-./scripts/bootstrap.sh
+uv run invoke bootstrap
 ```
 
 ## Demo Scenarios
@@ -381,8 +381,7 @@ uv run infrahubctl object load objects/dc-cisco-s --branch my-branch
 - `schemas/base/` - Base schema models (dcim, ipam, location, topology)
 - `schemas/extensions/` - Extended schemas
 - `scripts/` - User-facing automation scripts:
-  - `bootstrap.py` - Python bootstrap script with Rich UI (recommended)
-  - `bootstrap.sh` - Bash bootstrap script (legacy)
+  - `bootstrap.py` - Python bootstrap script with Rich UI
   - `create_proposed_change.py` - Create Infrahub Proposed Changes
   - `get_configs.py` - Extract device configs and topologies from artifacts
   - `populate_security_relationships.py` - Populate security zone relationships
