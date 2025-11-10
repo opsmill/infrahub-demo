@@ -160,7 +160,7 @@ def load_data(
 
 
 @task(optional=["branch"])
-def load_menu(context: Context, menu: str = "menus", branch: str = "main") -> None:
+def load_menu(context: Context, menu: str = "menus/menu-full.yml", branch: str = "main") -> None:
     """Load the menu from the given path."""
     context.run(f"infrahubctl menu load {menu} --branch {branch}")
 

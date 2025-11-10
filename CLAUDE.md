@@ -35,7 +35,7 @@ uv run invoke restart <component>
 uv run infrahubctl schema load schemas --branch main
 
 # Load menu
-uv run infrahubctl menu load menus --branch main
+uv run infrahubctl menu load menus/menu-full.yml --branch main
 
 # Load bootstrap data
 uv run infrahubctl object load objects/bootstrap --branch main
@@ -332,7 +332,7 @@ uv run invoke start
 uv run infrahubctl schema load schemas
 
 # 3. Load menu
-uv run infrahubctl menu load menus
+uv run infrahubctl menu load menus/menu-full.yml
 
 # 4. Load bootstrap data
 uv run infrahubctl object load objects/bootstrap
