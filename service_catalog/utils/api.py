@@ -39,14 +39,16 @@ class InfrahubGraphQLError(InfrahubAPIError):
 class InfrahubClient:
     """Client for interacting with the Infrahub API."""
 
-    def __init__(self, base_url: str, timeout: int = 30):
+    def __init__(self, base_url: str, api_token: Optional[str] = None, timeout: int = 30):
         """Initialize the Infrahub API client.
 
         Args:
             base_url: Base URL of the Infrahub instance (e.g., "http://localhost:8000")
+            api_token: Optional API token for authentication
             timeout: Request timeout in seconds (default: 30)
         """
         self.base_url = base_url.rstrip("/")
+        self.api_token = api_token
         self.timeout = timeout
         self.session = requests.Session()
 
@@ -408,6 +410,10 @@ class InfrahubClient:
         """
         url = f"{self.base_url}/graphql"
         headers = {"Content-Type": "application/json", "X-INFRAHUB-BRANCH": branch}
+
+        # Add authentication if API token is provided
+        if self.api_token:
+            headers["X-INFRAHUB-KEY"] = self.api_token
 
         payload: Dict[str, Any] = {"query": query}
         if variables:

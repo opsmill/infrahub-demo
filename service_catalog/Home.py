@@ -9,6 +9,7 @@ import streamlit as st
 from utils import (
     DEFAULT_BRANCH,
     INFRAHUB_ADDRESS,
+    INFRAHUB_API_TOKEN,
     InfrahubClient,
     display_error,
     display_logo,
@@ -42,7 +43,10 @@ def main() -> None:
     display_logo()
 
     # Initialize API client
-    client = InfrahubClient(st.session_state.infrahub_url)
+    client = InfrahubClient(
+        st.session_state.infrahub_url,
+        api_token=INFRAHUB_API_TOKEN or None
+    )
 
     # Page title
     st.title("Infrahub Service Catalog")

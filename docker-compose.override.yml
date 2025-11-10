@@ -18,6 +18,7 @@ services:
       - "8501:8501"
     environment:
       - INFRAHUB_ADDRESS=http://infrahub-server:8000
+      - INFRAHUB_API_TOKEN=${INFRAHUB_API_TOKEN:-06438eb2-8019-4776-878c-0941b1f1d1ec}
       - DEFAULT_BRANCH=main
       - GENERATOR_WAIT_TIME=60
     volumes:

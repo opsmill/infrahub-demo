@@ -13,6 +13,7 @@ from utils import (
     DEFAULT_BRANCH,
     GENERATOR_WAIT_TIME,
     INFRAHUB_ADDRESS,
+    INFRAHUB_API_TOKEN,
     InfrahubClient,
     display_error,
     display_logo,
@@ -598,7 +599,10 @@ def main() -> None:
                 }
 
                 # Initialize API client
-                client = InfrahubClient(st.session_state.infrahub_url)
+                client = InfrahubClient(
+                    st.session_state.infrahub_url,
+                    api_token=INFRAHUB_API_TOKEN or None
+                )
 
                 # Execute DC creation workflow
                 handle_dc_creation(client, form_data)
