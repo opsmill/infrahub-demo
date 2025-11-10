@@ -17,7 +17,7 @@ services:
     ports:
       - "8501:8501"
     environment:
-      - INFRAHUB_ADDRESS=${INFRAHUB_ADDRESS:-http://localhost:8000}
+      - INFRAHUB_ADDRESS=http://infrahub-server:8000
       - DEFAULT_BRANCH=main
       - GENERATOR_WAIT_TIME=60
     volumes:

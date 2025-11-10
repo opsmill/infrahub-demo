@@ -317,7 +317,8 @@ def destroy(context: Context) -> None:
             box=box.SIMPLE,
         )
     )
-    context.run(f"{COMPOSE_COMMAND} down -v")
+    # Include all profiles to ensure profile-based containers are destroyed
+    context.run(f"{COMPOSE_COMMAND} --profile service-catalog down -v")
     console.print("[green]✓[/green] All containers and volumes destroyed")
 
 
@@ -332,7 +333,8 @@ def stop(context: Context) -> None:
             box=box.SIMPLE,
         )
     )
-    context.run(f"{COMPOSE_COMMAND} down")
+    # Include all profiles to ensure profile-based containers are stopped
+    context.run(f"{COMPOSE_COMMAND} --profile service-catalog down")
     console.print("[green]✓[/green] All containers stopped")
 
 
