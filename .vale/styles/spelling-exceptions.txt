@@ -13,16 +13,19 @@ automations
 boolean
 check_definitions
 class_name
+CLIs
 CloudFormation
 codespace
 codespaces
 combobox
+containerlab
+Containerlab
+Containerlab's
 Composable
 composable
 config
 Config
 configs
-Containerlab
 content_type
 convert_query_response
 coroutine
@@ -40,6 +43,7 @@ Diataxis
 direnv
 display_labels
 docker
+Docker's
 dockerfile
 docstrings
 Docstrings
@@ -73,6 +77,7 @@ Infrahub's
 infrahubctl
 IP
 IPAddress
+IPs
 Ipam
 IPAM
 is_empty
@@ -122,6 +127,7 @@ reusability
 schema_mapping
 sdk
 snake_case
+startup-config
 Streamlit
 subcommand
 sudo
@@ -152,6 +158,7 @@ VLANs
 VRFs
 vscode
 VSCode
+VTEPs
 walkthrough
 Yaml
 yamllint

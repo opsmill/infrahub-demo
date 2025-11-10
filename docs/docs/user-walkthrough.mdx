@@ -97,6 +97,39 @@ The design specifies high-level parameters like:
 - Underlay routing protocol (eBGP or OSPF)
 - Addressing schemes
 
+### Multi-vendor support
+
+This demo supports multiple network device vendors with pre-configured data center designs. The DC-2 topology you just loaded uses Cisco NX-OS switches, but the demo can generate configurations for several other vendors.
+
+**Available vendor designs:**
+
+- **Cisco NX-OS** - The default DC-2 design (`objects/dc-cisco-s.yml`)
+- **Arista EOS** - DC-3 design with Arista switches
+- **Juniper JunOS** - DC-5 design with Juniper switches
+- **SONiC NOS** - DC-4 design with EdgeCore switches running SONiC
+
+**Using alternative vendor designs:**
+
+To explore Arista EOS configurations, you can use the automated demo command:
+
+```bash
+uv run invoke demo-dc-arista
+```
+
+This command creates a branch, loads the Arista design, and waits for generator completion.
+
+For other vendors, load the design files directly:
+
+```bash
+# Juniper design (DC-5)
+uv run infrahubctl object load objects/dc-juniper-s.yml --branch add-dc5
+
+# SONiC design (DC-4)
+uv run infrahubctl object load objects/dc-sonic-border-leafs.yml --branch add-dc4
+```
+
+Each vendor design generates appropriate configurations for that platform's CLI syntax and features. The same workflow (branch creation, design loading, generator execution, proposed change, merge) applies regardless of vendor.
+
 ## Step 4: Wait for automatic generator execution
 
 When you loaded the DC-2 design in Step 3, Infrahub automatically triggered a generator action that transforms the abstract design into concrete infrastructure objects including devices, interfaces, IP addresses, and routing configurations.
@@ -211,12 +244,30 @@ Common validations include:
 ### View generated artifacts
 
 1. Click on the **Artifacts** tab
-2. You should see generated artifacts like:
-   - Device configurations (one per device)
-   - Topology cabling matrix
-   - Containerlab topology file (if configured)
+2. You should see generated artifacts including:
+   - **Device configurations** (one per device)
+     - Spine, leaf, and border-leaf configurations in native vendor CLI format
+     - For Arista and Juniper leaf switches, additional OpenConfig-formatted configurations demonstrating multi-format output
+   - **Topology cabling matrix** (CSV format) - Complete cabling plan with source/destination interfaces
+   - **Containerlab topology file** - Virtual lab topology definition for testing configurations
 
 Click on any artifact to view its content. For example, view a spine configuration to see the generated CLI commands.
+
+**Multi-format configuration rendering:**
+
+Infrahub's transformation system can generate multiple configuration formats from the same source data. For Arista EOS and Juniper JunOS leaf switches, you'll find both:
+
+- **Native CLI format** - Vendor-specific command syntax ready for deployment
+- **OpenConfig format** - Standardized, vendor-neutral YANG-based configuration
+
+This demonstrates how a single data model in Infrahub can produce multiple output formats, enabling flexibility in deployment methods (traditional CLI, NETCONF, gNMI, etc.) without duplicating source data.
+
+**Infrastructure artifacts:**
+
+Beyond device configurations, the generator creates supporting artifacts:
+
+- **CSV cabling matrix** - Documents physical connectivity between all devices and interfaces, useful for operations teams during installation and troubleshooting
+- **Containerlab topology file** - Enables spinning up virtual lab environments that mirror your production topology for testing and validation
 
 :::tip
 Artifacts are regenerated automatically when you create a proposed change. This ensures they always reflect the latest data.
