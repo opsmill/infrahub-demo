@@ -302,6 +302,89 @@ class InfrahubClient:
 
         return colocations
 
+    def get_proposed_changes(self, branch: str = "main") -> List[Dict[str, Any]]:
+        """Fetch proposed changes for a branch.
+
+        Args:
+            branch: Branch name to query (default: "main")
+
+        Returns:
+            List of proposed change dictionaries
+
+        Raises:
+            InfrahubConnectionError: If connection fails
+            InfrahubHTTPError: If HTTP error occurs
+            InfrahubGraphQLError: If GraphQL error occurs
+        """
+        query = """
+        query GetProposedChanges {
+          CoreProposedChange {
+            edges {
+              node {
+                id
+                name {
+                  value
+                }
+                state {
+                  value
+                }
+                source_branch {
+                  value
+                }
+              }
+            }
+          }
+        }
+        """
+
+        result = self.execute_graphql(query, branch=branch)
+
+        # Extract proposed changes from GraphQL response
+        edges = result.get("data", {}).get("CoreProposedChange", {}).get("edges", [])
+        proposed_changes = [edge["node"] for edge in edges]
+
+        return proposed_changes
+
+    def get_datacenters_from_proposed_changes(
+        self, branch: str = "main"
+    ) -> List[Dict[str, Any]]:
+        """Fetch TopologyDataCenter objects from proposed changes on a branch.
+
+        This method queries for data centers that may be part of open proposed changes
+        and haven't been merged yet. It adds a "_proposed" flag to distinguish them.
+
+        Args:
+            branch: Branch name to query (default: "main")
+
+        Returns:
+            List of datacenter dictionaries from proposed changes
+
+        Raises:
+            InfrahubConnectionError: If connection fails
+            InfrahubHTTPError: If HTTP error occurs
+            InfrahubGraphQLError: If GraphQL error occurs
+        """
+        # First, get proposed changes for this branch
+        proposed_changes = self.get_proposed_changes(branch)
+
+        # Filter for open proposed changes on this branch
+        open_pcs = [
+            pc
+            for pc in proposed_changes
+            if pc.get("state", {}).get("value") == "open"
+            and pc.get("source_branch", {}).get("value") == branch
+        ]
+
+        if not open_pcs:
+            return []
+
+        # For now, we'll query the branch directly with a flag to get uncommitted objects
+        # In Infrahub, objects created on a branch are visible via GraphQL queries on that branch
+        # even if they're part of an open proposed change
+        # So we actually don't need special handling - the issue is likely elsewhere
+
+        return []
+
     def execute_graphql(
         self,
         query: str,

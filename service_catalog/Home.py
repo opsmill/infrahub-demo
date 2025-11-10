@@ -131,6 +131,58 @@ def main() -> None:
         else:
             st.info("No data centers found in this branch.")
 
+            # Show debug info if on a non-main branch
+            if st.session_state.selected_branch != "main":
+                with st.expander("🔍 Debug Information"):
+                    st.markdown("**Query Details:**")
+                    st.code(f"Branch: {st.session_state.selected_branch}")
+                    st.code(f"Object Type: TopologyDataCenter")
+                    st.code(f"Infrahub Address: {client.base_url}")
+
+                    # Check for proposed changes
+                    try:
+                        pcs = client.get_proposed_changes(st.session_state.selected_branch)
+                        if pcs:
+                            st.markdown("**Proposed Changes on this branch:**")
+                            for pc in pcs:
+                                pc_name = pc.get("name", {}).get("value", "Unknown")
+                                pc_state = pc.get("state", {}).get("value", "Unknown")
+                                st.write(f"- {pc_name} (State: {pc_state})")
+                        else:
+                            st.write("No proposed changes found on this branch.")
+                    except Exception as e:
+                        st.write(f"Could not fetch proposed changes: {e}")
+
+                    # Check what other objects exist on this branch
+                    st.markdown("**Other objects on this branch:**")
+                    try:
+                        # Query for generic devices
+                        device_query = """
+                        query {
+                          DcimGenericDevice {
+                            count
+                            edges {
+                              node {
+                                id
+                                name { value }
+                                __typename
+                              }
+                            }
+                          }
+                        }
+                        """
+                        result = client.execute_graphql(device_query, branch=st.session_state.selected_branch)
+                        device_count = result.get("data", {}).get("DcimGenericDevice", {}).get("count", 0)
+                        st.write(f"- DcimGenericDevice: {device_count} object(s)")
+
+                        if device_count > 0:
+                            devices = result.get("data", {}).get("DcimGenericDevice", {}).get("edges", [])
+                            for device in devices[:5]:  # Show first 5
+                                dev_name = device.get("node", {}).get("name", {}).get("value", "Unknown")
+                                st.write(f"  - {dev_name}")
+                    except Exception as e:
+                        st.write(f"Error checking other objects: {e}")
+
     except InfrahubConnectionError as e:
         display_error("Unable to connect to Infrahub", str(e))
     except InfrahubHTTPError as e:
