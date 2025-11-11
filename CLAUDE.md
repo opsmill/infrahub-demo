@@ -15,6 +15,7 @@ This is **infrahub-demo**, a comprehensive demonstration of design-driven networ
 ## Common Commands
 
 ### InfraHub Container Management
+
 ```bash
 # Start InfraHub (uses invoke tasks)
 uv run invoke start
@@ -30,6 +31,7 @@ uv run invoke restart <component>
 ```
 
 ### Schema and Data Loading
+
 ```bash
 # Load schemas
 uv run infrahubctl schema load schemas --branch main
@@ -51,6 +53,7 @@ uv run infrahubctl object load objects/events/ --branch main
 ```
 
 ### Branch Management
+
 ```bash
 # Create a new branch
 uv run infrahubctl branch create <branch-name>
@@ -64,6 +67,7 @@ uv run python scripts/create_proposed_change.py --branch <branch-name>
 ```
 
 ### Testing and Validation
+
 ```bash
 # Run all tests
 uv run pytest
@@ -82,6 +86,7 @@ uv run invoke validate
 ```
 
 ### Code Quality
+
 ```bash
 # Format and lint code
 uv run ruff check . --fix
@@ -94,6 +99,7 @@ uv run invoke validate
 ```
 
 ### Bootstrap and Demo Workflows
+
 ```bash
 # Bootstrap Infrahub (Python version with Rich UI)
 uv run invoke bootstrap
@@ -139,7 +145,7 @@ This project follows InfraHub's SDK pattern with five core component types:
 
 ### Data Flow
 
-```
+```text
 Schema Definition → Data Loading → Generator Execution → Transform Processing → Configuration Generation
                                          ↓
                                    Validation Checks
@@ -148,6 +154,7 @@ Schema Definition → Data Loading → Generator Execution → Transform Process
 ### Configuration Hub (.infrahub.yml)
 
 All components are registered in `.infrahub.yml`:
+
 - `jinja2_transforms` - Template-based transforms
 - `python_transforms` - Python-based transforms
 - `generator_definitions` - Topology generators
@@ -158,7 +165,9 @@ All components are registered in `.infrahub.yml`:
 ## Code Quality Requirements
 
 ### Type Hints (MANDATORY)
+
 All functions must have complete type hints:
+
 ```python
 from typing import Any, Dict, List, Optional
 
@@ -168,13 +177,16 @@ async def process_data(data: Dict[str, Any], device_name: str) -> List[str]:
 ```
 
 ### Testing (MANDATORY)
+
 Every new functionality must have corresponding tests:
+
 - Unit tests in `tests/unit/`
 - Integration tests in `tests/integration/`
 - Use `unittest.mock` for mocking external dependencies
 - Test both success and failure scenarios
 
 ### Code Style
+
 - Format with `ruff` before committing
 - Pass `mypy` type checking
 - Follow PascalCase for classes, snake_case for functions/variables
@@ -185,9 +197,11 @@ Every new functionality must have corresponding tests:
 When creating user-facing scripts with Rich for terminal output:
 
 **Box Styles:**
+
 - Use `box.SIMPLE` for panels and tables (ASCII characters: `+`, `-`, `|`)
 - Avoid `box.ROUNDED` and `box.DOUBLE` (Unicode characters may not render properly in all terminals)
 - Example:
+
   ```python
   from rich import box
   from rich.panel import Panel
@@ -196,9 +210,11 @@ When creating user-facing scripts with Rich for terminal output:
   ```
 
 **Progress Bars:**
+
 - Include task description in the progress bar itself, not in a separate print statement
 - Use spinners, bars, percentages, and time indicators for better UX
 - Example from `scripts/bootstrap.py`:
+
   ```python
   with Progress(
       SpinnerColumn(spinner_name="dots12", style="bold bright_yellow"),
@@ -212,12 +228,14 @@ When creating user-facing scripts with Rich for terminal output:
   ```
 
 **Type Stubs:**
+
 - Install type stubs for external libraries: `uv pip install types-requests`
 - Mypy configuration excludes `scripts/debug/` directory from type checking
 
 ## InfraHub SDK Patterns
 
 ### Generator Pattern
+
 ```python
 from infrahub_sdk.generators import InfrahubGenerator
 
@@ -229,6 +247,7 @@ class MyTopologyGenerator(InfrahubGenerator):
 ```
 
 ### Transform Pattern
+
 ```python
 from infrahub_sdk.transforms import InfrahubTransform
 from jinja2 import Environment, FileSystemLoader
@@ -251,12 +270,14 @@ class MyTransform(InfrahubTransform):
 ```
 
 **Important Transform Notes:**
+
 - Always disable Jinja2 autoescape (`autoescape=False`) when generating device configs
 - HTML entities in Infrahub data (e.g., `&gt;`) are decoded in `transforms/common.py`
 - Use `get_interface_roles()` to organize interfaces by role for templates
 - Interface descriptions are automatically HTML-decoded to prevent `&gt;` appearing as `-&gt;`
 
 ### Check Pattern
+
 ```python
 from infrahub_sdk.checks import InfrahubCheck
 from typing import Any
@@ -287,12 +308,14 @@ The `transforms/common.py` module provides helper functions for data processing:
 ## Schema Conventions
 
 ### Naming Conventions
+
 - **Nodes**: PascalCase (e.g., `LocationBuilding`, `DcimGenericDevice`)
 - **Attributes**: snake_case (e.g., `device_type`, `ip_address`)
 - **Relationships**: snake_case (e.g., `parent_location`, `connected_interfaces`)
 - **Namespaces**: PascalCase (e.g., `Dcim`, `Ipam`, `Service`, `Design`)
 
 ### Schema Structure
+
 ```yaml
 nodes:
   - name: MyDevice
@@ -315,6 +338,7 @@ nodes:
 ## Environment Variables
 
 Required environment variables (can be set in `.env`):
+
 ```bash
 INFRAHUB_ADDRESS="http://localhost:8000"
 INFRAHUB_API_TOKEN="06438eb2-8019-4776-878c-0941b1f1d1ec"
@@ -325,6 +349,7 @@ Note: The token above is a demo token for local development only.
 ## Bootstrap Process
 
 The complete setup sequence:
+
 ```bash
 # 1. Start InfraHub
 uv run invoke start
@@ -355,6 +380,7 @@ uv run python scripts/bootstrap.py
 ## Demo Scenarios
 
 ### Data Center Demo
+
 ```bash
 # Automated approach (via invoke task)
 uv run invoke demo-dc-arista
@@ -366,6 +392,7 @@ uv run infrahubctl object load objects/dc/dc-arista-s.yml --branch my-branch
 ```
 
 ### Available Demo Data Files
+
 - `objects/dc/dc-arista-s.yml` - Arista EOS data center
 - `objects/dc/dc-cisco-s.yml` - Cisco NX-OS data center
 - `objects/dc/dc-cisco-s-border-leafs.yml` - Cisco with border leafs
@@ -381,6 +408,7 @@ The project includes a Streamlit-based service catalog application:
 **Location:** `service_catalog/`
 
 **Features:**
+
 - Rich visual interface for infrastructure resources
 - Branch selection capability
 - Data center and colocation center listings
@@ -388,6 +416,7 @@ The project includes a Streamlit-based service catalog application:
 - Real-time status updates
 
 **Running the Service Catalog:**
+
 ```bash
 # Ensure INFRAHUB_SERVICE_CATALOG=true in .env or docker-compose.override.yml
 # The service catalog runs automatically when enabled
@@ -460,11 +489,12 @@ The project includes a Streamlit-based service catalog application:
 - `tests/conftest.py` - Pytest fixtures and configuration
 - `tests/unit/` - Unit tests
 - `tests/integration/` - Integration tests
-- `tasks.py` - Invoke task definitions (bootstrap, demo-dc-arista, create-pc, etc.)
+- `tasks.py` - Invoke task definitions (bootstrap, demo-dc-arista, etc.)
 
 ## GraphQL Query Patterns
 
 Queries are defined in `queries/` and referenced by name in transforms/checks:
+
 ```graphql
 query GetDeviceConfig($device_name: String!) {
   DcimGenericDevice(name__value: $device_name) {
@@ -521,17 +551,20 @@ uv run infrahubctl transform spine --branch add-dc3 --debug device=dc-3-spine-01
 ### Common Transform Issues
 
 **"interface_roles is undefined" error:**
+
 - The template expects `interface_roles` but transform provides flat `interfaces` list
 - Solution: Use `get_interface_roles()` instead of `get_interfaces()` in transform
 - Spine templates need: `interface_roles.loopback`, `interface_roles.all_downlink`
 - Leaf templates need: `interfaces.all_physical`
 
 **HTML entities in output (`&gt;`, `&lt;`, etc.):**
+
 - Infrahub stores descriptions with HTML-encoded entities
 - Solution: Disable Jinja2 autoescape (`autoescape=False`)
 - `get_interfaces()` automatically decodes descriptions with `html.unescape()`
 
 **Artifact caching:**
+
 - Artifacts in Infrahub are cached
 - Template/transform changes won't appear until artifacts regenerate
 - Trigger regeneration by updating device or running generator again
@@ -591,6 +624,7 @@ markdownlint docs/docs/**/*.mdx --fix
 The Docusaurus documentation site supports [Mermaid diagrams](https://mermaid.js.org/) for creating visual representations directly in markdown.
 
 **Setup:**
+
 - Mermaid theme is configured in `docs/docusaurus.config.ts`
 - `@docusaurus/theme-mermaid` package is installed
 - See `docs/MERMAID_SETUP.md` for installation and troubleshooting
@@ -606,6 +640,7 @@ graph TB
 ````
 
 **Examples:**
+
 - `docs/docs/security-management.mdx` includes a comprehensive security schema diagram
 - Supported types: flowcharts, sequence diagrams, class diagrams, state diagrams, ER diagrams, and more
 

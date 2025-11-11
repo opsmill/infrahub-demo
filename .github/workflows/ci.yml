@@ -140,7 +140,7 @@ jobs:
     runs-on: "ubuntu-22.04"
     timeout-minutes: 5
     env:
-      VALE_VERSION: "3.7.1"
+      VALE_VERSION: "3.13.0"
     steps:
       - uses: "actions/checkout@v5"
         with:

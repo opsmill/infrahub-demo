@@ -192,9 +192,6 @@ Examples:
   # Create proposed change for a specific branch
   python scripts/create_proposed_change.py --branch my-feature-branch
 
-  # Using invoke
-  uv run invoke create-pc
-  uv run invoke create-pc --branch my-feature-branch
         """,
     )
     parser.add_argument(

@@ -143,39 +143,9 @@ def start(context: Context, rebuild: bool = False) -> None:
         )
 
 
-@task(optional=["schema", "branch"])
-def load_schema(
-    context: Context, schema: str = "./schemas/", branch: str = "main"
-) -> None:
-    """Load the schemas from the given path."""
-    context.run(f"infrahubctl schema load {schema} --branch {branch}")
-
-
-@task(optional=["branch"])
-def load_data(
-    context: Context, name: str = "bootstrap.py", branch: str = "main"
-) -> None:
-    """Load the data from the given path."""
-    context.run(f"infrahubctl run bootstrap/{name} --branch {branch}")
-
-
-@task(optional=["branch"])
-def load_menu(context: Context, menu: str = "menus/menu-full.yml", branch: str = "main") -> None:
-    """Load the menu from the given path."""
-    context.run(f"infrahubctl menu load {menu} --branch {branch}")
-
-
-@task(optional=["branch"])
-def load_objects(
-    context: Context, path: str = "objects/bootstrap/", branch: str = "main"
-) -> None:
-    """Load objects from the given path."""
-    context.run(f"infrahubctl object load {path} --branch {branch}")
-
-
 @task(optional=["branch"], name="bootstrap")
 def bootstrap_py(context: Context, branch: str = "main") -> None:
-    """Run the complete bootstrap process (Python version with Rich UI)."""
+    """Run the complete bootstrap process."""
     context.run(f"uv run python scripts/bootstrap.py --branch {branch}", pty=True)
 
 
@@ -243,14 +213,6 @@ def demo_dc_arista(context: Context, branch: str = "add-dc3") -> None:
     )
 
     console.print()
-
-
-@task(optional=["branch"], name="create-pc")
-def create_proposed_change(context: Context, branch: str = "add-dc3") -> None:
-    """Create an Infrahub Proposed Change for a branch."""
-    context.run(
-        f"uv run python scripts/create_proposed_change.py --branch {branch}", pty=True
-    )
 
 
 @task(optional=["branch", "topology"])
@@ -360,56 +322,17 @@ def run_tests(context: Context) -> None:
 
 
 @task
-def validate(context: Context) -> None:
-    """Run all code quality tests."""
-    console.print()
-    console.print(
-        Panel(
-            "[bold cyan]Running Code Validation[/bold cyan]\n"
-            "[dim]Ruff → Mypy → Pytest[/dim]",
-            border_style="cyan",
-            box=box.SIMPLE,
-        )
-    )
-
-    console.print("\n[cyan]→[/cyan] Running Ruff checks...")
-    context.run("ruff check . --fix")
-
-    console.print("\n[cyan]→[/cyan] Running Mypy type checks...")
-    context.run("mypy .")
-
-    console.print("\n[cyan]→[/cyan] Running Pytest...")
-    context.run("pytest -vv tests")
-
-    console.print("\n[green]✓[/green] All validation checks completed!")
-    console.print()
-
-
-@task
-def format(context: Context) -> None:
-    """Run RUFF to format all Python files."""
-    console.print()
-    console.print(
-        Panel(
-            "[bold magenta]Formatting Python Code[/bold magenta]\n"
-            "[dim]Ruff Format → Ruff Fix[/dim]",
-            border_style="magenta",
-            box=box.SIMPLE,
-        )
-    )
-
-    exec_cmds = ["ruff format .", "ruff check . --fix"]
+def lint_markdown(context: Context) -> None:
+    """Run Linter to check all Markdown files."""
+    print(" - Check code with markdownlint")
+    exec_cmd = "markdownlint ."
     with context.cd(MAIN_DIRECTORY_PATH):
-        for cmd in exec_cmds:
-            context.run(cmd)
-
-    console.print("[green]✓[/green] Code formatting completed")
-    console.print()
+        context.run(exec_cmd)
 
 
 @task
 def lint_yaml(context: Context) -> None:
-    """Run Linter to check all Python files."""
+    """Run Linter to check all YAML files."""
     print(" - Check code with yamllint")
     exec_cmd = "yamllint ."
     with context.cd(MAIN_DIRECTORY_PATH):
@@ -418,7 +341,7 @@ def lint_yaml(context: Context) -> None:
 
 @task
 def lint_mypy(context: Context) -> None:
-    """Run Linter to check all Python files."""
+    """Run mypy to check all Python files."""
     print(" - Check code with mypy")
     exec_cmd = "mypy --show-error-codes ."
     with context.cd(MAIN_DIRECTORY_PATH):
@@ -427,7 +350,7 @@ def lint_mypy(context: Context) -> None:
 
 @task
 def lint_ruff(context: Context) -> None:
-    """Run Linter to check all Python files."""
+    """Run ruff to check all Python files."""
     print(" - Check code with ruff")
     exec_cmd = "ruff check ."
     with context.cd(MAIN_DIRECTORY_PATH):
@@ -441,11 +364,14 @@ def lint_all(context: Context) -> None:
     console.print(
         Panel(
             "[bold yellow]Running All Linters[/bold yellow]\n"
-            "[dim]YAML → Ruff → Mypy[/dim]",
+            "[dim]Markdown → YAML → Ruff → Mypy[/dim]",
             border_style="yellow",
             box=box.SIMPLE,
         )
     )
+
+    console.print("\n[yellow]→[/yellow] Running markdownlint...")
+    lint_markdown(context)
 
     console.print("\n[yellow]→[/yellow] Running yamllint...")
     lint_yaml(context)
