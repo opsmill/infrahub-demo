@@ -131,6 +131,7 @@ extensions:
           cardinality: many
           optional: true
           peer: ServiceVIP
+          description: Virtual IP services using this server as a backend
           order_weight: 2000
           identifier: vip__backend_servers
     - kind: LoadbalancerHealthCheck

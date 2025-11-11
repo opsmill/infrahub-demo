@@ -126,7 +126,7 @@ To explore Arista EOS configurations, you can use the automated demo command:
 uv run invoke demo-dc-arista
 ```
 
-This command creates a branch, loads the Arista design, and waits for generator completion.
+This command creates a branch, loads the Arista design, waits for generator completion, then creates a proposed change.
 
 For other vendors, load the design files directly:
 
@@ -375,23 +375,3 @@ If you encounter merge conflicts:
 1. Review the conflicting objects
 2. Resolve conflicts manually if needed
 3. You may need to rebase your branch or create a new branch
-
-## Using the CLI for the workflow
-
-You can also perform this entire workflow from the command line. Here's the abbreviated version:
-
-```bash
-# Create branch
-uv run infrahubctl branch create add-dc3
-
-# Load design (this automatically triggers the generator)
-uv run infrahubctl object load objects/dc/dc-arista-s.yml --branch add-dc3
-
-# Monitor generator progress in the web interface (System → Tasks)
-# Create proposed change (easier via web interface)
-
-# After merge, verify on main
-uv run infrahubctl branch list
-```
-
-For complex workflows involving proposed changes and monitoring generator execution, the web interface provides a better experience with visual feedback and real-time status updates.

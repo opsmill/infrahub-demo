@@ -28,9 +28,13 @@ Before starting this tutorial, ensure you have:
 The security data is loaded as part of the bootstrap process. If you haven't loaded it yet, run `uv run infrahubctl object load objects/security/` followed by `uv run python scripts/populate_security_relationships.py` to populate the many-to-many relationships.
 :::
 
-## Understanding the security schema
+## Understanding the demo security schema
 
-Infrahub's security management schema provides a comprehensive data model for firewall policies, zones, services, and applications. The schema is organized into several categories of security objects that work together to define complete security policies.
+The demo security management schema in this repository provides an example data model for firewall policies, zones, services, and applications. The schema is organized into several categories of security objects that work together to define complete security policies.
+
+:::info
+As Infrahub provides the user a flexible schema, this specific security schema implementation serves as an example of what is possible, not a finished solution. The value of Infrahub is the ability to create a specific schema to the needs of your organization.
+:::
 
 ### Security schema architecture
 
@@ -505,5 +509,5 @@ Now that you understand security management in Infrahub, you can:
 For deeper understanding:
 
 - **[Understanding the concepts](./concepts.mdx)** - Learn about schema-driven data modeling
-- **[Developer guide](./developer-guide.mdx)** - Understand how transforms and templates work
+- **[Developer guide](./developer-guide.mdx)** - Understand how transformations and templates work
 - **[Infrahub security schema](https://github.com/opsmill/infrahub-demo/blob/main/schemas/extensions/security/security.yml)** - Review the complete schema definition

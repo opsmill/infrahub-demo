@@ -15,8 +15,7 @@ nodes:
     include_in_menu: true
     order_by:
       - name__value
-    display_labels:
-      - name__value
+    display_label: "{{ name__value }}"
     attributes:
       - name: name
         kind: Text
@@ -48,8 +47,7 @@ nodes:
     include_in_menu: true
     order_by:
       - name__value
-    display_labels:
-      - name__value
+    display_label: "{{ name__value }}"
     attributes:
       - name: name
         kind: Text
@@ -81,8 +79,7 @@ nodes:
     include_in_menu: true
     order_by:
       - name__value
-    display_labels:
-      - name__value
+    display_label: "{{ name__value }}"
     attributes:
       - name: name
         kind: Text
@@ -114,8 +111,7 @@ nodes:
     include_in_menu: true
     order_by:
       - name__value
-    display_labels:
-      - name__value
+    display_label: "{{ name__value }}"
     attributes:
       - name: name
         kind: Text
@@ -150,8 +146,7 @@ nodes:
     include_in_menu: true
     order_by:
       - name__value
-    display_labels:
-      - name__value
+    display_label: "{{ name__value }}"
     attributes:
       - name: name
         kind: Text
@@ -180,8 +175,7 @@ nodes:
     include_in_menu: true
     order_by:
       - name__value
-    display_labels:
-      - name__value
+    display_label: "{{ name__value }}"
     attributes:
       - name: name
         kind: Text
@@ -236,8 +230,7 @@ nodes:
     include_in_menu: true
     order_by:
       - name__value
-    display_labels:
-      - name__value
+    display_label: "{{ name__value }}"
     attributes:
       - name: name
         kind: Text
@@ -286,8 +279,7 @@ nodes:
     include_in_menu: true
     order_by:
       - name__value
-    display_labels:
-      - name__value
+    display_label: "{{ name__value }}"
     attributes:
       - name: name
         kind: Text
@@ -338,8 +330,7 @@ nodes:
     include_in_menu: true
     order_by:
       - name__value
-    display_labels:
-      - name__value
+    display_label: "{{ name__value }}"
     attributes:
       - name: name
         kind: Text
@@ -380,8 +371,7 @@ nodes:
     include_in_menu: true
     order_by:
       - name__value
-    display_labels:
-      - name__value
+    display_label: "{{ name__value }}"
     attributes:
       - name: name
         kind: Text
@@ -428,8 +418,7 @@ nodes:
     include_in_menu: true
     order_by:
       - name__value
-    display_labels:
-      - name__value
+    display_label: "{{ name__value }}"
     attributes:
       - name: name
         kind: Text
@@ -479,8 +468,7 @@ nodes:
     include_in_menu: true
     order_by:
       - name__value
-    display_labels:
-      - name__value
+    display_label: "{{ name__value }}"
     attributes:
       - name: name
         kind: Text
@@ -524,8 +512,7 @@ nodes:
     include_in_menu: true
     order_by:
       - name__value
-    display_labels:
-      - name__value
+    display_label: "{{ name__value }}"
     attributes:
       - name: name
         kind: Text
@@ -576,8 +563,7 @@ nodes:
     include_in_menu: true
     order_by:
       - name__value
-    display_labels:
-      - name__value
+    display_label: "{{ name__value }}"
     attributes:
       - name: name
         kind: Text
@@ -617,8 +603,7 @@ nodes:
     include_in_menu: true
     order_by:
       - index__value
-    display_labels:
-      - name__value
+    display_label: "{{ name__value }}"
     attributes:
       - name: index
         kind: Number
@@ -742,8 +727,7 @@ nodes:
     include_in_menu: true
     order_by:
       - name__value
-    display_labels:
-      - name__value
+    display_label: "{{ name__value }}"
     attributes:
       - name: name
         kind: Text
@@ -788,8 +772,7 @@ nodes:
     include_in_menu: true
     order_by:
       - name__value
-    display_labels:
-      - name__value
+    display_label: "{{ name__value }}"
     attributes:
       - name: name
         kind: Text
@@ -855,8 +838,7 @@ nodes:
     include_in_menu: true
     order_by:
       - name__value
-    display_labels:
-      - name__value
+    display_label: "{{ name__value }}"
     attributes:
       - name: name
         kind: Text
@@ -895,8 +877,7 @@ nodes:
     include_in_menu: true
     order_by:
       - index__value
-    display_labels:
-      - name__value
+    display_label: "{{ name__value }}"
     attributes:
       - name: index
         kind: Number

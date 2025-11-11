@@ -21,7 +21,7 @@ Before starting this tutorial, ensure you have:
 
 - Completed the [installation guide](./install.mdx) and have Infrahub running
 - Completed the [user walkthrough](./user-walkthrough.mdx) to understand the basic workflow
-- **Docker** installed and running with sufficient resources (at least 8GB RAM recommended)
+- **Docker** installed and running with sufficient resources (at least 16GB RAM recommended to support a few cEOS containers)
 - **Containerlab** installed ([installation instructions](https://containerlab.dev/install/))
 - **sudo access** for running Containerlab (required for network namespace operations)
 
@@ -253,50 +253,7 @@ ssh admin@<management-ip>
 
 Default credentials are typically `admin` / `admin` for cEOS devices.
 
-## Step 6: Test the fabric
-
-With all devices running, verify the data center fabric is functioning:
-
-### Check underlay connectivity
-
-From any spine, ping the loopback addresses of all leaves:
-
-```bash
-sudo containerlab exec --name DC-3 --node dc3-spine1 Cli
-
-# In the EOS CLI
-ping <leaf1-loopback-ip>
-ping <leaf2-loopback-ip>
-```
-
-### Verify BGP convergence
-
-Check that all BGP sessions are established:
-
-```bash
-# From a spine
-show ip bgp summary
-
-# From a leaf
-show ip bgp summary
-show bgp evpn summary
-```
-
-All neighbors should show state "Established" with non-zero prefix counts.
-
-### Verify the EVPN control plane
-
-On leaf switches, check EVPN VXLAN status:
-
-```bash
-show bgp evpn summary
-show vxlan vtep
-show vxlan vni
-```
-
-You should see VXLAN tunnels established between all VTEPs (leaf switches).
-
-## Step 7: Destroy the lab (cleanup)
+## Step 6: Destroy the lab (cleanup)
 
 When you're done testing, destroy the lab to free resources:
 
@@ -336,21 +293,6 @@ Deploy configurations from any branch:
 uv run invoke containerlab --branch my-branch --topology DC-3
 ```
 
-### Customizing the topology
-
-Edit the generated topology file before deployment:
-
-```bash
-# Extract configs only (don't deploy yet)
-uv run scripts/get_configs.py --branch add-dc3
-
-# Edit the topology file
-vim generated-configs/clab/DC-3.clab.yml
-
-# Deploy manually
-sudo -E containerlab deploy -t generated-configs/clab/DC-3.clab.yml
-```
-
 ### Testing configuration changes
 
 Use this workflow to test changes before production:
@@ -361,15 +303,6 @@ Use this workflow to test changes before production:
 4. Extract configs and deploy to Containerlab
 5. Test in virtual lab
 6. If successful, merge to main and deploy to production
-
-### Connecting external tools
-
-Containerlab labs can be accessed by external tools:
-
-- **Ansible** - Use management IPs to configure devices
-- **Network monitoring** - Connect SNMP or streaming telemetry collectors
-- **Traffic generators** - Inject test traffic using additional containers
-- **CI/CD pipelines** - Automate testing with Containerlab in CI
 
 ## Troubleshooting
 
@@ -401,15 +334,6 @@ docker logs clab-DC-3-dc3-spine1
 
 Look for configuration syntax errors or boot failures.
 
-### BGP sessions don't establish
-
-Verify:
-
-1. All containers are running (`docker ps`)
-2. Device configurations were loaded correctly (check `show running-config`)
-3. Interface states are up (`show ip interface brief`)
-4. No IP address conflicts
-
 ### Out of memory errors
 
 Containerlab labs can be resource-intensive. For DC-3 with 8 devices:
@@ -422,16 +346,8 @@ Reduce device count or increase Docker's memory allocation if needed.
 
 ## Next steps
 
-Now that you can deploy virtual labs, you can:
-
-- **Test other vendor designs** - Deploy DC-2 (Cisco), DC-4 (SONiC), or DC-5 (Juniper) topologies
-- **Experiment with changes** - Modify designs in Infrahub, regenerate, and test in Containerlab
-- **Automate testing** - Write scripts that deploy, test, and validate configurations automatically
-- **Integrate with CI/CD** - Add Containerlab deployment to your pipeline for automated validation
-- **Learn device CLIs** - Practice configuring Arista EOS in a safe virtual environment
-
 For deeper understanding:
 
-- **[Understanding the concepts](./concepts.mdx)** - Learn about design-driven automation
-- **[Developer guide](./developer-guide.mdx)** - Understand how generators and transforms work
+- **[Understanding the concepts](./concepts.mdx)** - Learn about this design-driven automation demo
+- **[Developer guide](./developer-guide.mdx)** - Understand how generators and transformations work
 - **[Containerlab documentation](https://containerlab.dev/)** - Explore advanced Containerlab features

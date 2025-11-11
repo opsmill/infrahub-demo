@@ -760,67 +760,6 @@ config = template.render(hostname="spine1", interfaces=[...])
 print(config)
 ```
 
-## Troubleshooting
-
-### Generator fails
-
-1. Check task logs in Infrahub UI (System → Tasks)
-2. Look for Python exceptions in generator code
-3. Verify input data matches expected structure
-4. Add debug logging to narrow down issue
-
-### Transform produces incorrect output
-
-1. Examine GraphQL query results
-2. Print context data before rendering
-3. Test template with sample data
-4. Check for Jinja2 syntax errors
-
-### Check fails unexpectedly
-
-1. Review check query and data
-2. Verify validation logic
-3. Check for missing relationships or attributes
-4. Test with minimal dataset
-
-### Schema conflicts
-
-1. Check for naming conflicts
-2. Verify relationship peer nodes exist
-3. Ensure proper inheritance
-4. Review schema validation errors
-
-## Best practices
-
-### Code organization
-
-- Keep generators focused on single topology type
-- Separate common logic into utilities (`common.py`)
-- Use type hints throughout
-- Write docstrings for classes and methods
-
-### Testing
-
-- Write tests before implementing features (TDD)
-- Cover both success and failure cases
-- Use mocks for external dependencies
-- Maintain high test coverage
-
-### Documentation
-
-- Document complex generator logic
-- Add inline comments for non-obvious code
-- Update this guide when adding features
-- Keep README.md current
-
-### Performance
-
-- Use batch operations for creating many objects
-- Leverage async/await for concurrent operations
-- Profile generators for large topologies
-- Optimize GraphQL queries to fetch only needed data
-
 ## Additional resources
 
-- **Infrahub SDK documentation**: [docs.infrahub.app/python-sdk/](https://docs.infrahub.app/python-sdk/)
-- **Infrahub schema guide**: [docs.infrahub.app/topics/schema/](https://docs.infrahub.app/topics/schema/)
+- **Infrahub documentation**: [docs.infrahub.app/](https://docs.infrahub.app/)

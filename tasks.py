@@ -321,7 +321,7 @@ def run_tests(context: Context) -> None:
     console.print("[green]✓[/green] Tests completed")
 
 
-@task
+@task(name="_lint-markdown")
 def lint_markdown(context: Context) -> None:
     """Run Linter to check all Markdown files."""
     print(" - Check code with markdownlint")
@@ -330,7 +330,7 @@ def lint_markdown(context: Context) -> None:
         context.run(exec_cmd)
 
 
-@task
+@task(name="_lint-yaml")
 def lint_yaml(context: Context) -> None:
     """Run Linter to check all YAML files."""
     print(" - Check code with yamllint")
@@ -339,7 +339,7 @@ def lint_yaml(context: Context) -> None:
         context.run(exec_cmd)
 
 
-@task
+@task(name="_lint-mypy")
 def lint_mypy(context: Context) -> None:
     """Run mypy to check all Python files."""
     print(" - Check code with mypy")
@@ -348,7 +348,7 @@ def lint_mypy(context: Context) -> None:
         context.run(exec_cmd)
 
 
-@task
+@task(name="_lint-ruff")
 def lint_ruff(context: Context) -> None:
     """Run ruff to check all Python files."""
     print(" - Check code with ruff")

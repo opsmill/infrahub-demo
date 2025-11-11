@@ -8,8 +8,7 @@ generics:
     label: "Network Management Servers"
     human_friendly_id:
       - name__value
-    display_labels:
-      - name__value
+    display_label: "{{ name__value }}"
     order_by: [name__value]
     include_in_menu: false
     attributes:
@@ -54,8 +53,7 @@ generics:
     icon: "carbon:network-3-reference"
     human_friendly_id:
       - name__value
-    display_labels:
-      - name__value
+    display_label: "{{ name__value }}"
     order_by: [name__value]
     include_in_menu: false
     attributes:
@@ -117,8 +115,7 @@ nodes:
     icon: "carbon:network-3"
     human_friendly_id:
       - name__value
-    display_labels:
-      - name__value
+    display_label: "{{ name__value }}"
     order_by: [name__value]
     inherit_from:
       - CoreArtifactTarget
@@ -169,8 +166,7 @@ nodes:
     human_friendly_id:
       - name__value
     order_by: [name__value]
-    display_labels:
-      - name__value
+    display_label: "{{ name__value }}"
     attributes:
       - name: name
         kind: Text
@@ -265,8 +261,7 @@ nodes:
     include_in_menu: false
     human_friendly_id:
       - name__value
-    display_labels:
-      - name__value
+    display_label: "{{ name__value }}"
     order_by: [name__value]
     attributes:
       - name: name
@@ -291,8 +286,7 @@ nodes:
     include_in_menu: false
     human_friendly_id:
       - name__value
-    display_labels:
-      - name__value
+    display_label: "{{ name__value }}"
     order_by: [name__value]
     inherit_from:
       - NetworkManagementServer
@@ -314,8 +308,7 @@ nodes:
     menu_placement: "NetworkManagementServer"
     human_friendly_id:
       - name__value
-    display_labels:
-      - name__value
+    display_label: "{{ name__value }}"
     order_by: [name__value]
     inherit_from:
       - NetworkManagementServer
@@ -327,8 +320,7 @@ nodes:
     menu_placement: "NetworkManagementServer"
     human_friendly_id:
       - name__value
-    display_labels:
-      - name__value
+    display_label: "{{ name__value }}"
     order_by: [name__value]
     inherit_from:
       - NetworkManagementServer
@@ -338,8 +330,7 @@ nodes:
     namespace: Topology
     description: "A Topology represents the entire network pod."
     label: "Data Center Deployment"
-    display_labels:
-      - name__value
+    display_label: "{{ name__value }}"
     order_by: [name__value]
     inherit_from:
       - CoreArtifactTarget
@@ -402,8 +393,7 @@ nodes:
     namespace: Topology
     description: "A Topology represents the Colocation Center."
     label: "Colocation Center"
-    display_labels:
-      - name__value
+    display_label: "{{ name__value }}"
     order_by: [name__value]
     inherit_from:
       - CoreArtifactTarget
@@ -433,8 +423,7 @@ nodes:
     namespace: Topology
     description: "A Topology represents Branch Office."
     label: "Branch Office"
-    display_labels:
-      - name__value
+    display_label: "{{ name__value }}"
     order_by: [name__value]
     inherit_from:
       - CoreArtifactTarget

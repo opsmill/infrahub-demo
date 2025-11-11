@@ -12,8 +12,7 @@ generics:
       - name__value
     order_by:
       - name__value
-    display_labels:
-      - name__value
+    display_label: "{{ name__value }}"
     attributes:
       - name: name
         kind: Text
@@ -172,8 +171,7 @@ generics:
     human_friendly_id:
       - device__name__value
       - name__value
-    display_labels:
-      - name__value
+    display_label: "{{ name__value }}"
     attributes:
       - name: name
         kind: Text
@@ -323,8 +321,7 @@ nodes:
     icon: mdi:poll
     human_friendly_id:
       - name__value
-    display_labels:
-      - name__value
+    display_label: "{{ name__value }}"
     order_by:
       - manufacturer__name__value
       - name__value
@@ -386,8 +383,7 @@ nodes:
     icon: mdi:application-cog-outline
     human_friendly_id:
       - name__value
-    display_labels:
-      - name__value
+    display_label: "{{ name__value }}"
     order_by:
       - manufacturer__name__value
       - name__value
@@ -514,8 +510,7 @@ nodes:
       - DcimEndpoint
       - DcimSubInterface
     include_in_menu: false
-    display_labels:
-      - name__value
+    display_label: "{{ name__value }}"
 
     attributes:
       - name: interface_type
@@ -604,8 +599,7 @@ nodes:
       - DcimInterface
       # - DcimSubInterface # Depending if you want your virtual interfaces to have sub interface
     include_in_menu: false
-    display_labels:
-      - name__value
+    display_label: "{{ name__value }}"
     # human_friendly_id:
     #   - device__name__value
     #   - name__value
