@@ -34,32 +34,33 @@ infrahub-demo/
 │   ├── leaf.py
 │   ├── edge.py
 │   └── loadbalancer.py
-├── objects/                      # Demo data
-│   ├── bootstrap/            # Initial data (18 files: locations, platforms, roles, devices, etc.)
-│   ├── security/             # Security zones, policies, rules
-│   ├── cloud_security/       # Cloud security examples
-│   ├── events/               # Event action definitions
-│   ├── dc-cisco-s.yml            # DC-2 design data (Cisco)
-│   ├── dc-arista-s.yml           # DC-3 design data (Arista)
-│   ├── dc-sonic-border-leafs.yml # DC-4 design data (SONiC with border leafs)
-│   ├── dc-juniper-s.yml          # DC-5 design data (Juniper)
-│   ├── dc-2.yml              # Additional DC-2 variant
-│   ├── dc-3.yml              # Additional DC-3 variant
-│   ├── pop-1.yml             # POP-1 design data
-│   └── pop-2.yml             # POP-2 design data
-├── generators/               # Topology generators
-│   ├── generate_dc.py        # Data center generator
-│   ├── generate_pop.py       # POP generator
-│   ├── generate_segment.py   # Network segment generator
-│   ├── common.py             # Shared utilities
-│   └── schema_protocols.py   # Type protocols
-├── menus/                    # UI menu definitions
-│   └── menu-full.yml         # Complete menu
-
-├── queries/                  # GraphQL queries
-│   ├── config/              # Configuration queries
-│   ├── topology/            # Topology queries
-│   └── validation/          # Validation queries
+├── objects/                   # Demo data
+│   ├── bootstrap/             # Initial data (19 files: groups, locations, platforms, roles, devices, etc.)
+│   ├── cloud_security/        # Cloud security examples (services, devices, gateways)
+│   ├── dc/                    # Data center design files
+│   │   ├── dc-arista-s.yml    # DC-3 design data (Arista)
+│   │   ├── dc-cisco-s.yml     # DC-2 design data (Cisco)
+│   │   ├── dc-cisco-s-border-leafs.yml  # Cisco DC with border leafs
+│   │   ├── dc-juniper-s.yml   # DC-5 design data (Juniper)
+│   │   └── dc-sonic-border-leafs.yml    # DC-4 design data (SONiC with border leafs)
+│   ├── events/                # Event action definitions
+│   ├── lb/                    # Load balancer configurations
+│   ├── pop/                   # Point of presence design files
+│   │   ├── pop-1.yml          # POP-1 design data
+│   │   └── pop-2.yml          # POP-2 design data
+│   └── security/              # Security zones, policies, rules (15 files)
+├── generators/                # Topology generators
+│   ├── generate_dc.py         # Data center generator
+│   ├── generate_pop.py        # POP generator
+│   ├── generate_segment.py    # Network segment generator
+│   ├── common.py              # Shared utilities
+│   └── schema_protocols.py    # Type protocols
+├── menus/                     # UI menu definitions
+│   └── menu-full.yml          # Complete menu
+├── queries/                   # GraphQL queries
+│   ├── config/                # Configuration queries
+│   ├── topology/              # Topology queries
+│   └── validation/            # Validation queries
 ├── schemas/                  # Data model definitions
 │   ├── base/                # Core models
 │   │   ├── dcim.yml
@@ -72,6 +73,16 @@ infrahub-demo/
 │       ├── security/
 │       ├── service/
 │       └── topology/
+├── docs/                     # Documentation (Docusaurus)
+│   ├── docs/                # Documentation content (.mdx files)
+│   ├── static/              # Static assets
+│   ├── docusaurus.config.ts # Docusaurus configuration
+│   └── package.json         # Node.js dependencies
+├── scripts/                 # Automation scripts
+│   ├── bootstrap.py         # Complete setup script
+│   ├── populate_security_relationships.py  # Security data relationships
+│   ├── create_proposed_change.py  # Create proposed changes
+│   └── get_configs.py       # Retrieve device configurations
 ├── service_catalog/         # Streamlit Service Catalog application
 │   ├── pages/               # Streamlit pages
 │   │   └── 1_Create_DC.py  # DC creation UI
@@ -81,21 +92,16 @@ infrahub-demo/
 │   │   └── ui.py            # UI helpers
 │   ├── Home.py              # Main application page
 │   └── Dockerfile           # Container definition
-├── scripts/                  # Automation scripts
-│   ├── bootstrap.py              # Complete setup script
-│   ├── populate_security_relationships.py  # Security data relationships
-│   ├── create_proposed_change.py    # Create proposed changes
-│   └── get_configs.py               # Retrieve device configurations
 ├── templates/               # Jinja2 config templates
-├── transforms/              # Config transforms
-│   ├── leaf.py
-│   ├── spine.py
-│   ├── edge.py
-│   └── loadbalancer.py
 ├── tests/                   # Test suite
-│   ├── unit/               # Unit tests
-│   ├── integration/        # Integration tests
-│   └── smoke/              # Smoke tests
+│   ├── integration/         # Integration tests
+│   ├── smoke/               # Smoke tests
+│   └── unit/                # Unit tests
+├── transforms/              # Config transforms
+│   ├── edge.py
+│   ├── leaf.py
+│   ├── loadbalancer.py
+│   └── spine.py
 └── tasks.py                 # Invoke task definitions
 ```
 
@@ -212,7 +218,7 @@ class DCTopologyGenerator(InfrahubGenerator):
 
 The `create_dc` generator in `generators/generate_dc.py`:
 
-1. **Queries the topology design** - Reads DC-2 parameters like spine count, leaf count, underlay protocol
+1. **Queries the topology design** - Reads DC-3 parameters like spine count, leaf count, underlay protocol
 2. **Creates resource pools** - Sets up IP prefix pools and VLAN pools
 3. **Creates devices** - Generates spine, leaf, and border-leaf switches with correct roles and platforms
 4. **Creates interfaces** - Adds physical interfaces, loopbacks, and sub-interfaces
@@ -510,7 +516,7 @@ Located in `tests/integration/`, these test end-to-end workflows:
 
 ```python
 async def test_dc_workflow(async_client_main):
-    """Test complete DC-2 workflow."""
+    """Test complete DC-3 workflow."""
     # Load schemas
     # Load data
     # Run generator

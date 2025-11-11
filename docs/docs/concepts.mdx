@@ -28,7 +28,7 @@ Design-driven automation flips this model. Instead of defining devices, you defi
 4. Scaling means adjusting design parameters, not editing configs
 5. Architectural changes propagate automatically
 
-The demo implements this pattern. When you load `objects/dc/dc-cisco-s.yml`, you're not defining 20 devices. You're defining a **design specification** that a generator transforms into complete infrastructure.
+The demo implements this pattern. When you load `objects/dc/dc-arista-s.yml`, you're not defining 20 devices. You're defining a **design specification** that a generator transforms into complete infrastructure.
 
 ### Benefits
 
@@ -61,9 +61,9 @@ Each layer builds on the previous one:
 4. **Routing design** specifies underlay and overlay protocols
 5. **Service overlays** enable tenant networks and services
 
-### Example: DC-2 composition
+### Example: DC-3 composition
 
-When you create DC-2, the generator:
+When you create DC-3, the generator:
 
 1. Selects spine, leaf, and border-leaf **templates**
 2. Applies fabric **connectivity pattern** (full mesh spine-to-leaf)
@@ -450,7 +450,7 @@ Declarative: "Spine1 exists with eth1 having IP 10.0.0.1 in enabled state"
 
 Use data to drive behavior rather than hard-coding logic.
 
-Code-driven: `if dc == "DC-2": create_4_spines()`
+Code-driven: `if dc == "DC-3": create_4_spines()`
 Data-driven: `for _ in range(design.spine_count): create_spine()`
 
 ### Separation of concerns

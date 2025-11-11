@@ -30,6 +30,7 @@ exceptions:
   - CoreGroup
   - DC
   - DC-2
+  - DC-3
   - Docker Compose
   - E2E
   - Example

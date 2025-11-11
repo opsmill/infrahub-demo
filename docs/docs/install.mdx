@@ -2,6 +2,9 @@
 title: Installation guide
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 This guide walks you through setting up the Infrahub demo environment on your local system. By the end, you'll have a fully functional Infrahub instance with pre-loaded schemas, data, and generators ready to explore.
 
 ## Prerequisites
@@ -10,15 +13,15 @@ Before you begin, ensure you have the following installed on your system:
 
 ### Required software
 
-- **Python 3.10, 3.11, or 3.12** - The demo requires a recent Python version
+- **Python 3.11 or 3.12** - The demo requires a recent Python version
 - **[uv](https://github.com/astral-sh/uv)** - Fast Python package manager for dependency management
-- **Docker** - For running Infrahub containers and optionally Containerlab
+- **Docker** - For running Infrahub containers and optionally Containerlab (or equivalent, e.g. OrbStack)
 - **Git** - For cloning the repository
 
 ### System requirements
 
 - **Operating system**: macOS, Linux, or Windows (with WSL2)
-- **Memory**: At least 8GB RAM (16GB recommended)
+- **Memory**: At least 12GB RAM (16GB recommended)
 - **Disk space**: At least 10GB free space
 - **Network**: Internet connection for downloading dependencies and Docker images
 
@@ -101,19 +104,14 @@ Control which version of Infrahub to run and which features to enable:
 
 ```bash
 # Infrahub version to use
-# Specify the version of Infrahub to run (for example, 1.5.0b2, stable, latest)
-# Default: 1.5.0b2
-INFRAHUB_VERSION=1.5.0b2
+# Specify the version of Infrahub to run (for example, 1.5.0, stable, latest)
+# Default: 1.5.0
+INFRAHUB_VERSION=1.5.0
 
 # Enable Infrahub Enterprise features
 # Set to "true" to enable enterprise features, "false" for community edition
-# Default: true
-INFRAHUB_ENTERPRISE=true
-
-# Opt out of Infrahub telemetry
-# Set to "true" to disable telemetry data collection
-# Default: true
-INFRAHUB_TELEMETRY_OPTOUT=true
+# Default: false
+INFRAHUB_ENTERPRISE=false
 ```
 
 ### Service catalog configuration
@@ -144,17 +142,6 @@ API_TIMEOUT=30
 # Number of retry attempts for failed API requests
 # Default: 3
 API_RETRY_COUNT=3
-```
-
-### Containerlab configuration
-
-Configure ContainerLab for virtual network device simulation:
-
-```bash
-# Docker image for Arista cEOS (Container EOS)
-# Used for network device simulation in containerlab topologies
-# Required if you plan to use containerlab for virtual lab deployment
-CEOS_DOCKER_IMAGE=registry.opsmill.io/external/ceos-image:4.29.0.2F
 ```
 
 ### Managing environment variables with direnv
@@ -229,7 +216,8 @@ You should see the Infrahub login screen. Use the default credentials:
 
 Now that Infrahub is running, load the demo schemas and data. You can use the automated bootstrap script or run the steps manually.
 
-### Option A: automated bootstrap (recommended)
+<Tabs>
+  <TabItem value="automated" label="Automated (Recommended)">
 
 Run the bootstrap command to load everything in one step:
 
@@ -237,11 +225,12 @@ Run the bootstrap command to load everything in one step:
 uv run invoke bootstrap
 ```
 
-This command performs all the steps in Option B automatically.
+This command performs all the steps in the Manual tab automatically.
 
-### Option B: manual bootstrap
+  </TabItem>
+  <TabItem value="manual" label="Manual">
 
-If you prefer to run each step individually:
+Run each step individually:
 
 ```bash
 # 1. Load schemas
@@ -265,6 +254,9 @@ uv run infrahubctl repository add DEMO https://github.com/opsmill/infrahub-demo.
 # 7. Load event actions (optional, enables automatic generator execution)
 uv run infrahubctl object load objects/events/
 ```
+
+  </TabItem>
+</Tabs>
 
 :::tip
 Loading schemas and data can take several minutes. Watch the console output to monitor progress.
@@ -312,7 +304,7 @@ uv run invoke start
 
 ### Schema loading fails
 
-If schema loading fails with validation errors, ensure you're using a compatible version of Infrahub. This demo is tested with Infrahub 1.0 and later.
+If schema loading fails with validation errors, ensure you're using a compatible version of Infrahub. This demo is tested with Infrahub 1.5.0 and later.
 
 ## Next steps
 

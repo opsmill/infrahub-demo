@@ -2,6 +2,9 @@
 title: Using the service catalog
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 This tutorial walks you through using Infrahub's Service Catalog web interface to manage data center and colocation center deployments. The Service Catalog provides a user-friendly web application built with Streamlit that simplifies infrastructure provisioning by automating branch creation, data loading, and generator execution.
 
 By the end of this tutorial, you'll understand how to enable the Service Catalog, navigate the interface, view existing infrastructure, and create new data centers through a guided form-based workflow.
@@ -34,7 +37,8 @@ The Service Catalog is an optional component that simplifies infrastructure prov
 
 The Service Catalog runs as a separate Docker container that can be enabled through environment variables or Docker Compose profiles.
 
-### Option 1: using environment variables (recommended)
+<Tabs>
+  <TabItem value="env" label="Environment Variables (Recommended)">
 
 1. Open your `.env` file (or create it from `.env.example`)
 2. Set the Service Catalog variable to true:
@@ -49,13 +53,17 @@ INFRAHUB_SERVICE_CATALOG=true
 uv run invoke restart
 ```
 
-### Option 2: using Docker Compose profiles
+  </TabItem>
+  <TabItem value="profile" label="Docker Compose Profiles">
 
-Alternatively, you can start Infrahub with the Service Catalog profile:
+Start Infrahub with the Service Catalog profile:
 
 ```bash
 docker-compose --profile service-catalog up -d
 ```
+
+  </TabItem>
+</Tabs>
 
 ### Verify the container is running
 

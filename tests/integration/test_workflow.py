@@ -1,12 +1,12 @@
 # pyright: reportAttributeAccessIssue=false
-"""Integration test for the DC-2 demo workflow.
+"""Integration test for the DC-3 demo workflow.
 
 This test validates the complete workflow from the README:
 1. Load schemas
 2. Load bootstrap data
 3. Add repository
 4. Create branch
-5. Load DC-2 design data
+5. Load DC-3 design data
 6. Run DC generator
 7. Create proposed change
 8. Validate and merge
@@ -33,12 +33,12 @@ logging.basicConfig(
 
 
 class TestDCWorkflow(TestInfrahubDockerWithClient):
-    """Test the complete DC-2 workflow from the demo."""
+    """Test the complete DC-3 workflow from the demo."""
 
     @pytest.fixture(scope="class")
     def default_branch(self) -> str:
         """Default branch for testing."""
-        return "add-dc2"
+        return "add-dc3"
 
     def test_01_schema_load(self, client_main: InfrahubClientSync) -> None:
         """Load all schemas into Infrahub."""
@@ -157,7 +157,7 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
     def test_06_create_branch(
         self, client_main: InfrahubClientSync, default_branch: str
     ) -> None:
-        """Create a new branch for the DC-2 deployment."""
+        """Create a new branch for the DC-3 deployment."""
         logging.info(
             "Starting test: test_06_create_branch - branch: %s", default_branch
         )
@@ -170,27 +170,27 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
             client_main.branch.create(default_branch, wait_until_completion=True)
             logging.info("Created branch: %s", default_branch)
 
-    def test_07_load_dc2_design(
+    def test_07_load_dc3_design(
         self, client_main: InfrahubClientSync, default_branch: str
     ) -> None:
-        """Load DC-2 design data onto the branch."""
-        logging.info("Starting test: test_07_load_dc2_design")
+        """Load DC-3 design data onto the branch."""
+        logging.info("Starting test: test_07_load_dc3_design")
 
-        load_dc2 = self.execute_command(
-            f"infrahubctl object load objects/dc/dc-cisco-s.yml --branch {default_branch}",
+        load_dc3 = self.execute_command(
+            f"infrahubctl object load objects/dc/dc-arista-s.yml --branch {default_branch}",
             address=client_main.config.address,
         )
 
-        logging.info("DC-2 design load output: %s", load_dc2.stdout)
-        assert load_dc2.returncode == 0, (
-            f"DC-2 design load failed: {load_dc2.stdout}\n{load_dc2.stderr}"
+        logging.info("DC-3 design load output: %s", load_dc3.stdout)
+        assert load_dc3.returncode == 0, (
+            f"DC-3 design load failed: {load_dc3.stdout}\n{load_dc3.stderr}"
         )
 
-    async def test_08_verify_dc2_created(
+    async def test_08_verify_dc3_created(
         self, async_client_main: InfrahubClient, default_branch: str
     ) -> None:
-        """Verify that DC-2 topology object was created."""
-        logging.info("Starting test: test_08_verify_dc2_created")
+        """Verify that DC-3 topology object was created."""
+        logging.info("Starting test: test_08_verify_dc3_created")
 
         client = async_client_main
         client.default_branch = default_branch
@@ -198,16 +198,16 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
         # Wait a moment for data to be fully committed
         time.sleep(5)
 
-        # Query for DC-2
-        dc2 = await client.get(
+        # Query for DC-3
+        dc3 = await client.get(
             kind="TopologyDataCenter",
-            name__value="DC-2",
+            name__value="DC-3",
             populate_store=True,
         )
 
-        assert dc2, "DC-2 topology not found"
-        assert dc2.name.value == "DC-2", f"Expected DC-2, got {dc2.name.value}"
-        logging.info("DC-2 topology verified: %s", dc2.name.value)
+        assert dc3, "DC-3 topology not found"
+        assert dc3.name.value == "DC-3", f"Expected DC-3, got {dc3.name.value}"
+        logging.info("DC-3 topology verified: %s", dc3.name.value)
 
     @pytest.mark.skip(
         reason="Repository not loaded - generator definitions not available"
@@ -215,7 +215,7 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
     async def test_09_run_generator(
         self, async_client_main: InfrahubClient, default_branch: str
     ) -> None:
-        """Run the create_dc generator for DC-2."""
+        """Run the create_dc generator for DC-3."""
         logging.info("Starting test: test_09_run_generator")
 
         client = async_client_main
@@ -267,7 +267,7 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
             input_data={
                 "data": {
                     "id": definition.id,
-                    "name": "DC-2",  # Generator parameter from .infrahub.yml
+                    "name": "DC-3",  # Generator parameter from .infrahub.yml
                 },
                 "wait_until_completion": False,
             },
@@ -350,7 +350,7 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
             mutation="CoreProposedChangeCreate",
             input_data={
                 "data": {
-                    "name": {"value": f"Add DC-2 - Test {default_branch}"},
+                    "name": {"value": f"Add DC-3 - Test {default_branch}"},
                     "source_branch": {"value": default_branch},
                     "destination_branch": {"value": "main"},
                 }
@@ -372,7 +372,7 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
         while not validations_completed and attempts < max_attempts:
             pc = client_main.get(
                 "CoreProposedChange",
-                name__value=f"Add DC-2 - Test {default_branch}",
+                name__value=f"Add DC-3 - Test {default_branch}",
                 include=["validations"],
                 exclude=["reviewers", "approved_by", "created_by"],
                 prefetch_relationships=True,
@@ -445,7 +445,7 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
         # Get the proposed change
         pc = client_main.get(
             "CoreProposedChange",
-            name__value=f"Add DC-2 - Test {default_branch}",
+            name__value=f"Add DC-3 - Test {default_branch}",
         )
 
         # Merge the proposed change
@@ -475,20 +475,20 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
     async def test_14_verify_merge_to_main(
         self, async_client_main: InfrahubClient
     ) -> None:
-        """Verify that DC-2 and devices exist in main branch."""
+        """Verify that DC-3 and devices exist in main branch."""
         logging.info("Starting test: test_14_verify_merge_to_main")
 
         client = async_client_main
         client.default_branch = "main"
 
-        # Verify DC-2 exists in main
-        dc2_main = await client.get(
+        # Verify DC-3 exists in main
+        dc3_main = await client.get(
             kind="TopologyDataCenter",
-            name__value="DC-2",
+            name__value="DC-3",
         )
 
-        assert dc2_main, "DC-2 not found in main branch after merge"
-        logging.info("DC-2 verified in main branch")
+        assert dc3_main, "DC-3 not found in main branch after merge"
+        logging.info("DC-3 verified in main branch")
 
         # Verify devices exist in main
         devices_main = await client.all(kind="DcimGenericDevice")

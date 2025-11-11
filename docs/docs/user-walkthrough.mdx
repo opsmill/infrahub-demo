@@ -2,6 +2,9 @@
 title: User walkthrough
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 This tutorial guides you through the complete workflow of creating a data center topology using Infrahub's design-driven automation. You'll create a new branch, load a topology design, run a generator to create infrastructure, review the changes, and merge them to the main branch.
 
 By the end of this walkthrough, you'll understand how to use Infrahub's branch-based workflow to safely design, validate, and deploy network infrastructure.
@@ -19,7 +22,7 @@ Before starting this tutorial, ensure you have:
 In this tutorial, you will:
 
 1. Create a new branch for your changes
-2. Load a data center design (DC-2)
+2. Load a data center design (DC-3)
 3. Wait for the automatic generator to create devices, interfaces, and connections
 4. Create a proposed change
 5. Review the generated artifacts and validation results
@@ -29,26 +32,33 @@ In this tutorial, you will:
 
 All changes in Infrahub happen in branches. This allows you to work on infrastructure changes safely without affecting the main branch until you're ready.
 
-### Using the web interface
+<Tabs>
+  <TabItem value="web" label="Web Interface">
 
 1. Navigate to `http://localhost:8000`
 2. Click on the branch selector in the top-right corner (shows "main" by default)
 3. Click **Create Branch**
-4. Enter branch name: `add-dc2`
+4. Enter branch name: `add-dc3`
 5. Click **Create**
 
-### Using the CLI
+You should see a success message confirming the branch was created.
 
-Alternatively, create the branch from the command line:
+  </TabItem>
+  <TabItem value="cli" label="CLI">
+
+Create the branch from the command line:
 
 ```bash
-uv run infrahubctl branch create add-dc2
+uv run infrahubctl branch create add-dc3
 ```
 
 You should see a success message confirming the branch was created.
 
+  </TabItem>
+</Tabs>
+
 :::tip
-Branch names should be descriptive and indicate what changes you're making, like `add-dc2`, `update-security-policies`, or `fix-bgp-config`.
+Branch names should be descriptive and indicate what changes you're making, like `add-dc3`, `update-security-policies`, or `fix-bgp-config`.
 :::
 
 ## Step 2: Switch to your new branch
@@ -56,18 +66,18 @@ Branch names should be descriptive and indicate what changes you're making, like
 In the web interface:
 
 1. Click the branch selector in the top-right
-2. Select `add-dc2` from the list
-3. The interface should now show `add-dc2` as the active branch
+2. Select `add-dc3` from the list
+3. The interface should now show `add-dc3` as the active branch
 
 :::info
-All subsequent actions will be performed on the `add-dc2` branch until you switch back to another branch.
+All subsequent actions will be performed on the `add-dc3` branch until you switch back to another branch.
 :::
 
-## Step 3: load the DC-2 design
+## Step 3: load the DC-3 design
 
-The DC-2 design is a pre-configured data center topology specification that defines:
+The DC-3 design is a pre-configured data center topology specification that defines:
 
-- A data center named "DC-2"
+- A data center named "DC-3"
 - Spine-leaf fabric architecture
 - Device roles and platform assignments
 - IP address pools and subnets
@@ -76,7 +86,7 @@ The DC-2 design is a pre-configured data center topology specification that defi
 Load the design data onto your branch:
 
 ```bash
-uv run infrahubctl object load objects/dc/dc-cisco-s.yml --branch add-dc2
+uv run infrahubctl object load objects/dc/dc-arista-s.yml --branch add-dc3
 ```
 
 Watch the output for success messages. You should see confirmations that the topology data has been loaded.
@@ -85,10 +95,10 @@ Watch the output for success messages. You should see confirmations that the top
 
 In the web interface:
 
-1. Ensure you're on the `add-dc2` branch
+1. Ensure you're on the `add-dc3` branch
 2. Navigate to **Network Topologies → Deployments → Data center**
-3. You should see a new entry for **DC-2**
-4. Click on DC-2 to view its properties
+3. You should see a new entry for **DC-3**
+4. Click on DC-3 to view its properties
 
 The design specifies high-level parameters like:
 
@@ -99,12 +109,12 @@ The design specifies high-level parameters like:
 
 ### Multi-vendor support
 
-This demo supports multiple network device vendors with pre-configured data center designs. The DC-2 topology you just loaded uses Cisco NX-OS switches, but the demo can generate configurations for several other vendors.
+This demo supports multiple network device vendors with pre-configured data center designs. The DC-3 topology you just loaded uses Arista EOS switches, but the demo can generate configurations for several other vendors.
 
 **Available vendor designs:**
 
-- **Cisco NX-OS** - The default DC-2 design (`objects/dc/dc-cisco-s.yml`)
-- **Arista EOS** - DC-3 design with Arista switches
+- **Arista EOS** - The default DC-3 design with Arista switches (`objects/dc/dc-arista-s.yml`)
+- **Cisco NX-OS** - The DC-2 design (`objects/dc/dc-cisco-s.yml`)
 - **Juniper JunOS** - DC-5 design with Juniper switches
 - **SONiC NOS** - DC-4 design with EdgeCore switches running SONiC
 
@@ -132,7 +142,7 @@ Each vendor design generates appropriate configurations for that platform's CLI 
 
 ## Step 4: Wait for automatic generator execution
 
-When you loaded the DC-2 design in Step 3, Infrahub automatically triggered a generator action that transforms the abstract design into concrete infrastructure objects including devices, interfaces, IP addresses, and routing configurations.
+When you loaded the DC-3 design in Step 3, Infrahub automatically triggered a generator action that transforms the abstract design into concrete infrastructure objects including devices, interfaces, IP addresses, and routing configurations.
 
 This automation is configured through an event action (defined in `objects/events/98_generator_action.yml`) that runs the `create_dc` generator whenever a data center topology is created or updated.
 
@@ -149,7 +159,7 @@ Generator actions are event-driven automations configured in Infrahub. When you 
 :::
 
 :::tip
-Generators create infrastructure following best practices. For DC-2, the create_dc generator will create spine switches, leaf switches, border leafs, management connections, fabric peering, loopback interfaces, and BGP configurations.
+Generators create infrastructure following best practices. For DC-3, the create_dc generator will create spine switches, leaf switches, border leafs, management connections, fabric peering, loopback interfaces, and BGP configurations.
 :::
 
 ## Step 5: Review generated infrastructure
@@ -197,10 +207,10 @@ Now that you've made changes on your branch, create a proposed change to merge t
 1. Navigate to **Proposed Changes**
 2. Click **New Proposed Change**
 3. Fill in the form:
-   - **Name**: `Add DC-2 data center`
-   - **Source Branch**: `add-dc2`
+   - **Name**: `Add DC-3 data center`
+   - **Source Branch**: `add-dc3`
    - **Destination Branch**: `main`
-   - **Description** (optional): `This change adds the DC-2 data center with spine-leaf fabric`
+   - **Description** (optional): `This change adds the DC-3 data center with spine-leaf fabric`
 4. Click **Create Proposed Change**
 
 ### Understanding what happens next
@@ -291,17 +301,17 @@ The merge process:
 
 1. Switch back to the **main** branch using the branch selector
 2. Navigate to **Device Management → Infrastructure → All Devices**
-3. You should now see all the DC-2 devices in the main branch
+3. You should now see all the DC-3 devices in the main branch
 4. Navigate to **Services → Topology Deployments → Data center**
-5. Verify that DC-2 appears in the main branch
+5. Verify that DC-3 appears in the main branch
 
 ## Step 9: View device configurations
 
-Now that DC-2 is in the main branch, view the generated device configurations:
+Now that DC-3 is in the main branch, view the generated device configurations:
 
 1. Ensure you're on the **main** branch
 2. Navigate to **Device Management → Infrastructure → All Devices**
-3. Click on a spine device (for example, `dc2-spine1`)
+3. Click on a spine device (for example, `dc3-spine1`)
 4. Look for an **Artifacts** section or tab
 5. Click on the spine configuration artifact
 
@@ -330,7 +340,7 @@ Congratulations! You've completed the full workflow:
 Now that you understand the basic workflow, you can:
 
 - **Explore variations** - Try creating DC-3 or a POP topology
-- **Modify designs** - Edit the objects/dc/dc-cisco-s.yml file to change the topology
+- **Modify designs** - Edit the objects/dc/dc-arista-s.yml file to change the topology
 - **Add network services** - Create Layer 2 or Layer 3 services on top of the fabric
 - **Customize configurations** - Modify templates in the `templates/` directory
 - **Add validation checks** - Create custom checks in the `checks/` directory
@@ -372,10 +382,10 @@ You can also perform this entire workflow from the command line. Here's the abbr
 
 ```bash
 # Create branch
-uv run infrahubctl branch create add-dc2
+uv run infrahubctl branch create add-dc3
 
 # Load design (this automatically triggers the generator)
-uv run infrahubctl object load objects/dc/dc-cisco-s.yml --branch add-dc2
+uv run infrahubctl object load objects/dc/dc-arista-s.yml --branch add-dc3
 
 # Monitor generator progress in the web interface (System → Tasks)
 # Create proposed change (easier via web interface)
