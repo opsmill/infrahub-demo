@@ -17,6 +17,8 @@ CLIs
 CloudFormation
 codespace
 codespaces
+colocation
+Colocation
 combobox
 containerlab
 Containerlab

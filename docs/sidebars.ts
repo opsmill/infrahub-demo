@@ -15,6 +15,9 @@ const sidebars: SidebarsConfig = {
       label: 'Tutorials',
       items: [
         'user-walkthrough',
+        'containerlab-deployment',
+        'security-management',
+        'service-catalog',
       ],
     },
     {

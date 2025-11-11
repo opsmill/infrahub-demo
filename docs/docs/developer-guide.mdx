@@ -557,6 +557,10 @@ uv sync
 # Start Infrahub
 uv run invoke start
 
+# Optional: Enable Service Catalog in .env
+echo "INFRAHUB_SERVICE_CATALOG=true" >> .env
+uv run invoke restart
+
 # Load bootstrap data
 uv run invoke bootstrap
 ```
@@ -564,10 +568,11 @@ uv run invoke bootstrap
 ### Making changes
 
 1. **Create a feature branch** in Git
-2. **Modify code** (generators, transforms, checks, schemas)
+2. **Modify code** (generators, transforms, checks, schemas, Service Catalog)
 3. **Add tests** for new functionality
 4. **Run quality checks** (`uv run invoke validate`)
 5. **Test locally** in Infrahub
+   - For Service Catalog changes: use `uv run invoke start --rebuild`
 6. **Commit changes** with descriptive messages
 7. **Create pull request** for review
 
@@ -598,6 +603,63 @@ uv run invoke bootstrap
 4. Create GraphQL query in `queries/`
 5. Add unit tests
 6. Test in proposed change workflow
+
+### Service catalog development
+
+The Service Catalog is a Streamlit application that runs in a Docker container. When making changes to the Service Catalog code, you need to rebuild the container image.
+
+#### Making changes to the service catalog
+
+1. **Edit Service Catalog code** in `service_catalog/`:
+   - `Home.py` - Main landing page
+   - `pages/1_Create_DC.py` - DC creation form
+   - `utils/` - Utility modules (api.py, config.py, ui.py)
+2. **Rebuild and restart** the Service Catalog container:
+
+```bash
+uv run invoke start --rebuild
+```
+
+The `--rebuild` flag forces Docker to rebuild the Service Catalog image with your code changes before starting the containers.
+
+#### When to use --rebuild
+
+Use the `--rebuild` flag when you modify:
+
+- Streamlit page files (`Home.py`, `pages/*.py`)
+- Service Catalog utilities (`service_catalog/utils/`)
+- Service Catalog dependencies (if you modify `service_catalog/requirements.txt`)
+- Service Catalog Dockerfile
+
+#### Testing service catalog changes
+
+1. Make your code changes in `service_catalog/`
+2. Rebuild and start with `uv run invoke start --rebuild`
+3. Access the Service Catalog at `http://localhost:8501`
+4. Test your changes in the web interface
+5. Check logs for errors:
+
+```bash
+docker logs infrahub-demo-service-catalog-1
+```
+
+#### Service catalog environment variables
+
+Configure the Service Catalog behavior via `.env`:
+
+```bash
+INFRAHUB_SERVICE_CATALOG=true     # Enable the service catalog
+DEFAULT_BRANCH=main               # Default branch to show
+GENERATOR_WAIT_TIME=60            # Seconds to wait for generator
+API_TIMEOUT=30                    # API request timeout
+API_RETRY_COUNT=3                 # Number of API retries
+```
+
+Changes to environment variables do not require `--rebuild`, just restart:
+
+```bash
+uv run invoke restart
+```
 
 ## Extending schemas
 

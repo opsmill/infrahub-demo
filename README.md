@@ -11,7 +11,7 @@
 - **Unified Storage**: By combining a graph database and git, Infrahub stores data and code needed to manage the infrastructure.
 
 > **Note**
-> This demo repository is mostly authored by the OpsMill community member [tomek](https://www.linkedin.com/in/tomekzajac/) from this example: https://github.com/t0m3kz/infrahub-demo
+> This demo repository is partially authored by the OpsMill community member [tomek](https://www.linkedin.com/in/tomekzajac/) from this example: https://github.com/t0m3kz/infrahub-demo
 
 ## Infrahub demo
 
