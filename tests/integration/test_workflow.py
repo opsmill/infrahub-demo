@@ -17,7 +17,6 @@ The Infrahub SDK uses dynamic attribute generation at runtime.
 
 import logging
 import time
-from pathlib import Path
 
 import pytest
 from infrahub_sdk import InfrahubClient, InfrahubClientSync
@@ -99,9 +98,6 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
             f"Security data load failed: {load_security.stdout}\n{load_security.stderr}"
         )
 
-    @pytest.mark.skip(
-        reason="Repository sync fails due to group resolution issue during import"
-    )
     async def test_05_add_repository(
         self, async_client_main: InfrahubClient, remote_repos_dir: str
     ) -> None:
@@ -113,7 +109,7 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
         git_repository = GitRepo(
             name="demo_repo",
             src_directory=src_directory,
-            dst_directory=Path(remote_repos_dir),
+            dst_directory=remote_repos_dir,
         )
 
         response = await git_repository.add_to_infrahub(client=client)
@@ -127,7 +123,6 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
         # Wait for repository to sync
         synchronized = False
         max_attempts, attempts = 60, 0
-        repository = None
 
         while not synchronized and attempts < max_attempts:
             repository = await client.get(
@@ -148,7 +143,6 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
             )
             time.sleep(10)
 
-        assert repository is not None, "Failed to retrieve repository"
         assert synchronized, (
             f"Repository failed to sync. Status: {repository.sync_status.value}"
         )
@@ -209,9 +203,6 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
         assert dc3.name.value == "DC-3", f"Expected DC-3, got {dc3.name.value}"
         logging.info("DC-3 topology verified: %s", dc3.name.value)
 
-    @pytest.mark.skip(
-        reason="Repository not loaded - generator definitions not available"
-    )
     async def test_09_run_generator(
         self, async_client_main: InfrahubClient, default_branch: str
     ) -> None:
@@ -251,10 +242,10 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
             attempts += 1
             time.sleep(10)
 
-        if not definition:
-            pytest.skip(
-                "Generator definition 'create_dc' not available - skipping generator test"
-            )
+        assert definition, (
+            "Generator definition 'create_dc' not available after waiting. "
+            "Repository may not have synced properly in test_05."
+        )
 
         logging.info("Found generator: %s", definition.name.value)
 
@@ -288,7 +279,6 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
         )
         logging.info("Generator completed successfully")
 
-    @pytest.mark.skip(reason="Generator not run - no devices to verify")
     async def test_10_verify_devices_created(
         self, async_client_main: InfrahubClient, default_branch: str
     ) -> None:
@@ -301,10 +291,10 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
         # Query for devices
         devices = await client.all(kind="DcimGenericDevice")
 
-        if not devices:
-            pytest.skip(
-                "No devices found - generator may not have run (test_09 may have been skipped)"
-            )
+        assert devices, (
+            "No devices found after generator run. "
+            "Generator in test_09 may not have completed successfully."
+        )
 
         logging.info("Found %d devices after generator run", len(devices))
 
@@ -471,7 +461,6 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
         )
         logging.info("Proposed change merged successfully")
 
-    @pytest.mark.skip(reason="Generator not run - no devices to verify in main")
     async def test_14_verify_merge_to_main(
         self, async_client_main: InfrahubClient
     ) -> None:
