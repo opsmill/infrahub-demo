@@ -188,6 +188,8 @@ Schemas provide:
 3. **Relationships** - Formalize connections between objects
 4. **Extensibility** - Inheritance allows customization without modification
 5. **API generation** - Infrahub auto-generates GraphQL API from schemas
+6. **Computed attributes** - Automatically derive values from other attributes
+7. **Range expansion** - Define multiple items with compact notation
 
 ### Schema evolution
 
@@ -213,6 +215,14 @@ This organization supports:
 - **Modularity** - Enable/disable domains as needed
 - **Clarity** - Related nodes grouped together
 - **Maintainability** - Domain experts can own their schemas
+
+### Advanced schema features
+
+The demo showcases several advanced Infrahub schema capabilities:
+
+**Computed attributes** automatically generate values based on other attributes. For example, Autonomous System names are computed from ASN values (AS65000 from ASN 65000) using Jinja2 templates. This ensures naming consistency and eliminates manual data entry. [Learn more about computed attributes](https://docs.infrahub.app/topics/computed-attributes).
+
+**Interface range expansion** allows compact definition of multiple interfaces. Instead of defining 30 interfaces individually, you can use `Ethernet1/[1-30]` which automatically expands to `Ethernet1/1` through `Ethernet1/30`. This dramatically reduces YAML verbosity in device templates and topology definitions. [Learn more about range expansion](https://docs.infrahub.app/python-sdk/reference/templating#netutils-filters).
 
 ## Branch-based infrastructure changes
 

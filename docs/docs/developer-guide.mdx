@@ -138,6 +138,35 @@ nodes:
         kind: Component
 ```
 
+### Computed attributes
+
+Infrahub supports [computed attributes](https://docs.infrahub.app/topics/computed-attributes) that automatically generate values based on other attributes using Jinja2 templates. The demo uses this feature in the BGP schema for Autonomous System names.
+
+**Example from `schemas/extensions/routing/bgp.yml`:**
+
+```yaml
+attributes:
+  - name: name
+    kind: Text
+    computed_attribute:
+      kind: Jinja2
+      jinja2_template: "AS{{asn__value}}"
+    read_only: true
+    optional: false
+  - name: asn
+    kind: Number
+    description: "Autonomous System Number"
+```
+
+When you create an Autonomous System with ASN 65000, the `name` attribute is automatically computed as "AS65000". This ensures consistency and reduces manual data entry errors.
+
+**Benefits of computed attributes:**
+
+- **Consistency** - Standardized naming conventions enforced automatically
+- **Reduced errors** - No manual entry of derived values
+- **Dynamic updates** - Values recompute when dependencies change
+- **Read-only enforcement** - Prevents manual modification of computed values
+
 ### Schema types
 
 The demo includes schemas for:
@@ -417,6 +446,35 @@ objects/bootstrap/
 ```
 
 Files are numbered to ensure correct loading order due to dependencies.
+
+### Interface range expansion
+
+The bootstrap data uses Infrahub's [interface range expansion feature](https://docs.infrahub.app/python-sdk/reference/templating#netutils-filters) to efficiently define multiple interfaces with compact syntax. This feature automatically expands range notation into individual interfaces.
+
+**Example from `objects/bootstrap/10_physical_device_templates.yml`:**
+
+```yaml
+interfaces:
+  kind: TemplateDcimPhysicalInterface
+  data:
+    - template_name: N9K-C9336C-FX2_SPINE_Ethernet1/[1-30]
+      name: Ethernet1/[1-30]
+      role: leaf
+    - template_name: N9K-C9336C-FX2_SPINE_Ethernet1/[31-36]
+      name: Ethernet1/[31-36]
+      role: uplink
+```
+
+When loaded, `Ethernet1/[1-30]` expands to 30 individual interfaces: `Ethernet1/1`, `Ethernet1/2`, ... `Ethernet1/30`. This dramatically reduces YAML verbosity when defining device templates with many interfaces.
+
+**Benefits of range expansion:**
+
+- **Compact notation** - Define dozens of interfaces in a single line
+- **Reduced errors** - Less repetitive typing means fewer mistakes
+- **Simplified maintenance** - Update interface ranges without editing individual entries
+- **Vendor compatibility** - Supports common interface naming patterns (Ethernet, GigabitEthernet, et-, ge-, etc.)
+
+This feature is used extensively throughout the bootstrap data for device templates, physical devices, and topology definitions.
 
 ### Loading bootstrap data
 

@@ -584,6 +584,30 @@ markdownlint docs/docs/**/*.mdx --fix
 - Include code snippets with language specifications
 - Add explanatory callouts (:::tip, :::info, :::warning) for important concepts
 - Ensure all lists and code blocks have proper spacing
+- Use Mermaid diagrams for visualizing schemas, workflows, and relationships
+
+### Mermaid diagram support
+
+The Docusaurus documentation site supports [Mermaid diagrams](https://mermaid.js.org/) for creating visual representations directly in markdown.
+
+**Setup:**
+- Mermaid theme is configured in `docs/docusaurus.config.ts`
+- `@docusaurus/theme-mermaid` package is installed
+- See `docs/MERMAID_SETUP.md` for installation and troubleshooting
+
+**Usage in MDX files:**
+
+````markdown
+```mermaid
+graph TB
+    A[Node A] --> B[Node B]
+    B --> C[Node C]
+```
+````
+
+**Examples:**
+- `docs/docs/security-management.mdx` includes a comprehensive security schema diagram
+- Supported types: flowcharts, sequence diagrams, class diagrams, state diagrams, ER diagrams, and more
 
 ### Vale Style Guide
 
