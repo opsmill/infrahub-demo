@@ -35,7 +35,7 @@ spec:
 apiVersion: infrahub.app/v1
 kind: Object
 spec:
-  kind: DcimGenericDevice
+  kind: DcimPhysicalDevice
   data:
     - name: cisco-switch-01
       role: leaf
