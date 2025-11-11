@@ -199,7 +199,7 @@ def demo_dc_arista(context: Context, branch: str = "add-dc3") -> None:
         f"\n[cyan]→[/cyan] Loading DC Arista topology to branch: [bold]{branch}[/bold]"
     )
     context.run(
-        f"uv run infrahubctl object load objects/dc-arista-s.yml --branch {branch}"
+        f"uv run infrahubctl object load objects/dc/dc-arista-s.yml --branch {branch}"
     )
 
     console.print(

@@ -1,7 +1,9 @@
 {% set default_images = {
   "arista_ceos": "registry.opsmill.io/external/ceos-image:4.29.0.2F"
-} %}
-{% for topology in data.TopologyDeployment.edges %}
+} -%}
+{% for topology in data.TopologyDeployment.edges -%}
+
+
 ---
 name: {{ topology.node.name.value }}
 prefix: ""
@@ -10,7 +12,8 @@ mgmt:
   network: {{ topology.node.name.value | lower() }}
   ipv4-subnet: {{ topology.node.management_subnet.node.prefix.value }}
 
-{% if topology.node.devices.edges is defined %}
+{% if topology.node.devices.edges is defined -%}
+
 topology:
   kinds:
     arista_ceos:
@@ -21,52 +24,53 @@ topology:
         - FastCli -p 15 -c 'security pki certificate generate self-signed eAPI.crt key eAPI.key generate rsa 4096 validity 30000 parameters common-name eAPI'
 
   nodes:
-    {% for device in topology.node.devices.edges %}
-    {% if device.node.platform.node.containerlab_os.value == "arista_ceos" %}
+{%- for device in topology.node.devices.edges %}
+{%- if device.node.platform.node.containerlab_os.value == "arista_ceos" %}
     {{ device.node.name.value }}:
       kind: {{ device.node.platform.node.containerlab_os.value }}
       type: {{ device.node.device_type.node.name.value }}
-      {% if device.node.os_version.value %}
+{%- if device.node.os_version.value %}
       image: {{ device.node.os_version.value }}
-      {% endif %}
-      {% if device.node.primary_address.node.address is defined %}
-      {% set mgmt_ip = device.node.primary_address.node.address.value.split('/') %}
+{%- endif %}
+{%- if device.node.primary_address.node.address is defined %}
+{%- set mgmt_ip = device.node.primary_address.node.address.value.split('/') %}
       mgmt-ipv4: {{ mgmt_ip[0] }}
-      {% endif %}
+{%- endif %}
       startup-config: ../devices/{{ device.node.name.value }}.cfg
-    {% endif %}
-    {% endfor %}
+{%- endif %}
+{%- endfor %}
+
 
   links:
-    {% set processed_endpoints = [] %}
-    {% set device_kinds = {} %}
-    {% for device in topology.node.devices.edges %}
-      {% set _ = device_kinds.update({device.node.name.value: device.node.platform.node.containerlab_os.value}) %}
-    {% endfor %}
-    {% for device in topology.node.devices.edges %}
-      {% for interface in device.node.interfaces.edges %}
-        {% if interface.node.connector is defined and interface.node.connector.node is not none and interface.node.role.value not in ["console", "management"] %}
-          {% set connected_endpoint = interface.node.connector.node %}
-          {% set endpoint1 = device.node.name.value + ":" + interface.node.name.value %}
-          {% set endpoint2 = connected_endpoint.hfid | join(":") %}
-          {% set endpoint_tuple = [endpoint1, endpoint2] | sort %}
-          {% set endpoint_key = endpoint_tuple | join("|") %}
-          {% if endpoint_key not in processed_endpoints %}
-            {% set _ = processed_endpoints.append(endpoint_key) %}
-            {% set endpoint1 = endpoint1.replace("Ethernet", "eth") %}
-            {% set endpoint2 = endpoint2.replace("Ethernet", "eth") %}
-            {% set device1_name = endpoint1.split(":")[0] %}
-            {% set device2_name = endpoint2.split(":")[0] %}
-            {% if device_kinds.get(device1_name) == "arista_ceos" %}
-              {% set endpoint1 = endpoint1.split("/")[0] %}
-            {% endif %}
-            {% if device_kinds.get(device2_name) == "arista_ceos" %}
-              {% set endpoint2 = endpoint2.split("/")[0] %}
-            {% endif %}
+{%- set processed_endpoints = [] %}
+{%- set device_kinds = {} %}
+{%- for device in topology.node.devices.edges %}
+{%- set _ = device_kinds.update({device.node.name.value: device.node.platform.node.containerlab_os.value}) %}
+{%- endfor %}
+{%- for device in topology.node.devices.edges %}
+{%- for interface in device.node.interfaces.edges %}
+{%- if interface.node.connector is defined and interface.node.connector.node is not none and interface.node.role.value not in ["console", "management"] %}
+{%- set connected_endpoint = interface.node.connector.node %}
+{%- set endpoint1 = device.node.name.value + ":" + interface.node.name.value %}
+{%- set endpoint2 = connected_endpoint.hfid | join(":") %}
+{%- set endpoint_tuple = [endpoint1, endpoint2] | sort %}
+{%- set endpoint_key = endpoint_tuple | join("|") %}
+{%- if endpoint_key not in processed_endpoints %}
+{%- set _ = processed_endpoints.append(endpoint_key) %}
+{%- set endpoint1 = endpoint1.replace("Ethernet", "eth") %}
+{%- set endpoint2 = endpoint2.replace("Ethernet", "eth") %}
+{%- set device1_name = endpoint1.split(":")[0] %}
+{%- set device2_name = endpoint2.split(":")[0] %}
+{%- if device_kinds.get(device1_name) == "arista_ceos" %}
+{%- set endpoint1 = endpoint1.split("/")[0] %}
+{%- endif %}
+{%- if device_kinds.get(device2_name) == "arista_ceos" %}
+{%- set endpoint2 = endpoint2.split("/")[0] %}
+{%- endif %}
     - endpoints: ["{{ endpoint1 }}", "{{ endpoint2 }}"]
-          {% endif %}
-        {% endif %}
-      {% endfor %}
-    {% endfor %}
-{% endif %}
-{% endfor %}
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}

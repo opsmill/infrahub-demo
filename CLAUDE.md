@@ -56,7 +56,7 @@ uv run infrahubctl object load objects/events/ --branch main
 uv run infrahubctl branch create <branch-name>
 
 # Load data to specific branch
-uv run infrahubctl object load objects/dc-arista-s.yml --branch <branch-name>
+uv run infrahubctl object load objects/dc/dc-arista-s.yml --branch <branch-name>
 
 # Create a proposed change for a branch
 uv run invoke create-pc --branch <branch-name>
@@ -361,18 +361,18 @@ uv run invoke demo-dc-arista
 
 # Manual approach
 uv run infrahubctl branch create my-branch
-uv run infrahubctl object load objects/dc-arista-s.yml --branch my-branch
+uv run infrahubctl object load objects/dc/dc-arista-s.yml --branch my-branch
 # Then run generator via InfraHub UI: Actions → Generator Definitions → create_dc
 ```
 
 ### Available Demo Data Files
-- `objects/dc-arista-s.yml` - Arista EOS data center
-- `objects/dc-cisco-s.yml` - Cisco NX-OS data center
-- `objects/dc-cisco-s-border-leafs.yml` - Cisco with border leafs
-- `objects/dc-juniper-s.yml` - Juniper data center
-- `objects/dc-sonic-border-leafs.yml` - SONiC with border leafs
-- `objects/pop-1.yml` - Point of presence 1
-- `objects/pop-2.yml` - Point of presence 2
+- `objects/dc/dc-arista-s.yml` - Arista EOS data center
+- `objects/dc/dc-cisco-s.yml` - Cisco NX-OS data center
+- `objects/dc/dc-cisco-s-border-leafs.yml` - Cisco with border leafs
+- `objects/dc/dc-juniper-s.yml` - Juniper data center
+- `objects/dc/dc-sonic-border-leafs.yml` - SONiC with border leafs
+- `objects/pop/pop-1.yml` - Point of presence 1
+- `objects/pop/pop-2.yml` - Point of presence 2
 
 ## Service Catalog
 
@@ -416,7 +416,7 @@ The project includes a Streamlit-based service catalog application:
   - `17_ip_prefix_pools.yml` - IP prefix pools
   - `18_devices.yml` - Pre-configured devices (corp-firewall, cisco-switch-01, etc.)
   - `19_docs.yml` - Documentation links
-- `objects/dc-*.yml` - Demo scenario data files (Arista, Cisco, Juniper, SONiC)
+- `objects/dc/` - Data center demo scenario files (Arista, Cisco, Juniper, SONiC)
 - `objects/security/` - Security-related demo data
 - `objects/cloud_security/` - Cloud security examples
 - `objects/events/` - Event action definitions

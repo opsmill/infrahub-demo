@@ -52,13 +52,13 @@ if "dc_template" not in st.session_state:
 def load_dc_template() -> Optional[Dict[str, Any]]:
     """Load and parse the DC template YAML file.
 
-    Reads the /objects/dc-arista-s.yml file (mounted volume) and parses it
+    Reads the /objects/dc/dc-arista-s.yml file (mounted volume) and parses it
     to extract the field structure for the DC creation form.
 
     Returns:
         Dictionary containing the parsed template data, or None if file not found.
     """
-    template_path = Path("/objects/dc-arista-s.yml")
+    template_path = Path("/objects/dc/dc-arista-s.yml")
 
     try:
         with open(template_path, "r") as f:
@@ -415,7 +415,7 @@ def main() -> None:
     if st.session_state.dc_template is None:
         display_error(
             "Unable to load DC template",
-            "The template file /objects/dc-arista-s.yml could not be loaded. "
+            "The template file /objects/dc/dc-arista-s.yml could not be loaded. "
             "Please ensure the objects directory is properly mounted.",
         )
         st.stop()

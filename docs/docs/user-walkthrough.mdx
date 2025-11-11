@@ -76,7 +76,7 @@ The DC-2 design is a pre-configured data center topology specification that defi
 Load the design data onto your branch:
 
 ```bash
-uv run infrahubctl object load objects/dc-cisco-s.yml --branch add-dc2
+uv run infrahubctl object load objects/dc/dc-cisco-s.yml --branch add-dc2
 ```
 
 Watch the output for success messages. You should see confirmations that the topology data has been loaded.
@@ -103,7 +103,7 @@ This demo supports multiple network device vendors with pre-configured data cent
 
 **Available vendor designs:**
 
-- **Cisco NX-OS** - The default DC-2 design (`objects/dc-cisco-s.yml`)
+- **Cisco NX-OS** - The default DC-2 design (`objects/dc/dc-cisco-s.yml`)
 - **Arista EOS** - DC-3 design with Arista switches
 - **Juniper JunOS** - DC-5 design with Juniper switches
 - **SONiC NOS** - DC-4 design with EdgeCore switches running SONiC
@@ -122,10 +122,10 @@ For other vendors, load the design files directly:
 
 ```bash
 # Juniper design (DC-5)
-uv run infrahubctl object load objects/dc-juniper-s.yml --branch add-dc5
+uv run infrahubctl object load objects/dc/dc-juniper-s.yml --branch add-dc5
 
 # SONiC design (DC-4)
-uv run infrahubctl object load objects/dc-sonic-border-leafs.yml --branch add-dc4
+uv run infrahubctl object load objects/dc/dc-sonic-border-leafs.yml --branch add-dc4
 ```
 
 Each vendor design generates appropriate configurations for that platform's CLI syntax and features. The same workflow (branch creation, design loading, generator execution, proposed change, merge) applies regardless of vendor.
@@ -330,7 +330,7 @@ Congratulations! You've completed the full workflow:
 Now that you understand the basic workflow, you can:
 
 - **Explore variations** - Try creating DC-3 or a POP topology
-- **Modify designs** - Edit the objects/dc-cisco-s.yml file to change the topology
+- **Modify designs** - Edit the objects/dc/dc-cisco-s.yml file to change the topology
 - **Add network services** - Create Layer 2 or Layer 3 services on top of the fabric
 - **Customize configurations** - Modify templates in the `templates/` directory
 - **Add validation checks** - Create custom checks in the `checks/` directory
@@ -375,7 +375,7 @@ You can also perform this entire workflow from the command line. Here's the abbr
 uv run infrahubctl branch create add-dc2
 
 # Load design (this automatically triggers the generator)
-uv run infrahubctl object load objects/dc-cisco-s.yml --branch add-dc2
+uv run infrahubctl object load objects/dc/dc-cisco-s.yml --branch add-dc2
 
 # Monitor generator progress in the web interface (System → Tasks)
 # Create proposed change (easier via web interface)

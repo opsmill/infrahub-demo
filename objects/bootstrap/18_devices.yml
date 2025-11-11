@@ -8,12 +8,7 @@ spec:
       role: edge_firewall
       device_type: SRX-1500
       platform: Juniper JunOS
-      location:
-        kind: LocationBuilding
-        data:
-          name: PAR-1
-          shortname: par-1
-          parent: Paris
+      location: PAR-1
       status: active
       member_of_groups:
         - juniper_firewall
@@ -46,11 +41,7 @@ spec:
       role: leaf
       device_type: N9K-C93108TC-FX
       platform: Cisco NX-OS
-      location:
-        kind: LocationMetro
-        data:
-          name: London
-          shortname: lon
+      location: London
       status: active
       member_of_groups:
         - leafs
@@ -68,11 +59,7 @@ spec:
       role: spine
       device_type: QFX5220-32CD
       platform: Juniper JunOS
-      location:
-        kind: LocationMetro
-        data:
-          name: Frankfurt
-          shortname: fra
+      location: Frankfurt
       status: active
       member_of_groups:
         - spines
@@ -90,11 +77,7 @@ spec:
       role: spine
       device_type: DCS-7280DR3-24-F
       platform: Arista EOS
-      location:
-        kind: LocationMetro
-        data:
-          name: Barcelona
-          shortname: bcn
+      location: Barcelona
       status: active
       member_of_groups:
         - spines
@@ -112,11 +95,7 @@ spec:
       role: leaf
       device_type: 5912-54X-O-AC-F
       platform: Sonic OS
-      location:
-        kind: LocationMetro
-        data:
-          name: Chicago
-          shortname: chi
+      location: Chicago
       status: active
       member_of_groups:
         - leafs

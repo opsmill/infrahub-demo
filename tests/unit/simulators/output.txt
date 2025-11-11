@@ -3,7 +3,7 @@ name: DC-3
 prefix: ""
 
 mgmt:
-  network: dc-arista-s
+  network: dc-3
   ipv4-subnet: 172.20.3.0/24
 
 topology:
@@ -16,42 +16,7 @@ topology:
         - FastCli -p 15 -c 'security pki certificate generate self-signed eAPI.crt key eAPI.key generate rsa 4096 validity 30000 parameters common-name eAPI'
 
   nodes:
-    dc-arista-s-dc_firewall-01:
-      kind: juniper_vjunosswitch
-      type: SRX-1500
-    dc-arista-s-dc_firewall-02:
-      kind: juniper_vjunosswitch
-      type: SRX-1500
-    dc-arista-s-leaf-01:
-      kind: cisco_n9kv
-      type: N9K-C9336C-FX2
-    dc-arista-s-leaf-02:
-      kind: cisco_n9kv
-      type: N9K-C9336C-FX2
-    dc-arista-s-leaf-03:
-      kind: cisco_n9kv
-      type: N9K-C9336C-FX2
-    dc-arista-s-leaf-04:
-      kind: cisco_n9kv
-      type: N9K-C9336C-FX2
-    dc-arista-s-leaf-05:
-      kind: cisco_n9kv
-      type: N9K-C9336C-FX2
-    dc-arista-s-leaf-06:
-      kind: cisco_n9kv
-      type: N9K-C9336C-FX2
-    dc-arista-s-leaf-07:
-      kind: cisco_n9kv
-      type: N9K-C9336C-FX2
-    dc-arista-s-leaf-08:
-      kind: cisco_n9kv
-      type: N9K-C9336C-FX2
-    dc-arista-s-spine-01:
-      kind: cisco_n9kv
-      type: N9K-C9336C-FX2
-    dc-arista-s-spine-02:
-      kind: cisco_n9kv
-      type: N9K-C9336C-FX2
+
 
   links:
     - endpoints: ["dc-arista-s-leaf-01:eth1/31", "dc-arista-s-spine-01:eth1/1"]
