@@ -15,6 +15,7 @@ jobs:
       documentation: ${{ steps.changes.outputs.documentation_all }}
       python: ${{ steps.changes.outputs.python_all }}
       yaml: ${{ steps.changes.outputs.yaml_all }}
+      markdown: ${{ steps.changes.outputs.markdown_all }}
     steps:
       - name: "Check out repository code"
         uses: "actions/checkout@v5"
@@ -67,9 +68,22 @@ jobs:
           uv run yamllint -d "{extends: default, ignore: [.github/, .venv/ , .dev/ ]}" \
                    -d "{rules: {truthy: {allowed-values: ['true', 'false', 'yes', 'no', 'on', 'off', 'True', 'False']}}}" .
 
+  markdown-lint:
+    if: needs.files-changed.outputs.markdown == 'true'
+    needs: ["files-changed"]
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20
+      - name: Install markdownlint-cli
+        run: npm install -g markdownlint-cli
+      - name: Run markdownlint
+        run: markdownlint "**/*.{md,mdx}"
 
   integration-test:
-    needs: ["python-lint", "yaml-lint"]
+    needs: ["python-lint", "yaml-lint", "markdown-lint"]
     runs-on:
       group: "huge-runners"
     strategy:
@@ -109,7 +123,7 @@ jobs:
       !contains(needs.*.result, 'failure') &&
       !contains(needs.*.result, 'cancelled') &&
       needs.files-changed.outputs.documentation == 'true'
-    needs: ["files-changed", "yaml-lint", "python-lint"]
+    needs: ["files-changed", "yaml-lint", "python-lint", "markdown-lint"]
     runs-on: "ubuntu-22.04"
     timeout-minutes: 5
     steps:
@@ -136,7 +150,7 @@ jobs:
       always() && !cancelled() &&
       !contains(needs.*.result, 'failure') &&
       !contains(needs.*.result, 'cancelled')
-    needs: ["files-changed", "yaml-lint", "python-lint"]
+    needs: ["files-changed", "yaml-lint", "python-lint", "markdown-lint"]
     runs-on: "ubuntu-22.04"
     timeout-minutes: 5
     env:
