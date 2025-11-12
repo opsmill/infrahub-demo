@@ -2,9 +2,8 @@
 
 from infrahub_sdk.generator import InfrahubGenerator
 from infrahub_sdk.protocols import CoreNumberPool
-from netutils.interface import sort_interface_list
 
-from .common import TopologyCreator, clean_data
+from .common import TopologyCreator, clean_data, safe_sort_interface_list
 from .schema_protocols import DcimPhysicalInterface, DcimVirtualInterface
 
 
@@ -33,14 +32,14 @@ class DCTopologyCreator(TopologyCreator):
         }
 
         spines_leaves = {
-            name: sort_interface_list(
+            name: safe_sort_interface_list(
                 [iface.get("name") for iface in ifaces if iface.get("role") == "leaf"]
             )
             for name, ifaces in interfaces.items()
             if "spine" in name
         }
         spine_borders = {
-            name: sort_interface_list(
+            name: safe_sort_interface_list(
                 [iface.get("name") for iface in ifaces if iface.get("role") == "uplink"]
             )
             for name, ifaces in interfaces.items()
@@ -48,7 +47,7 @@ class DCTopologyCreator(TopologyCreator):
         }
 
         leafs = {
-            name: sort_interface_list(
+            name: safe_sort_interface_list(
                 [iface.get("name") for iface in ifaces if iface.get("role") == "uplink"]
             )
             for name, ifaces in interfaces.items()
@@ -56,7 +55,7 @@ class DCTopologyCreator(TopologyCreator):
         }
 
         border_leafs = {
-            name: sort_interface_list(
+            name: safe_sort_interface_list(
                 [iface.get("name") for iface in ifaces if iface.get("role") == "uplink"]
             )
             for name, ifaces in interfaces.items()

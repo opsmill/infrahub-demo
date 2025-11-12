@@ -6,6 +6,8 @@ spec:
   data:
     - prefix: 10.0.0.0/8
       status: active
+    - prefix: 10.10.0.0/16
+      status: active
     - prefix: 172.16.0.0/16
       status: active
     - prefix: 192.168.0.0/16
@@ -21,8 +23,6 @@ spec:
     - prefix: 192.168.4.0/24
       status: active
     - prefix: 192.168.5.0/24
-      status: active
-    - prefix: 1.0.0.0/8
       status: active
     - prefix: fd00:1000::/32
       status: active

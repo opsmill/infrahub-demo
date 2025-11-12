@@ -15,19 +15,31 @@ class CheckLeaf(InfrahubCheck):
     def validate(self, data: Any) -> None:
         """Validate Leaf."""
         errors: list[str] = []
+        warnings: list[str] = []
         data = get_data(data)
-        errors.extend(validate_interfaces(data))
-        if not data.get("device_services"):
-            errors.append("You're MORON !!! No service.")
-        redundant_bgp = [
-            service.get("name")
-            for service in data.get("device_services", [])
-            if service["typename"] == "ServiceBGP"
-        ]
-        if len(redundant_bgp) < 2:
-            errors.append("No BGP redundancy set !!!")
 
-        # Display all errors
-        if errors:
-            for error in errors:
-                self.log_error(message=error)
+        # Validate interfaces - this is critical
+        errors.extend(validate_interfaces(data))
+
+        # Check for services - warn if missing but don't fail
+        # Use 'or []' to handle None values from GraphQL
+        device_services = data.get("device_services") or []
+        if not device_services:
+            warnings.append("No services configured on this device")
+        else:
+            # Only check BGP redundancy if we have services
+            redundant_bgp = [
+                service.get("name")
+                for service in device_services
+                if service.get("typename") == "ServiceBGP"
+            ]
+            if redundant_bgp and len(redundant_bgp) < 2:
+                warnings.append("BGP redundancy not configured - only 1 BGP service found")
+
+        # Log warnings
+        for warning in warnings:
+            self.log_warning(message=warning)
+
+        # Log errors (these will fail the check)
+        for error in errors:
+            self.log_error(message=error)

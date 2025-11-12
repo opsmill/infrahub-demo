@@ -9,6 +9,24 @@ from netutils.interface import sort_interface_list
 from .schema_protocols import DcimConsoleInterface, DcimPhysicalInterface
 
 
+def safe_sort_interface_list(interface_names: list[str]) -> list[str]:
+    """
+    Safely sort interface names using netutils, falling back to alphabetical sorting.
+
+    Args:
+        interface_names: List of interface names to sort
+
+    Returns:
+        Sorted list of interface names
+    """
+    try:
+        return sort_interface_list(interface_names)
+    except (ValueError, TypeError):
+        # If netutils can't parse interface names (e.g., special characters),
+        # fall back to simple alphabetical sorting
+        return sorted(interface_names)
+
+
 def clean_data(data: Any) -> Any:
     """
     Recursively transforms the input data by extracting 'value', 'node', or 'edges' from dictionaries.
@@ -95,7 +113,7 @@ class TopologyCreator:
                 batch.add(task=obj.save, allow_upsert=allow_upsert, node=obj)
                 if data.get("store_key"):
                     self.client.store.set(
-                        key=data.get("store_key"), node=obj, branch=self.branch
+                        key=data.get("store_key"), node=obj, kind=kind, branch=self.branch
                     )
             except GraphQLError as exc:
                 self.log.debug(f"- Creation failed due to {exc}")
@@ -133,7 +151,7 @@ class TopologyCreator:
             )
             if data.get("store_key"):
                 self.client.store.set(
-                    key=data.get("store_key"), node=obj, branch=self.branch
+                    key=data.get("store_key"), node=obj, kind=kind, branch=self.branch
                 )
         except (GraphQLError, ValidationError) as exc:
             self.log.error(f"- Creation failed due to {exc}")
@@ -469,13 +487,13 @@ class TopologyCreator:
 
         device_key = "oob" if connection_type == "management" else "console"
         sources = {
-            key: sort_interface_list(value)
+            key: safe_sort_interface_list(value)
             for key, value in interfaces.items()
             if device_key in key and value
         }
 
         destinations = {
-            key: sort_interface_list(value)
+            key: safe_sort_interface_list(value)
             for key, value in interfaces.items()
             if key not in sources and value
         }

@@ -543,7 +543,7 @@ wheels = [
 ]
 
 [[package]]
-name = "infrahub-demo"
+name = "infrahub-bundle-dc"
 version = "1.0.0"
 source = { editable = "." }
 dependencies = [

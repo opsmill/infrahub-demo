@@ -233,7 +233,7 @@ def main(branch: str = "main") -> int:
         "\n[bold bright_magenta on black][6/7][/bold bright_magenta on black] 📚 [bold white]Adding demo repository[/bold white]"
     )
     result = subprocess.run(
-        "uv run infrahubctl repository add DEMO https://github.com/opsmill/infrahub-demo.git --ref main --read-only --ref main",
+        "uv run infrahubctl repository add DEMO https://github.com/opsmill/infrahub-bundle-dc.git --ref main --read-only --ref main",
         shell=True,
         capture_output=True,
         text=True,
