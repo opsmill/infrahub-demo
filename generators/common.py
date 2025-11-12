@@ -387,15 +387,15 @@ class TopologyCreator:
                     "platform": device["device_type"]["platform"]["id"],
                     "status": "active",
                     "role": role,
-                    "location": self.client.store.get_by_hfid(
-                        key=f"LocationBuilding__{topology_name}",
-                        branch=self.branch,
+                    "location": self.client.store.get(
+                        kind="LocationBuilding",
+                        key=topology_name,
                     ).id,
                     "topology": self.data.get("id"),
                     "member_of_groups": [
-                        self.client.store.get_by_hfid(
-                            key=f"CoreStandardGroup__{group_name}",
-                            branch=self.branch,
+                        self.client.store.get(
+                            kind="CoreStandardGroup",
+                            key=group_name,
                         ).id,
                     ],
                     "primary_address": await self.client.allocate_next_ip_address(
