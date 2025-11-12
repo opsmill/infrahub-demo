@@ -23,7 +23,7 @@ spec:
           role: supernet
       technical_subnet:
         data:
-          prefix: 1.3.0.0/24
+          prefix: 10.10.1.0/24
           status: active
           role: loopback
       member_of_groups:

@@ -69,11 +69,11 @@ async def get_containerlab_topologies(client: InfrahubClient) -> list[str]:
 
 
 async def get_device_configs(client: InfrahubClient) -> int:
-    """Fetch device configuration artifacts and save to files."""
+    """Fetch device configuration artifacts and save to files (leaf and spine only)."""
     base_path = Path("./generated-configs/devices")
     base_path.mkdir(parents=True, exist_ok=True)
 
-    console.print("\n[cyan]→[/cyan] Fetching device configurations...")
+    console.print("\n[cyan]→[/cyan] Fetching device configurations (leaf and spine only)...")
 
     devices = await client.all(kind="DcimGenericDevice")
 
@@ -81,16 +81,24 @@ async def get_device_configs(client: InfrahubClient) -> int:
     artifact_names = [
         "leaf",
         "spine",
-        "edge",
         "border-leaf",
-        "loadbalancer",
-        "juniper-firewall",
         "openconfig-leaf",
     ]
+
+    # Roles to filter by
+    allowed_roles = ["leaf", "spine", "border_leaf"]
 
     config_count = 0
     for device in devices:
         try:
+            # Fetch role to filter devices
+            await device.role.fetch()
+            device_role = device.role.value if device.role else None
+
+            # Skip devices that aren't leaf or spine
+            if device_role not in allowed_roles:
+                continue
+
             # Fetch artifacts list
             await device.artifacts.fetch()
 
