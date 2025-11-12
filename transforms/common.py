@@ -185,9 +185,15 @@ def get_interfaces(data: list) -> list[dict[str, Any]]:
     Only includes 'ospf' key if OSPF area is present.
     Includes IP addresses, description, status, role, and other interface data.
     """
-    sorted_names = sort_interface_list(
-        [iface.get("name") for iface in data if iface.get("name")]
-    )
+    interface_names = [iface.get("name") for iface in data if iface.get("name")]
+
+    # Try to use netutils intelligent sorting, fall back to alphabetical if it fails
+    try:
+        sorted_names = sort_interface_list(interface_names)
+    except (ValueError, TypeError) as e:
+        # If netutils can't parse interface names (e.g., special characters),
+        # fall back to simple alphabetical sorting
+        sorted_names = sorted(interface_names)
     name_to_interface = {}
     for iface in data:
         name = iface.get("name")

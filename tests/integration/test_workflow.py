@@ -252,13 +252,24 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
         # Switch to target branch for running the generator
         client.default_branch = default_branch
 
-        # Run the generator with correct parameter format
+        # Get the DC-3 topology object to pass its ID to the generator
+        dc3 = await client.get(
+            kind="TopologyDataCenter",
+            name__value="DC-3",
+            populate_store=True,
+        )
+
+        assert dc3, "DC-3 topology not found before running generator"
+        logging.info("Found DC-3 topology with ID: %s", dc3.id)
+
+        # Run the generator with the correct format
+        # The nodes field should contain a list of node IDs to process
         mutation = Mutation(
             mutation="CoreGeneratorDefinitionRun",
             input_data={
                 "data": {
                     "id": definition.id,
-                    "name": "DC-3",  # Generator parameter from .infrahub.yml
+                    "nodes": [dc3.id],  # List of node IDs to run the generator on
                 },
                 "wait_until_completion": False,
             },

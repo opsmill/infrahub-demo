@@ -3,21 +3,25 @@ from typing import Any
 
 def clean_data(data: Any) -> Any:
     """
-    Recursively transforms the input data
-    by extracting 'value', 'node', or 'edges' from dictionaries.
+    Recursively normalize Infrahub API data by extracting values from nested dictionaries and lists.
     """
+    # Handle dictionaries
     if isinstance(data, dict):
         dict_result = {}
         for key, value in data.items():
             if isinstance(value, dict):
-                if value.get("value"):
-                    dict_result[key] = value["value"]
-                elif value.get("node"):
+                # Handle special cases with single keys
+                keys = set(value.keys())
+                if keys == {"value"}:
+                    dict_result[key] = value["value"]  # This handles None values too
+                elif keys == {"edges"} and not value["edges"]:
+                    dict_result[key] = []
+                # Handle nested structures
+                elif "node" in value:
                     dict_result[key] = clean_data(value["node"])
-                elif value.get("edges"):
+                elif "edges" in value:
                     dict_result[key] = clean_data(value["edges"])
-                elif not value.get("value"):
-                    dict_result[key] = None
+                # Process any other dictionaries
                 else:
                     dict_result[key] = clean_data(value)
             elif "__" in key:
@@ -25,14 +29,12 @@ def clean_data(data: Any) -> Any:
             else:
                 dict_result[key] = clean_data(value)
         return dict_result
+
+    # Handle lists
     if isinstance(data, list):
-        list_result = []
-        for item in data:
-            if isinstance(item, dict) and item.get("node", None) is not None:
-                list_result.append(clean_data(item["node"]))
-                continue
-            list_result.append(clean_data(item))
-        return list_result
+        return [clean_data(item.get("node", item)) for item in data]
+
+    # Return primitives unchanged
     return data
 
 
@@ -47,7 +49,8 @@ def get_data(data: Any) -> Any:
         first_value = cleaned_data[first_key]
         if isinstance(first_value, list) and first_value:
             return first_value[0]
-        return first_value
+        # Return empty dict if first_value is None to avoid NoneType errors
+        return first_value if first_value is not None else {}
     else:
         raise ValueError("clean_data() did not return a non-empty dictionary")
 

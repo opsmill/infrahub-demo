@@ -6,6 +6,24 @@ from infrahub_sdk.exceptions import GraphQLError, ValidationError
 from infrahub_sdk.protocols import CoreIPAddressPool
 from netutils.interface import sort_interface_list
 
+
+def safe_sort_interface_list(interface_names: list[str]) -> list[str]:
+    """
+    Safely sort interface names using netutils, falling back to alphabetical sorting.
+
+    Args:
+        interface_names: List of interface names to sort
+
+    Returns:
+        Sorted list of interface names
+    """
+    try:
+        return sort_interface_list(interface_names)
+    except (ValueError, TypeError):
+        # If netutils can't parse interface names (e.g., special characters),
+        # fall back to simple alphabetical sorting
+        return sorted(interface_names)
+
 from .schema_protocols import DcimConsoleInterface, DcimPhysicalInterface
 
 
@@ -469,13 +487,13 @@ class TopologyCreator:
 
         device_key = "oob" if connection_type == "management" else "console"
         sources = {
-            key: sort_interface_list(value)
+            key: safe_sort_interface_list(value)
             for key, value in interfaces.items()
             if device_key in key and value
         }
 
         destinations = {
-            key: sort_interface_list(value)
+            key: safe_sort_interface_list(value)
             for key, value in interfaces.items()
             if key not in sources and value
         }
