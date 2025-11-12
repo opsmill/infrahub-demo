@@ -6,10 +6,14 @@ from nested data structures returned by Infrahub APIs.
 """
 
 import html
+import re
 from collections import defaultdict
 from typing import Any
 
 from netutils.interface import sort_interface_list
+
+# Range expansion pattern from infrahub_sdk
+RANGE_PATTERN = re.compile(r"(\[[\w,-]*[-,][\w,-]*\])")
 
 
 def clean_data(data: Any) -> Any:
@@ -179,13 +183,74 @@ def get_loopbacks(data: list) -> dict[str, str]:
     return loopbacks
 
 
+def expand_interface_range(interface_name: str) -> list[str]:
+    """
+    Expand interface name with bracket notation into individual interfaces.
+
+    Examples:
+        "Ethernet[1-3]" -> ["Ethernet1", "Ethernet2", "Ethernet3"]
+        "Ethernet5" -> ["Ethernet5"]
+    """
+    # Check if interface name has bracket notation
+    if not RANGE_PATTERN.search(interface_name):
+        return [interface_name]
+
+    # Simple range expansion for interfaces like Ethernet[1-48]
+    # Extract the pattern
+    match = RANGE_PATTERN.search(interface_name)
+    if not match:
+        return [interface_name]
+
+    bracket_content = match.group(1)[1:-1]  # Remove [ and ]
+    prefix = interface_name[:match.start()]
+    suffix = interface_name[match.end():]
+
+    # Handle numeric ranges like [1-48] or [1,3,5]
+    expanded = []
+    for part in bracket_content.split(','):
+        if '-' in part:
+            start, end = part.split('-')
+            if start.isdigit() and end.isdigit():
+                for i in range(int(start), int(end) + 1):
+                    expanded.append(f"{prefix}{i}{suffix}")
+            else:
+                # Can't parse, return as-is
+                return [interface_name]
+        elif part.isdigit():
+            expanded.append(f"{prefix}{part}{suffix}")
+        else:
+            # Can't parse, return as-is
+            return [interface_name]
+
+    return expanded if expanded else [interface_name]
+
+
 def get_interfaces(data: list) -> list[dict[str, Any]]:
     """
     Returns a list of interface dictionaries sorted by interface name.
     Only includes 'ospf' key if OSPF area is present.
     Includes IP addresses, description, status, role, and other interface data.
+
+    Expands interface ranges like Ethernet[1-48] into individual interfaces.
     """
-    interface_names = [iface.get("name") for iface in data if iface.get("name")]
+    # First, expand any interface names with range notation
+    expanded_interfaces = []
+    for iface in data:
+        name = iface.get("name")
+        if not name:
+            continue
+
+        # Check if this interface needs expansion
+        if RANGE_PATTERN.search(name):
+            # Expand the range and create a copy for each expanded name
+            for expanded_name in expand_interface_range(name):
+                iface_copy = iface.copy()
+                iface_copy["name"] = expanded_name
+                expanded_interfaces.append(iface_copy)
+        else:
+            expanded_interfaces.append(iface)
+
+    interface_names = [iface.get("name") for iface in expanded_interfaces if iface.get("name")]
 
     # Try to use netutils intelligent sorting, fall back to alphabetical if it fails
     try:
@@ -195,7 +260,7 @@ def get_interfaces(data: list) -> list[dict[str, Any]]:
         # fall back to simple alphabetical sorting
         sorted_names = sorted(interface_names)
     name_to_interface = {}
-    for iface in data:
+    for iface in expanded_interfaces:
         name = iface.get("name")
         if not name:
             continue
