@@ -71,6 +71,7 @@ class DCTopologyCreator(TopologyCreator):
             }
             for spine, spine_interfaces in spines_leaves.items()
             for leaf, leaf_interfaces in leafs.items()
+            if spine_interfaces and leaf_interfaces  # Guard against empty lists
         ]
 
         connections.extend(
@@ -82,6 +83,7 @@ class DCTopologyCreator(TopologyCreator):
             }
             for spine, spine_interfaces in spine_borders.items()
             for leaf, leaf_interfaces in border_leafs.items()
+            if spine_interfaces and leaf_interfaces  # Guard against empty lists
         )
 
         # Always use unnumbered interface role for both OSPF and eBGP

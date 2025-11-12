@@ -507,7 +507,8 @@ class TopologyCreator:
             }
             for source_device, source_interfaces in sources.items()
             for destination_device, destination_interfaces in destinations.items()
-            if int(destination_device.split("-")[-1]) % 2
+            if source_interfaces and destination_interfaces  # Guard against empty lists
+            and int(destination_device.split("-")[-1]) % 2
             == int(source_device.split("-")[-1]) % 2
         ]
 
