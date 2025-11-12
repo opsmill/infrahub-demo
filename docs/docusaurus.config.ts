@@ -14,7 +14,7 @@ const config: Config = {
   baseUrl: '/',
 
   organizationName: 'opsmill',
-  projectName: 'infrahub-demo',
+  projectName: 'infrahub-bundle-dc',
 
   onBrokenLinks: 'throw',
   onDuplicateRoutes: "throw",
@@ -40,7 +40,7 @@ const config: Config = {
         docs: {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl: "https://github.com/opsmill/infrahub-demo/tree/main/docs",
+          editUrl: "https://github.com/opsmill/infrahub-bundle-dc/tree/main/docs",
           routeBasePath: "/",
           sidebarCollapsed: true,
           sidebarPath: "./sidebars.ts",
@@ -76,7 +76,7 @@ const config: Config = {
         //   position: "right",
         // },
         {
-          href: "https://github.com/opsmill/infrahub-demo",
+          href: "https://github.com/opsmill/infrahub-bundle-dc",
           position: "right",
           className: "header-github-link",
           "aria-label": "GitHub repository",

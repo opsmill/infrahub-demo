@@ -190,7 +190,7 @@ def get_interfaces(data: list) -> list[dict[str, Any]]:
     # Try to use netutils intelligent sorting, fall back to alphabetical if it fails
     try:
         sorted_names = sort_interface_list(interface_names)
-    except (ValueError, TypeError) as e:
+    except (ValueError, TypeError):
         # If netutils can't parse interface names (e.g., special characters),
         # fall back to simple alphabetical sorting
         sorted_names = sorted(interface_names)

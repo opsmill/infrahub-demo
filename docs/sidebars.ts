@@ -1,7 +1,7 @@
 import type {SidebarsConfig} from '@docusaurus/plugin-content-docs';
 
 const sidebars: SidebarsConfig = {
-  demoSidebar: [
+  BundleDcSidebar: [
     {
       type: 'category',
       label: 'Getting started',

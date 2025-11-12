@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is **infrahub-demo**, a comprehensive demonstration of design-driven network automation using [InfraHub](https://docs.infrahub.app). The project showcases composable data center and POP topology generation, configuration management, validation checks, and infrastructure-as-code patterns.
+This is **bundle-dc**, a comprehensive demonstration of design-driven network automation using [InfraHub](https://docs.infrahub.app). The project showcases composable data center and POP topology generation, configuration management, validation checks, and infrastructure-as-code patterns.
 
 ## Package Manager & Environment
 
@@ -46,7 +46,7 @@ uv run infrahubctl object load objects/bootstrap --branch main
 uv run infrahubctl object load objects/security/ --branch main
 
 # Add demo repository
-uv run infrahubctl repository add DEMO https://github.com/opsmill/infrahub-demo.git --read-only --ref main
+uv run infrahubctl repository add DEMO https://github.com/opsmill/infrahub-bundle-dc.git --read-only --ref main
 
 # Load event actions (optional)
 uv run infrahubctl object load objects/events/ --branch main
@@ -367,7 +367,7 @@ uv run infrahubctl object load objects/bootstrap
 uv run infrahubctl object load objects/security/
 
 # 6. Add repository
-uv run infrahubctl repository add DEMO https://github.com/opsmill/infrahub-demo.git --read-only --ref main
+uv run infrahubctl repository add DEMO https://github.com/opsmill/infrahub-bundle-dc.git --read-only --ref main
 
 # 7. Load event actions (optional)
 uv run infrahubctl object load objects/events/
@@ -585,7 +585,6 @@ uv run python scripts/get_configs.py --branch <branch-name>
 
 - [InfraHub Documentation](https://docs.infrahub.app)
 - [InfraHub SDK Documentation](https://docs.infrahub.app/python-sdk/)
-- [Project Discussions](https://github.com/opsmill/infrahub-demo/discussions/)
 
 ## Documentation Quality
 

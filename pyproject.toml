@@ -21,7 +21,7 @@ dependencies = [
     "types-requests>=2.32.0",
     "yamllint>=1.37.1",
 ]
-name = "infrahub-demo"
+name = "infrahub-bundle-dc"
 version = "1.0.0"
 description = "Design driven automation with Infrahub"
 readme = "README.md"
