@@ -153,8 +153,13 @@ class TopologyCreator:
                 self.client.store.set(
                     key=data.get("store_key"), node=obj, branch=self.branch
                 )
+                self.log.info(f"- Stored {kind} in store with key='{data.get('store_key')}' on branch='{self.branch}'")
         except (GraphQLError, ValidationError) as exc:
-            self.log.error(f"- Creation failed due to {exc}")
+            self.log.error(f"- Creation failed for {kind}: {exc}")
+            raise
+        except Exception as exc:
+            self.log.error(f"- Unexpected error creating {kind}: {type(exc).__name__}: {exc}")
+            raise
 
     async def load_data(self) -> None:
         """Load data and store in cache."""
@@ -205,7 +210,17 @@ class TopologyCreator:
 
     async def create_site(self) -> None:
         """Create site."""
-        self.log.info(f"Create site {self.data.get('name')}")
+        site_name = self.data.get('name')
+        self.log.info(f"Create site {site_name}")
+
+        # Validate data structure
+        if not self.data.get("location"):
+            raise ValueError(f"No location found in topology data for {site_name}")
+        if not self.data["location"].get("id"):
+            raise ValueError(f"Location has no ID in topology data for {site_name}")
+
+        self.log.info(f"Creating LocationBuilding '{site_name}' with parent location ID: {self.data['location']['id']}")
+
         await self._create(
             kind="LocationBuilding",
             data={
