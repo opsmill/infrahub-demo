@@ -16,20 +16,24 @@ class DCTopologyCreator(TopologyCreator):
         """
         batch = await self.client.create_batch()
 
-        interfaces: dict = {
-            device.name.value: [
+        # Build interface mapping using template lookup
+        interfaces: dict = {}
+        for device in self.devices:
+            if device.role.value not in ["leaf", "spine", "border_leaf"]:
+                continue
+
+            template_name = self._get_device_template_name(device)
+            if not template_name or template_name not in self.data["templates"]:
+                continue
+
+            interfaces[device.name.value] = [
                 {
                     "name": interface["name"],
                     "role": interface["role"],
                 }
-                for interface in self.data["templates"][
-                    device._data["object_template"][0]
-                ]
+                for interface in self.data["templates"][template_name]
                 if interface["role"] in ["leaf", "uplink"]
             ]
-            for device in self.devices
-            if device.role.value in ["leaf", "spine", "border_leaf"]
-        }
 
         spines_leaves = {
             name: safe_sort_interface_list(
@@ -111,6 +115,7 @@ class DCTopologyCreator(TopologyCreator):
                 f"Peering connection to {' -> '.join(source_endpoint.hfid or [])}"
             )
             target_endpoint.role.value = interface_role
+            target_endpoint.connector = source_endpoint.id  # type: ignore
 
             batch.add(
                 task=source_endpoint.save, allow_upsert=True, node=source_endpoint

@@ -1,4 +1,5 @@
 import logging
+import re
 from typing import Any
 
 from infrahub_sdk import InfrahubClient
@@ -7,6 +8,51 @@ from infrahub_sdk.protocols import CoreIPAddressPool
 from netutils.interface import sort_interface_list
 
 from .schema_protocols import DcimConsoleInterface, DcimPhysicalInterface
+
+# Range expansion pattern from infrahub_sdk
+RANGE_PATTERN = re.compile(r"(\[[\w,-]*[-,][\w,-]*\])")
+
+
+def expand_interface_range(interface_name: str) -> list[str]:
+    """
+    Expand interface name with bracket notation into individual interfaces.
+
+    Examples:
+        "Ethernet[1-3]" -> ["Ethernet1", "Ethernet2", "Ethernet3"]
+        "Ethernet5" -> ["Ethernet5"]
+    """
+    # Check if interface name has bracket notation
+    if not RANGE_PATTERN.search(interface_name):
+        return [interface_name]
+
+    # Simple range expansion for interfaces like Ethernet[1-48]
+    # Extract the pattern
+    match = RANGE_PATTERN.search(interface_name)
+    if not match:
+        return [interface_name]
+
+    bracket_content = match.group(1)[1:-1]  # Remove [ and ]
+    prefix = interface_name[:match.start()]
+    suffix = interface_name[match.end():]
+
+    # Handle numeric ranges like [1-48] or [1,3,5]
+    expanded = []
+    for part in bracket_content.split(','):
+        if '-' in part:
+            start, end = part.split('-')
+            if start.isdigit() and end.isdigit():
+                for i in range(int(start), int(end) + 1):
+                    expanded.append(f"{prefix}{i}{suffix}")
+            else:
+                # Can't parse, return as-is
+                return [interface_name]
+        elif part.isdigit():
+            expanded.append(f"{prefix}{part}{suffix}")
+        else:
+            # Can't parse, return as-is
+            return [interface_name]
+
+    return expanded if expanded else [interface_name]
 
 
 def safe_sort_interface_list(interface_names: list[str]) -> list[str]:
@@ -163,14 +209,28 @@ class TopologyCreator:
 
     async def load_data(self) -> None:
         """Load data and store in cache."""
-        self.data.update(
-            {
-                "templates": {
-                    item["template"]["template_name"]: item["template"]["interfaces"]
-                    for item in self.data["design"]["elements"]
-                }
-            }
-        )
+        # Expand interface ranges in templates
+        expanded_templates = {}
+        for item in self.data["design"]["elements"]:
+            template_name = item["template"]["template_name"]
+            template_interfaces = item["template"]["interfaces"]
+
+            # Expand each interface that has range notation
+            expanded_interfaces = []
+            for iface in template_interfaces:
+                iface_name = iface.get("name")
+                if iface_name and RANGE_PATTERN.search(iface_name):
+                    # Expand the range
+                    for expanded_name in expand_interface_range(iface_name):
+                        expanded_iface = iface.copy()
+                        expanded_iface["name"] = expanded_name
+                        expanded_interfaces.append(expanded_iface)
+                else:
+                    expanded_interfaces.append(iface)
+
+            expanded_templates[template_name] = expanded_interfaces
+
+        self.data.update({"templates": expanded_templates})
 
         roles = list(
             set(f"{item['role']}s" for item in self.data["design"]["elements"])
@@ -397,7 +457,7 @@ class TopologyCreator:
 
                 payload = {
                     "name": name,
-                    "object_template": [device["template"]["template_name"]],
+                    # Note: object_template removed - interfaces are created explicitly with expanded ranges
                     "device_type": device["device_type"]["id"],
                     "platform": device["device_type"]["platform"]["id"],
                     "status": "active",
@@ -453,6 +513,49 @@ class TopologyCreator:
                 ._hfids["DcimGenericDevice"]
                 .keys()
             ]
+
+        # Create interfaces for devices based on expanded templates
+        await self.create_interfaces_from_templates()
+
+    async def create_interfaces_from_templates(self) -> None:
+        """Create interfaces for all devices based on their templates with expanded ranges."""
+        self.log.info("Creating interfaces from templates with expanded ranges")
+
+        for device in self.devices:
+            template_name = self._get_device_template_name(device)
+            if not template_name or template_name not in self.data["templates"]:
+                self.log.warning(f"No template found for device {device.name.value if hasattr(device, 'name') else device.id}")
+                continue
+
+            # Get expanded interfaces from template
+            template_interfaces = self.data["templates"][template_name]
+
+            # Create interface data
+            interface_data_list = []
+            for iface in template_interfaces:
+                interface_data = {
+                    "payload": {
+                        "name": iface["name"],
+                        "device": device.id,
+                        "status": "active",
+                    },
+                    "store_key": f"{device.name.value}-{iface['name']}" if hasattr(device, 'name') else None,
+                }
+
+                # Add role if present
+                if iface.get("role"):
+                    interface_data["payload"]["role"] = iface["role"]
+
+                interface_data_list.append(interface_data)
+
+            # Create interfaces in batch
+            if interface_data_list:
+                await self._create_in_batch(
+                    kind="DcimPhysicalInterface",
+                    data_list=interface_data_list,
+                    allow_upsert=True,
+                )
+                self.log.info(f"Created {len(interface_data_list)} interfaces for {device.name.value if hasattr(device, 'name') else device.id}")
 
     def _get_device_template_name(self, device: Any) -> str | None:
         """
@@ -563,6 +666,7 @@ class TopologyCreator:
             target_endpoint.description.value = (
                 f"Connection to {' -> '.join(source_endpoint.hfid or [])}"
             )
+            target_endpoint.connector = source_endpoint.id  # type: ignore
             batch.add(
                 task=source_endpoint.save, allow_upsert=True, node=source_endpoint
             )
