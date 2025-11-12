@@ -605,7 +605,7 @@ nodes:
       - index__value
     display_label: "{{ name__value }}"
     uniqueness_constraints:
-      - [policy, index]
+      - [policy, index__value]
     attributes:
       - name: index
         kind: Number
