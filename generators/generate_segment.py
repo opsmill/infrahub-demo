@@ -63,7 +63,7 @@ class NetworkSegmentCreator(TopologyCreator):
         # Store segment references for later use
         for segment_data in segment_data_list:
             segment_key = segment_data["store_key"]
-            segment_obj = self.client.store.get(key=segment_key)
+            segment_obj = self.client.store.get(key=segment_key, branch=self.branch)
             if segment_obj:
                 self.segment_objects.append(segment_obj)
 

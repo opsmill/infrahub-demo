@@ -155,6 +155,7 @@ class DCTopologyCreator(TopologyCreator):
                         "area": self.client.store.get(
                             kind="RoutingOSPFArea",
                             key=f"UNDERLAY-{topology_name}",
+                            branch=self.branch,
                         ),
                         "version": "ospfv3",
                         "device": device.id,
@@ -162,6 +163,7 @@ class DCTopologyCreator(TopologyCreator):
                         "router_id": self.client.store.get(
                             key=f"{device.name.value}-loopback0",
                             kind=DcimVirtualInterface,
+                            branch=self.branch,
                         )
                         .ip_addresses[0]
                         .id,
@@ -293,7 +295,7 @@ class DCTopologyCreator(TopologyCreator):
                         "description": f"{topology_name} SPINES ASN for eBGP UNDERLAY",
                         "location": self.client.store.get(
                             kind="LocationBuilding", key=self.data["name"]
-                        ),
+                        , branch=self.branch),
                     },
                     "store_key": f"SPINE-ASN-{topology_name}",
                 },
@@ -315,7 +317,7 @@ class DCTopologyCreator(TopologyCreator):
                             "description": f"{topology_name} {device.name.value} ASN for eBGP UNDERLAY",
                             "location": self.client.store.get(
                                 kind="LocationBuilding", key=self.data["name"]
-                            ),
+                            , branch=self.branch),
                         },
                         "store_key": f"LEAF-ASN-{device.name.value}",
                     },
@@ -331,7 +333,7 @@ class DCTopologyCreator(TopologyCreator):
                         "description": f"{topology_name} OVERLAY ASN for iBGP EVPN over eBGP UNDERLAY",
                         "location": self.client.store.get(
                             kind="LocationBuilding", key=self.data["name"]
-                        ),
+                        , branch=self.branch),
                     },
                     "store_key": f"OVERLAY-ASN-{topology_name}",
                 },
@@ -347,7 +349,7 @@ class DCTopologyCreator(TopologyCreator):
                         "description": f"{topology_name} OVERLAY ASN for iBGP EVPN over OSPF UNDERLAY",
                         "location": self.client.store.get(
                             kind="LocationBuilding", key=self.data["name"]
-                        ),
+                        , branch=self.branch),
                     },
                     "store_key": f"OVERLAY-ASN-{topology_name}",
                 },
@@ -363,12 +365,12 @@ class DCTopologyCreator(TopologyCreator):
         # Get peer groups
         server_pg = self.client.store.get(
             kind="RoutingBGPPeerGroup", key=f"SPINE-TO-LEAF-UNDERLAY-PG-{topology_name}"
-        )
+        , branch=self.branch)
 
         # Get all ASNs for spines and leaves
         spine_asn_obj = self.client.store.get(
             kind="RoutingAutonomousSystem", key=f"SPINE-ASN-{topology_name}"
-        )
+        , branch=self.branch)
         spine_asn = spine_asn_obj.id if spine_asn_obj else None
 
         # Build device lists
@@ -390,7 +392,7 @@ class DCTopologyCreator(TopologyCreator):
                 leaf_asn_obj = self.client.store.get(
                     kind="RoutingAutonomousSystem",
                     key=f"LEAF-ASN-{leaf_device.name.value}",
-                )
+                , branch=self.branch)
                 leaf_asn = leaf_asn_obj.id if leaf_asn_obj else None
                 session_name = (
                     f"{spine_device.name.value}-{leaf_device.name.value}".upper()
@@ -405,19 +407,19 @@ class DCTopologyCreator(TopologyCreator):
                     "router_id": self.client.store.get(
                         key=f"{spine_device.name.value}-loopback0",
                         kind=DcimVirtualInterface,
-                    )
+                    , branch=self.branch)
                     .ip_addresses[0]
                     .id,
                     "local_ip": self.client.store.get(
                         key=f"{spine_device.name.value}-loopback0",
                         kind=DcimVirtualInterface,
-                    )
+                    , branch=self.branch)
                     .ip_addresses[0]
                     .id,
                     "remote_ip": self.client.store.get(
                         key=f"{leaf_device.name.value}-loopback0",
                         kind=DcimVirtualInterface,
-                    )
+                    , branch=self.branch)
                     .ip_addresses[0]
                     .id,
                     # Associate with unnumbered interfaces like OSPF does
@@ -443,7 +445,7 @@ class DCTopologyCreator(TopologyCreator):
         for leaf_device in leaf_devices:
             leaf_asn_obj = self.client.store.get(
                 kind="RoutingAutonomousSystem", key=f"LEAF-ASN-{leaf_device.name.value}"
-            )
+            , branch=self.branch)
             leaf_asn = leaf_asn_obj.id if leaf_asn_obj else None
             for spine_device in spine_devices:
                 session_name = (
@@ -459,19 +461,19 @@ class DCTopologyCreator(TopologyCreator):
                     "router_id": self.client.store.get(
                         key=f"{leaf_device.name.value}-loopback0",
                         kind=DcimVirtualInterface,
-                    )
+                    , branch=self.branch)
                     .ip_addresses[0]
                     .id,
                     "local_ip": self.client.store.get(
                         key=f"{leaf_device.name.value}-loopback0",
                         kind=DcimVirtualInterface,
-                    )
+                    , branch=self.branch)
                     .ip_addresses[0]
                     .id,
                     "remote_ip": self.client.store.get(
                         key=f"{spine_device.name.value}-loopback0",
                         kind=DcimVirtualInterface,
-                    )
+                    , branch=self.branch)
                     .ip_addresses[0]
                     .id,
                     # Associate with unnumbered interfaces like OSPF does
@@ -488,7 +490,7 @@ class DCTopologyCreator(TopologyCreator):
                 client_pg = self.client.store.get(
                     kind="RoutingBGPPeerGroup",
                     key=f"LEAF-TO-SPINE-UNDERLAY-PG-{topology_name}",
-                )
+                , branch=self.branch)
                 if client_pg:
                     leaf_bgp_data["peer_group"] = client_pg.id
                 else:
@@ -519,16 +521,16 @@ class DCTopologyCreator(TopologyCreator):
         # Always use the overlay ASN for iBGP overlay sessions
         overlay_asn = self.client.store.get(
             kind="RoutingAutonomousSystem", key=f"OVERLAY-ASN-{topology_name}"
-        )
+        , branch=self.branch)
         asn_id = overlay_asn.id if overlay_asn else None
 
         # Get peer groups
         client_pg = self.client.store.get(
             kind="RoutingBGPPeerGroup", key=f"RR-CLIENTS-OVERLAY-PG-{topology_name}"
-        )
+        , branch=self.branch)
         server_pg = self.client.store.get(
             kind="RoutingBGPPeerGroup", key=f"RR-SERVERS-OVERLAY-PG-{topology_name}"
-        )
+        , branch=self.branch)
 
         # Filter devices by role
         leaf_devices = [
@@ -559,19 +561,19 @@ class DCTopologyCreator(TopologyCreator):
                     "router_id": self.client.store.get(
                         key=f"{spine_device.name.value}-loopback0",
                         kind=DcimVirtualInterface,
-                    )
+                    , branch=self.branch)
                     .ip_addresses[0]
                     .id,
                     "local_ip": self.client.store.get(
                         key=f"{spine_device.name.value}-{loopback_name}",
                         kind=DcimVirtualInterface,
-                    )
+                    , branch=self.branch)
                     .ip_addresses[0]
                     .id,
                     "remote_ip": self.client.store.get(
                         key=f"{leaf_device.name.value}-{loopback_name}",
                         kind=DcimVirtualInterface,
-                    )
+                    , branch=self.branch)
                     .ip_addresses[0]
                     .id,
                     "session_type": "INTERNAL",
@@ -604,19 +606,19 @@ class DCTopologyCreator(TopologyCreator):
                     "router_id": self.client.store.get(
                         key=f"{leaf_device.name.value}-loopback0",
                         kind=DcimVirtualInterface,
-                    )
+                    , branch=self.branch)
                     .ip_addresses[0]
                     .id,
                     "local_ip": self.client.store.get(
                         key=f"{leaf_device.name.value}-{loopback_name}",
                         kind=DcimVirtualInterface,
-                    )
+                    , branch=self.branch)
                     .ip_addresses[0]
                     .id,
                     "remote_ip": self.client.store.get(
                         key=f"{spine_device.name.value}-{loopback_name}",
                         kind=DcimVirtualInterface,
-                    )
+                    , branch=self.branch)
                     .ip_addresses[0]
                     .id,
                     "session_type": "INTERNAL",

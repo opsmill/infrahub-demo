@@ -390,17 +390,19 @@ class TopologyCreator:
                     "location": self.client.store.get(
                         kind="LocationBuilding",
                         key=topology_name,
+                        branch=self.branch,
                     ).id,
                     "topology": self.data.get("id"),
                     "member_of_groups": [
                         self.client.store.get(
                             kind="CoreStandardGroup",
                             key=group_name,
+                            branch=self.branch,
                         ).id,
                     ],
                     "primary_address": await self.client.allocate_next_ip_address(
                         resource_pool=self.client.store.get(
-                            kind=CoreIPAddressPool, key="management_ip_pool"
+                            kind=CoreIPAddressPool, key="management_ip_pool", branch=self.branch
                         ),
                         identifier=f"{name}-management",
                         data={"description": f"{name} Management IP"},
@@ -587,7 +589,7 @@ class TopologyCreator:
                         "ip_addresses": [
                             await self.client.allocate_next_ip_address(
                                 resource_pool=self.client.store.get(
-                                    kind=CoreIPAddressPool, key=pool_key
+                                    kind=CoreIPAddressPool, key=pool_key, branch=self.branch
                                 ),
                                 identifier=f"{device.name.value}-{loopback_name}",
                                 data={
