@@ -1,0 +1,175 @@
+##
+## {{ hostname }} Configuration
+## Generated for Juniper JunOS Spine
+##
+
+system {
+    host-name {{ hostname }};
+
+{%- if ospf and ospf.router_id %}
+    router-id {{ ospf.router_id.split('/')[0] }};
+{%- elif loopbacks.loopback0 %}
+    router-id {{ loopbacks.loopback0.split('/')[0] }};
+{%- endif %}
+
+    services {
+        ssh;
+        netconf {
+            ssh;
+        }
+    }
+
+    syslog {
+        user * {
+            any emergency;
+        }
+        file messages {
+            any notice;
+            authorization info;
+        }
+    }
+}
+
+chassis {
+    aggregated-devices {
+        ethernet {
+            device-count 8;
+        }
+    }
+}
+
+interfaces {
+{%- for interface in interface_roles.loopback %}
+    ## Loopback Interface: {{ interface.name }}
+    {{ interface.name.replace('loopback', 'lo') }} {
+{%- if interface.name == 'loopback0' %}
+        description "Underlay Routing Loopback";
+{%- elif interface.name == 'loopback1' %}
+        description "VTEP Loopback Interface";
+{%- elif interface.description %}
+        description "{{ interface.description }}";
+{%- else %}
+        description "Routing Loopback";
+{%- endif %}
+        unit 0 {
+            family inet {
+{%- if interface.ip_address %}
+                address {{ interface.ip_address | replace('/24', '/32') }};
+{%- endif %}
+            }
+        }
+    }
+{%- endfor %}
+
+{%- for interface in interface_roles.all_downlink %}
+    ## Downlink to Leaf
+    {{ interface.name }} {
+{%- if interface.description %}
+        description "{{ interface.description }}";
+{%- else %}
+        description "Link to Leaf";
+{%- endif %}
+{%- if interface.mtu %}
+        mtu {{ interface.mtu }};
+{%- else %}
+        mtu 9214;
+{%- endif %}
+        unit 0 {
+            family inet {
+                unnumbered-address lo0.0;
+            }
+        }
+    }
+{%- endfor %}
+
+{%- for interface in interface_roles.management %}
+    ## Management Interface
+    {{ interface.name }} {
+{%- if interface.description %}
+        description "{{ interface.description }}";
+{%- else %}
+        description "Management interface";
+{%- endif %}
+        unit 0 {
+{%- if interface.ip_address %}
+            family inet {
+                address {{ interface.ip_address }};
+            }
+{%- endif %}
+        }
+    }
+{%- endfor %}
+}
+
+{%- if ospf %}
+
+protocols {
+    ospf {
+        reference-bandwidth {{ ospf.reference_bandwidth or 10000 }}m;
+{%- if ospf.area %}
+        area {{ ospf.area }} {
+{%- for interface in interface_roles.loopback %}
+{%- if interface.name != 'loopback1' %}
+            interface {{ interface.name.replace('loopback', 'lo') }}.0 {
+                passive;
+            }
+{%- endif %}
+{%- endfor %}
+{%- for interface in interface_roles.all_downlink %}
+            interface {{ interface.name }}.0 {
+                interface-type p2p;
+            }
+{%- endfor %}
+        }
+{%- endif %}
+    }
+
+    lldp {
+        interface all;
+    }
+
+    rstp;
+}
+{%- endif %}
+
+{%- if bgp %}
+
+routing-options {
+{%- if bgp.router_id %}
+    router-id {{ bgp.router_id }};
+{%- elif loopbacks.loopback0 %}
+    router-id {{ loopbacks.loopback0.split('/')[0] }};
+{%- endif %}
+    autonomous-system {{ bgp.local_as }};
+}
+
+protocols {
+    bgp {
+        group EVPN-OVERLAY-PEERS {
+            type internal;
+            local-address {{ loopbacks.loopback0.split('/')[0] if loopbacks.loopback0 else bgp.router_id }};
+            family inet {
+                unicast {
+                    multipath;
+                }
+            }
+            family evpn {
+                signaling;
+            }
+            cluster {{ bgp.router_id or loopbacks.loopback0.split('/')[0] }};
+
+{%- for neighbor in bgp.neighbors %}
+            neighbor {{ neighbor.remote_ip.split('/')[0] }} {
+{%- if neighbor.name %}
+                description "{{ neighbor.name }} (Route Reflector Client)";
+{%- else %}
+                description "BGP Neighbor (Route Reflector Client)";
+{%- endif %}
+            }
+{%- endfor %}
+        }
+    }
+}
+{%- endif %}
+
+## End of configuration

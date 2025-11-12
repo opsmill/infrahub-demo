@@ -112,10 +112,8 @@ class TopologyCreator:
                 )
                 batch.add(task=obj.save, allow_upsert=allow_upsert, node=obj)
                 if data.get("store_key"):
-                    # Store with composite key format: kind__key
-                    composite_key = f"{kind}__{data.get('store_key')}"
                     self.client.store.set(
-                        key=composite_key, node=obj, branch=self.branch
+                        key=data.get("store_key"), node=obj, branch=self.branch
                     )
             except GraphQLError as exc:
                 self.log.debug(f"- Creation failed due to {exc}")
@@ -152,10 +150,8 @@ class TopologyCreator:
                 else f"- Created [{kind}]"
             )
             if data.get("store_key"):
-                # Store with composite key format: kind__key
-                composite_key = f"{kind}__{data.get('store_key')}"
                 self.client.store.set(
-                    key=composite_key, node=obj, branch=self.branch
+                    key=data.get("store_key"), node=obj, branch=self.branch
                 )
         except (GraphQLError, ValidationError) as exc:
             self.log.error(f"- Creation failed due to {exc}")
