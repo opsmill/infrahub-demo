@@ -53,14 +53,14 @@ topology:
       kind: {{ device.node.platform.node.containerlab_os.value }}
       type: {{ device.node.device_type.node.name.value }}
 {#- Add custom OS version if specified #}
-{%- if device.node.os_version.value %}
+{% if device.node.os_version.value -%}
       image: {{ device.node.os_version.value }}
-{%- endif %}
+{% endif -%}
 {#- Extract and set management IP (strip subnet mask) #}
-{%- if device.node.primary_address.node.address is defined %}
-{%- set mgmt_ip = device.node.primary_address.node.address.value.split('/') %}
+{% if device.node.primary_address.node.address is defined -%}
+{% set mgmt_ip = device.node.primary_address.node.address.value.split('/') -%}
       mgmt-ipv4: {{ mgmt_ip[0] }}
-{%- endif %}
+{% endif -%}
       startup-config: ../devices/{{ device.node.name.value }}.cfg
 {%- endif %}
 {% endfor %}
