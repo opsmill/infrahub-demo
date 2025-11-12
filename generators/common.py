@@ -6,6 +6,8 @@ from infrahub_sdk.exceptions import GraphQLError, ValidationError
 from infrahub_sdk.protocols import CoreIPAddressPool
 from netutils.interface import sort_interface_list
 
+from .schema_protocols import DcimConsoleInterface, DcimPhysicalInterface
+
 
 def safe_sort_interface_list(interface_names: list[str]) -> list[str]:
     """
@@ -23,8 +25,6 @@ def safe_sort_interface_list(interface_names: list[str]) -> list[str]:
         # If netutils can't parse interface names (e.g., special characters),
         # fall back to simple alphabetical sorting
         return sorted(interface_names)
-
-from .schema_protocols import DcimConsoleInterface, DcimPhysicalInterface
 
 
 def clean_data(data: Any) -> Any:
@@ -113,7 +113,7 @@ class TopologyCreator:
                 batch.add(task=obj.save, allow_upsert=allow_upsert, node=obj)
                 if data.get("store_key"):
                     self.client.store.set(
-                        key=data.get("store_key"), node=obj, branch=self.branch
+                        key=data.get("store_key"), node=obj, kind=kind, branch=self.branch
                     )
             except GraphQLError as exc:
                 self.log.debug(f"- Creation failed due to {exc}")
@@ -151,7 +151,7 @@ class TopologyCreator:
             )
             if data.get("store_key"):
                 self.client.store.set(
-                    key=data.get("store_key"), node=obj, branch=self.branch
+                    key=data.get("store_key"), node=obj, kind=kind, branch=self.branch
                 )
         except (GraphQLError, ValidationError) as exc:
             self.log.error(f"- Creation failed due to {exc}")

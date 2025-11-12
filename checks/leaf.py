@@ -22,13 +22,15 @@ class CheckLeaf(InfrahubCheck):
         errors.extend(validate_interfaces(data))
 
         # Check for services - warn if missing but don't fail
-        if not data.get("device_services"):
+        # Use 'or []' to handle None values from GraphQL
+        device_services = data.get("device_services") or []
+        if not device_services:
             warnings.append("No services configured on this device")
         else:
             # Only check BGP redundancy if we have services
             redundant_bgp = [
                 service.get("name")
-                for service in data.get("device_services", [])
+                for service in device_services
                 if service.get("typename") == "ServiceBGP"
             ]
             if redundant_bgp and len(redundant_bgp) < 2:
