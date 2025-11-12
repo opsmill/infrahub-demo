@@ -43,7 +43,13 @@ spec:
   kind: SecurityPolicyRule
   data:
     # allow-web-traffic rule with all relationships
-    - name: "allow-web-traffic"
+    - index: 100
+      name: "allow-web-traffic"
+      action: "permit"
+      log: true
+      policy: "corporate-firewall-policy"
+      source_zone: "internal"
+      destination_zone: "dmz"
       source_addresses: [["internet"]]
       destination_addresses: [["web-servers"]]
       services: [["web-services"]]
