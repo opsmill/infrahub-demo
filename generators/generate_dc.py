@@ -109,13 +109,13 @@ class DCTopologyCreator(TopologyCreator):
                 f"Peering connection to {' -> '.join(target_endpoint.hfid or [])}"
             )
             source_endpoint.role.value = interface_role
-            source_endpoint.connector = target_endpoint.id  # type: ignore
+            source_endpoint.connector = target_endpoint.id  # type: ignore - Infrahub handles bidirectional automatically
             target_endpoint.status.value = "active"
             target_endpoint.description.value = (
                 f"Peering connection to {' -> '.join(source_endpoint.hfid or [])}"
             )
             target_endpoint.role.value = interface_role
-            target_endpoint.connector = source_endpoint.id  # type: ignore
+            # Note: Don't set target_endpoint.connector - Infrahub creates bidirectional relationship automatically
 
             batch.add(
                 task=source_endpoint.save, allow_upsert=True, node=source_endpoint

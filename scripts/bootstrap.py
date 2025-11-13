@@ -7,6 +7,7 @@ This script loads all necessary data into Infrahub including:
 - Menu definitions
 - Bootstrap data (locations, platforms, roles)
 - Security data
+- User accounts and roles (emma, otto)
 - Demo repository
 - Event actions
 
@@ -176,39 +177,46 @@ def main(branch: str = "main") -> int:
 
     steps = [
         {
-            "step": "[1/7]",
+            "step": "[1/8]",
             "description": "Loading schemas",
             "command": f"uv run infrahubctl schema load schemas --branch {branch}",
             "color": "blue",
             "icon": "📋",
         },
         {
-            "step": "[2/7]",
+            "step": "[2/8]",
             "description": "Loading menu definitions",
             "command": f"uv run infrahubctl menu load menus/menu-full.yml --branch {branch}",
             "color": "magenta",
             "icon": "📑",
         },
         {
-            "step": "[3/7]",
+            "step": "[3/8]",
             "description": "Loading bootstrap data (locations, platforms, roles, etc.)",
             "command": f"uv run infrahubctl object load objects/bootstrap/ --branch {branch}",
             "color": "yellow",
             "icon": "📦",
         },
         {
-            "step": "[4/7]",
+            "step": "[4/8]",
             "description": "Loading security data (zones, policies, rules)",
             "command": f"uv run infrahubctl object load objects/security/ --branch {branch}",
             "color": "green",
             "icon": "🔒",
         },
         {
-            "step": "[5/7]",
+            "step": "[5/8]",
             "description": "Populating security relationships",
             "command": "uv run python scripts/populate_security_relationships.py",
             "color": "cyan",
             "icon": "🔗",
+        },
+        {
+            "step": "[6/8]",
+            "description": "Creating user accounts and roles",
+            "command": "uv run python scripts/create_users_roles.py",
+            "color": "bright_blue",
+            "icon": "👥",
         },
     ]
 
@@ -230,7 +238,7 @@ def main(branch: str = "main") -> int:
 
     # Add repository (may already exist)
     console.print(
-        "\n[bold bright_magenta on black][6/7][/bold bright_magenta on black] 📚 [bold white]Adding demo repository[/bold white]"
+        "\n[bold bright_magenta on black][7/8][/bold bright_magenta on black] 📚 [bold white]Adding demo repository[/bold white]"
     )
     result = subprocess.run(
         "uv run infrahubctl repository add DEMO https://github.com/opsmill/infrahub-bundle-dc.git --ref main --read-only --ref main",
@@ -266,7 +274,7 @@ def main(branch: str = "main") -> int:
     console.print(Rule(style="dim bright_yellow"))
 
     # Load event actions
-    console.print("\n[bold bright_cyan]→ ⚡ Loading event actions[/bold bright_cyan]")
+    console.print("\n[bold bright_cyan on black][8/8][/bold bright_cyan on black] ⚡ [bold white]Loading event actions[/bold white]")
     run_command(
         f"uv run infrahubctl object load objects/events/ --branch {branch}",
         "Event actions loading",
