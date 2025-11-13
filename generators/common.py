@@ -135,6 +135,7 @@ class TopologyCreator:
         self.branch = branch
         self.data = data
         self.devices: list = []
+        self.device_to_template: dict[str, str] = {}  # Map device name to template name
 
     async def _create_in_batch(
         self,
@@ -448,6 +449,10 @@ class TopologyCreator:
                 # Format the name string once per device
                 name = f"{topology_name.lower()}-{role}-{str(role_counters[role]).zfill(2)}"
 
+                # Track template name for this device
+                template_name = device["template"]["template_name"]
+                self.device_to_template[name] = template_name
+
                 # Construct the payload once per device
                 # Determine group name based on role
                 if role in ["dc_firewall", "edge_firewall"]:
@@ -567,6 +572,13 @@ class TopologyCreator:
         Returns:
             The template name as a string, or None if not found
         """
+        # First try to get from our internal mapping
+        if hasattr(device, "name"):
+            device_name = device.name.value if hasattr(device.name, "value") else str(device.name)
+            if device_name in self.device_to_template:
+                return self.device_to_template[device_name]
+
+        # Fallback: try to get from object_template attribute (if it exists)
         try:
             if hasattr(device, "object_template"):
                 template = device.object_template

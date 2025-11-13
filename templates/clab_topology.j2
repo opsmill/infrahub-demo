@@ -48,7 +48,7 @@ topology:
   nodes:
 {% for device in topology.node.devices.edges %}
 {#- Only include devices that are Arista cEOS platform #}
-{%- if device.node.platform.node.containerlab_os.value == "arista_ceos" %}
+{% if device.node.platform.node.containerlab_os.value == "arista_ceos" %}
     {{ device.node.name.value }}:
       kind: {{ device.node.platform.node.containerlab_os.value }}
       type: {{ device.node.device_type.node.name.value }}
@@ -58,11 +58,11 @@ topology:
 {% endif %}
 {#- Extract and set management IP (strip subnet mask) #}
 {% if device.node.primary_address.node.address is defined %}
-{% set mgmt_ip = device.node.primary_address.node.address.value.split('/') -%}
+{% set mgmt_ip = device.node.primary_address.node.address.value.split('/') %}
       mgmt-ipv4: {{ mgmt_ip[0] }}
 {% endif %}
       startup-config: ../devices/{{ device.node.name.value }}.cfg
-{%- endif %}
+{% endif %}
 {% endfor %}
 
 
