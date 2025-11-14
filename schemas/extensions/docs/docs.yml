@@ -8,7 +8,7 @@ nodes:
     description: "Documentation links"
     include_in_menu: false
     label: Documentation
-    display_label: "{{ name__value }}"
+    # display_label: "{{ name__value }}"
     attributes:
       - name: name
         kind: Text

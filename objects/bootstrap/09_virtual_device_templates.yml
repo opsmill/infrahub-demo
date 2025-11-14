@@ -3,6 +3,8 @@ apiVersion: infrahub.app/v1
 kind: Object
 spec:
   kind: TemplateDcimVirtualDevice
+  parameters:
+    expand_range: true
   data:
     - template_name: C8000V_EDGE
       device_type: C8000V

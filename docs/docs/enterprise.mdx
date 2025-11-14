@@ -30,7 +30,7 @@ export INFRAHUB_ENTERPRISE="true"
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `INFRAHUB_ENTERPRISE` | `false` | Set to `true` to use Enterprise edition |
-| `INFRAHUB_VERSION` | `stable` | Infrahub version to use (for example, `1.5.0`, `stable`, `develop`) |
+| `INFRAHUB_VERSION` | `stable` | Infrahub version to use (for example, `1.5.1`, `stable`, `develop`) |
 | `INFRAHUB_ADDRESS` | `http://localhost:8000` | Infrahub API address |
 | `INFRAHUB_API_TOKEN` | (demo token) | API authentication token |
 
@@ -67,8 +67,8 @@ You should see output similar to:
 
 ```bash
 Infrahub Edition: Enterprise
-Version: 1.5.0
-Command: curl -s https://infrahub.opsmill.io/enterprise/1.5.0 | ...
+Version: 1.5.1
+Command: curl -s https://infrahub.opsmill.io/enterprise/1.5.1 | ...
 ```
 
 ### Step 4: restart Infrahub
@@ -171,7 +171,7 @@ If you get errors about missing environment variables:
 
 ## Best practices
 
-- **Use explicit versions** - Instead of `stable`, specify exact versions like `1.5.0` for reproducible environments
+- **Use explicit versions** - Instead of `stable`, specify exact versions like `1.5.1` for reproducible environments
 - **Document your choice** - Note which edition you're using in project documentation
 - **Test on Community first** - Validate your schemas and generators on Community edition before deploying to Enterprise
 - **Keep configurations in sync** - If working in a team, ensure everyone uses the same edition for consistency

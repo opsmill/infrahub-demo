@@ -516,3 +516,23 @@ spec:
             label: Backend Servers
             kind: LoadbalancerServer
             icon: mdi:server-plus
+
+    # ===================== MANAGEMENT SERVERS =====================
+
+    - namespace: Network
+      name: ManagementMenu
+      label: Network Mgmt Services
+      icon: "mdi:server"
+      children:
+        data:
+
+          - namespace: Network
+            name: NameServer
+            label: DNS Servers
+            kind: NetworkNameServer
+            icon: mdi:server-plus
+          - namespace: Network
+            name: NTPServer
+            label: NTP Servers
+            kind: NetworkNTPServer
+            icon: mdi:server-plus

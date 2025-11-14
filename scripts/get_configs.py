@@ -91,9 +91,9 @@ async def get_device_configs(client: InfrahubClient) -> int:
     config_count = 0
     for device in devices:
         try:
-            # Fetch role to filter devices
-            await device.role.fetch()
-            device_role = device.role.value if device.role else None
+            # Get role value to filter devices
+            # role is an attribute, not a relationship, so no need to fetch
+            device_role = device.role.value if hasattr(device.role, 'value') else str(device.role) if device.role else None
 
             # Skip devices that aren't leaf or spine
             if device_role not in allowed_roles:
