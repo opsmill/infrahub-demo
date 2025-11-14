@@ -34,6 +34,8 @@ spec:
       storage: 100
       interfaces:
         kind: TemplateDcimPhysicalInterface
+        parameters:
+          expand_range: true
         data:
           - template_name: CloudGuard_EDGE_eth0
             name: eth0

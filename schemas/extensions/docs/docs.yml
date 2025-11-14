@@ -5,10 +5,12 @@ version: "1.0"
 nodes:
   - name: Docs
     namespace: Docs
-    description: "Documentation links"
+    description: "Documentation"
+    human_friendly_id:
+      - name__value
     include_in_menu: false
     label: Documentation
-    # display_label: "{{ name__value }}"
+    display_label: "{{ name__value }}"
     attributes:
       - name: name
         kind: Text

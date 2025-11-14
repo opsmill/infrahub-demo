@@ -36,8 +36,6 @@ apiVersion: infrahub.app/v1
 kind: Object
 spec:
   kind: DcimPhysicalDevice
-  parameters:
-    expand_range: true
   data:
     - name: cisco-switch-01
       role: leaf
@@ -49,6 +47,8 @@ spec:
         - leafs
       interfaces:
         kind: DcimPhysicalInterface
+        parameters:
+          expand_range: true
         data:
           - name: mgmt0
             role: management
@@ -67,6 +67,8 @@ spec:
         - spines
       interfaces:
         kind: DcimPhysicalInterface
+        parameters:
+          expand_range: true
         data:
           - name: fxp0
             role: management
@@ -85,6 +87,8 @@ spec:
         - spines
       interfaces:
         kind: DcimPhysicalInterface
+        parameters:
+          expand_range: true
         data:
           - name: Management1
             role: management
