@@ -702,6 +702,7 @@ class InfrahubClient:
                             id
                             name { value }
                             position { value }
+                            role { value }
                             device_type {
                                 node {
                                     name { value }
@@ -740,6 +741,7 @@ class InfrahubClient:
                     "name": {"value": node.get("name", {}).get("value")},
                     "position": {"value": node.get("position", {}).get("value")},
                     "height": {"value": device_height},
+                    "role": {"value": node.get("role", {}).get("value")},
                 }
 
                 # Add device type if available

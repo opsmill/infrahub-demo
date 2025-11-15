@@ -24,6 +24,7 @@ from utils.api import (
     InfrahubHTTPError,
 )
 from utils.rack import generate_rack_html
+from utils.ui import get_role_legend
 
 
 # Configure page layout and title
@@ -198,6 +199,41 @@ def render_row_selector(client: InfrahubClient, branch: str) -> str:
     return row_map.get(selected_row_name, "")
 
 
+def render_legend() -> None:
+    """Render color legend for device roles."""
+    role_legend = get_role_legend()
+
+    # Create columns for legend items
+    cols = st.columns(len(role_legend))
+
+    for idx, (role, color) in enumerate(role_legend.items()):
+        with cols[idx]:
+            # Create a colored box with role name
+            st.markdown(
+                f"""
+                <div style="
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    padding: 8px;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                    background-color: #f9f9f9;
+                ">
+                    <div style="
+                        width: 24px;
+                        height: 24px;
+                        background-color: {color};
+                        border: 2px solid {color}dd;
+                        border-radius: 3px;
+                    "></div>
+                    <span style="font-size: 13px; font-weight: 500; color: #333;">{role}</span>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+
 def main() -> None:
     """Main function to render the rack visualization page."""
 
@@ -293,6 +329,11 @@ def main() -> None:
     # Render rack grid
     st.markdown("---")
     render_rack_grid(client, selected_row_id, st.session_state.selected_branch)
+
+    # Render legend
+    st.markdown("---")
+    st.markdown("### Legend - Device Roles")
+    render_legend()
 
     # Footer
     st.markdown("---")

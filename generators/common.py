@@ -362,7 +362,7 @@ class TopologyCreator:
         # Create racks
         rack_data_list = []
         for i in range(1, num_leafs + 1):
-            rack_name = f"R{i}"
+            rack_name = f"Rack-{i}"
             rack_data_list.append({
                 "payload": {
                     "name": rack_name,
@@ -386,6 +386,8 @@ class TopologyCreator:
         leaf_devices = [d for d in self.devices if d.role.value == "leaf"]
         border_leaf_devices = [d for d in self.devices if d.role.value == "border_leaf"]
         spine_devices = [d for d in self.devices if d.role.value == "spine"]
+        console_devices = [d for d in self.devices if "console" in d.role.value.lower()]
+        oob_devices = [d for d in self.devices if "oob" in d.role.value.lower()]
 
         # Calculate total rack count and middle racks
         total_racks = len(leaf_devices)
@@ -394,9 +396,14 @@ class TopologyCreator:
             self.log.warning("No leaf devices found, skipping rack assignment")
             return
 
-        # Calculate middle rack positions for spines and border leafs
-        middle_start = (total_racks // 2) - (len(spine_devices) // 2)
-        middle_racks = list(range(middle_start + 1, middle_start + len(spine_devices) + 1))
+        # Calculate middle rack positions for devices that go in the middle
+        # (spines, border_leafs, console, oob)
+        middle_device_count = max(
+            len(spine_devices),
+            len(border_leaf_devices) + len(console_devices) + len(oob_devices)
+        )
+        middle_start = (total_racks // 2) - (middle_device_count // 2)
+        middle_racks = list(range(middle_start + 1, middle_start + middle_device_count + 1))
 
         # Track rack occupancy (rack_number -> list of (device, position, height))
         rack_occupancy: dict[int, list[tuple[Any, int, int]]] = {
@@ -474,6 +481,46 @@ class TopologyCreator:
             rack_occupancy[rack_num].append((device, position, device_height))
             spine_rack_idx += 1
 
+        # Assign console devices to middle racks
+        console_rack_idx = 0
+        for device in console_devices:
+            if console_rack_idx >= len(middle_racks):
+                self.log.warning(f"Not enough middle racks for console device {device.name.value}")
+                break
+
+            rack_num = middle_racks[console_rack_idx]
+            device_height = await get_device_height(device)
+
+            # Find lowest occupied position in this rack
+            if rack_occupancy[rack_num]:
+                lowest_pos = min(pos for _, pos, _ in rack_occupancy[rack_num])
+                position = lowest_pos - device_height
+            else:
+                position = 42 - (device_height - 1)
+
+            rack_occupancy[rack_num].append((device, position, device_height))
+            console_rack_idx += 1
+
+        # Assign OOB devices to middle racks
+        oob_rack_idx = 0
+        for device in oob_devices:
+            if oob_rack_idx >= len(middle_racks):
+                self.log.warning(f"Not enough middle racks for OOB device {device.name.value}")
+                break
+
+            rack_num = middle_racks[oob_rack_idx]
+            device_height = await get_device_height(device)
+
+            # Find lowest occupied position in this rack
+            if rack_occupancy[rack_num]:
+                lowest_pos = min(pos for _, pos, _ in rack_occupancy[rack_num])
+                position = lowest_pos - device_height
+            else:
+                position = 42 - (device_height - 1)
+
+            rack_occupancy[rack_num].append((device, position, device_height))
+            oob_rack_idx += 1
+
         # Now update all devices with their rack locations and positions
         batch = await self.client.create_batch()
 
@@ -482,18 +529,26 @@ class TopologyCreator:
                 continue
 
             # Get rack object
-            rack_name = f"R{rack_num}"
+            rack_name = f"Rack-{rack_num}"
             rack = self.client.store.get(
                 kind="LocationRack",
                 key=f"{site_name}-{rack_name}",
                 branch=self.branch,
             )
 
+            # Collect device IDs for rack relationship
+            device_ids = []
+
             for device, position, height in devices_in_rack:
                 device.location = rack.id
                 device.position = position
+                device_ids.append(device.id)
                 batch.add(task=device.save, allow_upsert=True, node=device)
                 self.log.info(f"Assigned {device.name.value} to {rack_name} at position U{position} ({height}U device)")
+
+            # Set the devices relationship on the rack side
+            rack.devices = device_ids
+            batch.add(task=rack.save, allow_upsert=True, node=rack)
 
         # Execute the batch update
         async for node, _ in batch.execute():

@@ -193,30 +193,50 @@ def format_colocation_table(colocations: List[Dict[str, Any]]) -> pd.DataFrame:
     return pd.DataFrame(formatted_data)
 
 
-def get_device_color(device_type: Optional[str]) -> str:
-    """Get CSS color class for device based on type.
+def get_device_color(device_role: Optional[str]) -> str:
+    """Get CSS color class for device based on role.
 
     Args:
-        device_type: Device type name (e.g., "Cisco Catalyst 9300", "Dell PowerEdge R740").
+        device_role: Device role (e.g., "leaf", "spine", "border_leaf", "console", "oob").
 
     Returns:
         str: CSS class name for device color styling.
     """
-    if not device_type:
+    if not device_role:
         return "device"
 
-    device_type_lower = device_type.lower()
+    device_role_lower = device_role.lower()
 
-    if "switch" in device_type_lower:
-        return "device device-type-switch"
-    elif "server" in device_type_lower:
-        return "device device-type-server"
-    elif "router" in device_type_lower:
-        return "device device-type-router"
-    elif "firewall" in device_type_lower:
-        return "device device-type-firewall"
-    else:
-        return "device"
+    # Map device roles to color classes
+    role_color_map = {
+        "leaf": "device device-role-leaf",
+        "spine": "device device-role-spine",
+        "border_leaf": "device device-role-border-leaf",
+        "console": "device device-role-console",
+        "oob": "device device-role-oob",
+        "edge": "device device-role-edge",
+        "dc_firewall": "device device-role-firewall",
+        "edge_firewall": "device device-role-firewall",
+    }
+
+    return role_color_map.get(device_role_lower, "device")
+
+
+def get_role_legend() -> Dict[str, str]:
+    """Get mapping of device roles to their display colors.
+
+    Returns:
+        Dict mapping role names to color hex codes for legend display.
+    """
+    return {
+        "Leaf": "#4CAF50",           # Green
+        "Spine": "#2196F3",          # Blue
+        "Border Leaf": "#9C27B0",    # Purple
+        "Console": "#FF9800",        # Orange
+        "OOB": "#795548",            # Brown
+        "Edge": "#00BCD4",           # Cyan
+        "Firewall": "#F44336",       # Red
+    }
 
 
 def truncate_device_name(name: str, max_length: int = 15) -> str:

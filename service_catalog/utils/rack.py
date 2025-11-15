@@ -219,13 +219,14 @@ def _generate_device_html(unit_info: Dict[str, Any], unit_num: int, base_url: st
 
     device_name = device.get("name", {}).get("value", "Unknown Device")
     device_type = device.get("device_type", {}).get("value")
+    device_role = device.get("role", {}).get("value")
     device_id = device.get("id", "")
 
     # Truncate name if too long
     display_name = truncate_device_name(device_name, max_length=18)
 
-    # Get color class based on device type
-    color_class = get_device_color(device_type)
+    # Get color class based on device role
+    color_class = get_device_color(device_role)
 
     # Calculate height in pixels (each unit is approximately 20px)
     height_px = span * 20
@@ -373,22 +374,38 @@ def _generate_rack_css() -> str:
         width: 100%;
     }
 
-    .device-type-switch {
-        background-color: #2196F3;
-        border-color: #1565C0;
-    }
-
-    .device-type-server {
+    /* Role-based color classes */
+    .device-role-leaf {
         background-color: #4CAF50;
         border-color: #2E7D32;
     }
 
-    .device-type-router {
+    .device-role-spine {
+        background-color: #2196F3;
+        border-color: #1565C0;
+    }
+
+    .device-role-border-leaf {
+        background-color: #9C27B0;
+        border-color: #6A1B9A;
+    }
+
+    .device-role-console {
         background-color: #FF9800;
         border-color: #E65100;
     }
 
-    .device-type-firewall {
+    .device-role-oob {
+        background-color: #795548;
+        border-color: #4E342E;
+    }
+
+    .device-role-edge {
+        background-color: #00BCD4;
+        border-color: #00838F;
+    }
+
+    .device-role-firewall {
         background-color: #F44336;
         border-color: #C62828;
     }
