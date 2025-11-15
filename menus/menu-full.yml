@@ -501,7 +501,7 @@ spec:
             label: Providers & Customers
             icon: "mdi:router"
             children:
-
+              data:
                 - namespace: Organization
                   name: Provider
                   label: Providers
