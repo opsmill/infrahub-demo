@@ -104,8 +104,10 @@ async def ensure_permissions_exist(client: InfrahubClient) -> None:
             identifier = f"global:{data['action']}:allow_all"
         else:
             # Map decision to string
-            decision_map = {1: "deny", 6: "allow_all"}
-            decision_str = decision_map.get(data["decision"], "allow_all")
+            decision_map: dict[int, str] = {1: "deny", 6: "allow_all"}
+            decision_value = data["decision"]
+            assert isinstance(decision_value, int), "decision must be an integer"
+            decision_str = decision_map.get(decision_value, "allow_all")
             identifier = f"object:{data['namespace']}:{data['name']}:{data['action']}:{decision_str}"
 
         existing = await find_permission_by_identifier(client, identifier)

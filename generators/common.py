@@ -540,7 +540,7 @@ class TopologyCreator:
             physical_interface_data_list = []
 
             for iface in template_interfaces:
-                interface_data = {
+                interface_data: dict[str, Any] = {
                     "payload": {
                         "name": iface["name"],
                         "device": device.id,
@@ -691,7 +691,8 @@ class TopologyCreator:
             source_endpoint.description.value = (
                 f"Connection to {' -> '.join(target_endpoint.hfid or [])}"
             )
-            source_endpoint.connector = target_endpoint.id  # type: ignore - Infrahub handles bidirectional automatically
+            # Infrahub handles bidirectional connector relationships automatically
+            source_endpoint.connector = target_endpoint.id  # type: ignore[assignment]
             target_endpoint.status.value = "active"
             target_endpoint.description.value = (
                 f"Connection to {' -> '.join(source_endpoint.hfid or [])}"
