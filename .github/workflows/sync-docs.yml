@@ -10,9 +10,6 @@ on:
 
 jobs:
   sync:
-    # DISABLED FOR NOW
-    if: false
-
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source repository
