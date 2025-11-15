@@ -268,7 +268,7 @@ class SecurityFQDN(SecurityGenericAddress):
     fqdn: String
 
 
-class LocationFloor(LocationGeneric):
+class LocationPod(LocationGeneric):
     pass
 
 
@@ -476,7 +476,7 @@ class DcimStandardSFP(DcimGenericSFP):
     pass
 
 
-class LocationSuite(LocationGeneric):
+class LocationRow(LocationGeneric):
     facility_id: StringOptional
     owner: RelatedNode
 

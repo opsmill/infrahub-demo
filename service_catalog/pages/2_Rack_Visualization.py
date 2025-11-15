@@ -82,23 +82,23 @@ def render_rack_diagram(rack: Dict[str, Any], devices: List[Dict[str, Any]]) -> 
         st.caption("Empty rack")
 
 
-def render_rack_grid(client: InfrahubClient, suite_id: str, branch: str) -> None:
-    """Render grid of rack diagrams for the selected suite.
+def render_rack_grid(client: InfrahubClient, row_id: str, branch: str) -> None:
+    """Render grid of rack diagrams for the selected row.
 
-    Fetches all racks for the suite and displays them in a responsive grid layout.
+    Fetches all racks for the row and displays them in a responsive grid layout.
     For each rack, fetches associated devices and renders a rack diagram.
 
     Args:
         client: InfrahubClient instance
-        suite_id: Selected LocationSuite ID
+        row_id: Selected LocationRow ID
         branch: Selected branch name
     """
     try:
         with st.spinner("Loading racks..."):
-            racks = client.get_racks_by_suite(suite_id, branch)
+            racks = client.get_racks_by_row(row_id, branch)
 
         if not racks:
-            st.info("No racks found in the selected suite.")
+            st.info("No racks found in the selected row.")
             return
 
         st.markdown(f"### Racks ({len(racks)} found)")
@@ -146,60 +146,60 @@ def render_rack_grid(client: InfrahubClient, suite_id: str, branch: str) -> None
         display_error("Unexpected error while loading racks", str(e))
 
 
-def render_suite_selector(client: InfrahubClient, branch: str) -> str:
-    """Render LocationSuite dropdown selector.
+def render_row_selector(client: InfrahubClient, branch: str) -> str:
+    """Render LocationRow dropdown selector.
 
-    Fetches all LocationSuite objects from Infrahub and displays them in a dropdown.
-    Caches the suite list in session state to avoid repeated queries.
+    Fetches all LocationRow objects from Infrahub and displays them in a dropdown.
+    Caches the row list in session state to avoid repeated queries.
 
     Args:
         client: InfrahubClient instance
         branch: Selected branch name
 
     Returns:
-        Selected suite ID or empty string if no selection
+        Selected row ID or empty string if no selection
     """
-    # Cache key for suites based on branch
-    cache_key = f"location_suites_{branch}"
+    # Cache key for rows based on branch
+    cache_key = f"location_rows_{branch}"
 
-    # Fetch suites if not cached or branch changed
+    # Fetch rows if not cached or branch changed
     if cache_key not in st.session_state:
-        with st.spinner("Loading location suites..."):
+        with st.spinner("Loading location rows..."):
             try:
-                st.session_state[cache_key] = client.get_location_suites(branch)
+                st.session_state[cache_key] = client.get_location_rows(branch)
             except (InfrahubConnectionError, InfrahubHTTPError, InfrahubGraphQLError) as e:
-                display_error("Failed to load location suites", str(e))
+                display_error("Failed to load location rows", str(e))
                 return ""
             except Exception as e:
-                display_error("Unexpected error loading location suites", str(e))
+                display_error("Unexpected error loading location rows", str(e))
                 return ""
 
-    suites = st.session_state[cache_key]
+    rows = st.session_state[cache_key]
 
-    if not suites:
+    if not rows:
         st.warning(
-            f"No location suites found in branch '{branch}'. "
-            "Please create LocationSuite objects in Infrahub."
+            f"No location rows found in branch '{branch}'. "
+            "Please create LocationRow objects in Infrahub."
         )
         return ""
 
-    # Prepare suite options
-    suite_names = [suite.get("name", {}).get("value", "Unknown") for suite in suites]
-    suite_map = {
-        suite.get("name", {}).get("value", "Unknown"): suite.get("id")
-        for suite in suites
+    # Prepare row options
+    row_names = [row.get("name", {}).get("value", "Unknown") for row in rows]
+    row_map = {
+        row.get("name", {}).get("value", "Unknown"): row.get("id")
+        for row in rows
     }
 
-    # Display suite selector
-    selected_suite_name = st.selectbox(
-        "Select Location Suite",
-        options=suite_names,
-        help="Choose a suite to view its racks and devices",
-        key="suite_selector",
+    # Display row selector
+    selected_row_name = st.selectbox(
+        "Select Location Row",
+        options=row_names,
+        help="Choose a row to view its racks and devices",
+        key="row_selector",
     )
 
-    # Return selected suite ID
-    return suite_map.get(selected_suite_name, "")
+    # Return selected row ID
+    return row_map.get(selected_row_name, "")
 
 
 def main() -> None:
@@ -256,9 +256,9 @@ def main() -> None:
             # Update session state if branch changed
             if selected_branch != st.session_state.selected_branch:
                 st.session_state.selected_branch = selected_branch
-                # Clear cached suite data when branch changes
+                # Clear cached row data when branch changes
                 keys_to_clear = [
-                    key for key in st.session_state.keys() if key.startswith("location_suites_")
+                    key for key in st.session_state.keys() if key.startswith("location_rows_")
                 ]
                 for key in keys_to_clear:
                     del st.session_state[key]
@@ -284,19 +284,19 @@ def main() -> None:
     # Display current branch info
     st.sidebar.info(f"Current Branch: **{st.session_state.selected_branch}**")
 
-    # Suite selector
+    # Row selector
     st.markdown("---")
-    selected_suite_id = render_suite_selector(
+    selected_row_id = render_row_selector(
         client, st.session_state.selected_branch
     )
 
-    if not selected_suite_id:
-        st.info("👆 Select a location suite above to view racks.")
+    if not selected_row_id:
+        st.info("👆 Select a location row above to view racks.")
         return
 
     # Render rack grid
     st.markdown("---")
-    render_rack_grid(client, selected_suite_id, st.session_state.selected_branch)
+    render_rack_grid(client, selected_row_id, st.session_state.selected_branch)
 
     # Footer
     st.markdown("---")

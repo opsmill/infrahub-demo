@@ -52,7 +52,7 @@ nodes:
     label: Building
     display_label: "{{ name__value }}"
     parent: "LocationMetro"
-    children: "LocationFloor"
+    children: "LocationPod"
     icon: "ri:building-line"
     attributes:
       - name: facility_id
@@ -75,25 +75,25 @@ nodes:
         peer: OrganizationGeneric
         optional: true
         cardinality: one
-  - name: Floor
+  - name: Pod
     namespace: Location
     inherit_from: ["LocationGeneric"]
     include_in_menu: false
     menu_placement: "LocationGeneric"
-    label: Floor
+    label: Pod
     display_label: "{{ name__value }}"
     parent: "LocationBuilding"
     icon: "mdi:home-floor-0"
-    children: "LocationSuite"
-  - name: Suite
+    children: "LocationRow"
+  - name: Row
     namespace: Location
     inherit_from:
       - "LocationGeneric"
     include_in_menu: false
     menu_placement: "LocationGeneric"
-    label: Suite
+    label: Row
     display_label: "{{ name__value }}"
-    parent: "LocationFloor"
+    parent: "LocationPod"
     children: "LocationRack"
     icon: "game-icons:cage"
     attributes:
@@ -118,7 +118,7 @@ nodes:
     display_label: "{{ name__value }}"
     human_friendly_id:
       - shortname__value
-    parent: "LocationSuite"
+    parent: "LocationRow"
     children: null
     icon: "clarity:rack-server-line"
     attributes:

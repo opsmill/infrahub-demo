@@ -592,57 +592,57 @@ class InfrahubClient:
         """
         return f"{self.base_url}/proposed-changes/{pc_id}"
 
-    def get_location_suites(self, branch: str = "main") -> List[Dict[str, Any]]:
-        """Fetch LocationSuite objects.
+    def get_location_rows(self, branch: str = "main") -> List[Dict[str, Any]]:
+        """Fetch LocationRow objects.
 
         Args:
             branch: Branch name to query (default: "main")
 
         Returns:
-            List of LocationSuite dictionaries with id and name
+            List of LocationRow dictionaries with id and name
 
         Raises:
             InfrahubConnectionError: If connection fails
             InfrahubAPIError: If API error occurs
         """
         try:
-            suites = self._client.filters(
-                kind="LocationSuite",
+            rows = self._client.filters(
+                kind="LocationRow",
                 branch=branch,
                 prefetch_relationships=False
             )
 
             result = []
-            for suite in suites:
-                suite_dict = {
-                    "id": suite.id,
-                    "name": {"value": getattr(suite.name, "value", None)},
+            for row in rows:
+                row_dict = {
+                    "id": row.id,
+                    "name": {"value": getattr(row.name, "value", None)},
                 }
-                result.append(suite_dict)
+                result.append(row_dict)
 
             return result
         except Exception as e:
-            raise InfrahubAPIError(f"Failed to fetch location suites: {str(e)}")
+            raise InfrahubAPIError(f"Failed to fetch location rows: {str(e)}")
 
-    def get_racks_by_suite(self, suite_id: str, branch: str = "main") -> List[Dict[str, Any]]:
-        """Fetch LocationRack objects for a specific suite.
+    def get_racks_by_row(self, row_id: str, branch: str = "main") -> List[Dict[str, Any]]:
+        """Fetch LocationRack objects for a specific row.
 
         Args:
-            suite_id: LocationSuite ID
+            row_id: LocationRow ID
             branch: Branch name to query (default: "main")
 
         Returns:
-            List of LocationRack dictionaries with id, name, height, and suite relationship
+            List of LocationRack dictionaries with id, name, height, and row relationship
 
         Raises:
             InfrahubConnectionError: If connection fails
             InfrahubAPIError: If API error occurs
         """
         try:
-            # Use GraphQL to filter racks by parent (suite)
+            # Use GraphQL to filter racks by parent (row)
             query = """
-            query GetRacksBySuite($suite_id: ID!) {
-                LocationRack(parent__ids: [$suite_id]) {
+            query GetRacksByRow($row_id: ID!) {
+                LocationRack(parent__ids: [$row_id]) {
                     edges {
                         node {
                             id
@@ -659,7 +659,7 @@ class InfrahubClient:
             }
             """
 
-            result = self.execute_graphql(query, {"suite_id": suite_id}, branch)
+            result = self.execute_graphql(query, {"row_id": row_id}, branch)
 
             racks = []
             edges = result.get("LocationRack", {}).get("edges", [])
@@ -676,7 +676,7 @@ class InfrahubClient:
 
             return racks
         except Exception as e:
-            raise InfrahubAPIError(f"Failed to fetch racks for suite: {str(e)}")
+            raise InfrahubAPIError(f"Failed to fetch racks for row: {str(e)}")
 
     def get_devices_by_rack(self, rack_id: str, branch: str = "main") -> List[Dict[str, Any]]:
         """Fetch DcimPhysicalDevice objects for a specific rack.
