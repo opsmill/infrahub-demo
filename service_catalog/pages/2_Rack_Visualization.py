@@ -65,12 +65,8 @@ def render_rack_diagram(rack: Dict[str, Any], devices: List[Dict[str, Any]]) -> 
     # Display device count and details
     device_count = len(devices)
     if device_count > 0:
-        # Show device details for debugging
-        device_names = [d.get("name", {}).get("value", "Unknown") for d in devices]
-        device_positions = [d.get("position", {}).get("value", "No pos") for d in devices]
-        
         st.caption(f"{device_count} device(s)")
-        
+
         # Debug info in expander
         with st.expander("Device Details"):
             for i, device in enumerate(devices):

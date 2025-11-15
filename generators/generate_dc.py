@@ -677,6 +677,12 @@ class DCTopologyGenerator(InfrahubGenerator):
         await network_creator.load_data()
         await network_creator.create_site()
 
+        # Create location hierarchy (Pod-1 and Row-1)
+        await network_creator.create_location_hierarchy()
+
+        # Create racks based on number of leaf devices
+        await network_creator.create_racks()
+
         # Load technical_subnet as an object if it exists
         if data.get("technical_subnet"):
             technical_subnet_obj = await self.client.get(
@@ -706,6 +712,9 @@ class DCTopologyGenerator(InfrahubGenerator):
             await network_creator.create_address_pools(subnets)
         await network_creator.create_L2_pool()
         await network_creator.create_devices()
+
+        # Assign devices to racks with proper positioning
+        await network_creator.assign_devices_to_racks()
         # Create default network segments for EVPN fabric connectivity
         await network_creator.create_oob_connections("management")
         await network_creator.create_oob_connections("console")

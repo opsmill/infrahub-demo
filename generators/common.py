@@ -294,6 +294,211 @@ class TopologyCreator:
             },
         )
 
+    async def create_location_hierarchy(self) -> None:
+        """Create LocationPod and LocationRow for the datacenter."""
+        site_name = self.data.get('name')
+        self.log.info(f"Creating location hierarchy for {site_name}")
+
+        # Get the building we just created
+        building = self.client.store.get(
+            kind="LocationBuilding",
+            key=site_name,
+            branch=self.branch,
+        )
+
+        # Create Pod-1
+        await self._create(
+            kind="LocationPod",
+            data={
+                "payload": {
+                    "name": "Pod-1",
+                    "shortname": "Pod-1",
+                    "parent": building.id,
+                },
+                "store_key": f"{site_name}-Pod-1",
+            },
+        )
+
+        # Get the pod we just created
+        pod = self.client.store.get(
+            kind="LocationPod",
+            key=f"{site_name}-Pod-1",
+            branch=self.branch,
+        )
+
+        # Create Row-1
+        await self._create(
+            kind="LocationRow",
+            data={
+                "payload": {
+                    "name": "Row-1",
+                    "shortname": "Row-1",
+                    "parent": pod.id,
+                },
+                "store_key": f"{site_name}-Row-1",
+            },
+        )
+
+    async def create_racks(self) -> None:
+        """Create racks based on the number of leaf devices."""
+        site_name = self.data.get('name')
+
+        # Count leaf devices from design elements
+        num_leafs = sum(
+            device["quantity"]
+            for device in self.data["design"]["elements"]
+            if device["role"] == "leaf"
+        )
+
+        self.log.info(f"Creating {num_leafs} racks for {site_name}")
+
+        # Get the row we just created
+        row = self.client.store.get(
+            kind="LocationRow",
+            key=f"{site_name}-Row-1",
+            branch=self.branch,
+        )
+
+        # Create racks
+        rack_data_list = []
+        for i in range(1, num_leafs + 1):
+            rack_name = f"R{i}"
+            rack_data_list.append({
+                "payload": {
+                    "name": rack_name,
+                    "shortname": rack_name,
+                    "parent": row.id,
+                },
+                "store_key": f"{site_name}-{rack_name}",
+            })
+
+        await self._create_in_batch(
+            kind="LocationRack",
+            data_list=rack_data_list,
+        )
+
+    async def assign_devices_to_racks(self) -> None:
+        """Assign devices to racks with proper positioning."""
+        site_name = self.data.get('name')
+        self.log.info(f"Assigning devices to racks for {site_name}")
+
+        # Group devices by role
+        leaf_devices = [d for d in self.devices if d.role.value == "leaf"]
+        border_leaf_devices = [d for d in self.devices if d.role.value == "border_leaf"]
+        spine_devices = [d for d in self.devices if d.role.value == "spine"]
+
+        # Calculate total rack count and middle racks
+        total_racks = len(leaf_devices)
+
+        if total_racks == 0:
+            self.log.warning("No leaf devices found, skipping rack assignment")
+            return
+
+        # Calculate middle rack positions for spines and border leafs
+        middle_start = (total_racks // 2) - (len(spine_devices) // 2)
+        middle_racks = list(range(middle_start + 1, middle_start + len(spine_devices) + 1))
+
+        # Track rack occupancy (rack_number -> list of (device, position, height))
+        rack_occupancy: dict[int, list[tuple[Any, int, int]]] = {
+            i: [] for i in range(1, total_racks + 1)
+        }
+
+        # Helper function to extract device number from name
+        def get_device_number(device_name: str) -> int:
+            """Extract device number from name like 'dc-3-leaf-01' -> 1"""
+            parts = device_name.split("-")
+            return int(parts[-1])
+
+        # Helper function to get device height
+        async def get_device_height(device: Any) -> int:
+            """Get device height from device_type"""
+            if hasattr(device, "device_type"):
+                device_type = device.device_type
+                if hasattr(device_type, "peers") and device_type.peers:
+                    device_type_obj = device_type.peers[0]
+                    if hasattr(device_type_obj, "height"):
+                        height = device_type_obj.height
+                        return height.value if hasattr(height, "value") else int(height)
+            return 1  # Default to 1U
+
+        # Assign leaf devices to racks
+        for device in leaf_devices:
+            device_num = get_device_number(device.name.value)
+            rack_num = device_num
+
+            if rack_num > total_racks:
+                self.log.warning(f"Device {device.name.value} number ({device_num}) exceeds rack count ({total_racks}), skipping")
+                continue
+
+            device_height = await get_device_height(device)
+            position = 42 - (device_height - 1)  # Top of rack
+            rack_occupancy[rack_num].append((device, position, device_height))
+
+        # Assign border leaf devices to middle racks
+        border_leaf_rack_idx = 0
+        for device in border_leaf_devices:
+            if border_leaf_rack_idx >= len(middle_racks):
+                self.log.warning(f"Not enough middle racks for border leaf {device.name.value}")
+                break
+
+            rack_num = middle_racks[border_leaf_rack_idx]
+            device_height = await get_device_height(device)
+
+            # Find lowest occupied position in this rack
+            if rack_occupancy[rack_num]:
+                lowest_pos = min(pos for _, pos, _ in rack_occupancy[rack_num])
+                position = lowest_pos - device_height
+            else:
+                position = 42 - (device_height - 1)
+
+            rack_occupancy[rack_num].append((device, position, device_height))
+            border_leaf_rack_idx += 1
+
+        # Assign spine devices to middle racks
+        spine_rack_idx = 0
+        for device in spine_devices:
+            if spine_rack_idx >= len(middle_racks):
+                self.log.warning(f"Not enough middle racks for spine {device.name.value}")
+                break
+
+            rack_num = middle_racks[spine_rack_idx]
+            device_height = await get_device_height(device)
+
+            # Find lowest occupied position in this rack
+            if rack_occupancy[rack_num]:
+                lowest_pos = min(pos for _, pos, _ in rack_occupancy[rack_num])
+                position = lowest_pos - device_height
+            else:
+                position = 42 - (device_height - 1)
+
+            rack_occupancy[rack_num].append((device, position, device_height))
+            spine_rack_idx += 1
+
+        # Now update all devices with their rack locations and positions
+        batch = await self.client.create_batch()
+
+        for rack_num, devices_in_rack in rack_occupancy.items():
+            if not devices_in_rack:
+                continue
+
+            # Get rack object
+            rack_name = f"R{rack_num}"
+            rack = self.client.store.get(
+                kind="LocationRack",
+                key=f"{site_name}-{rack_name}",
+                branch=self.branch,
+            )
+
+            for device, position, height in devices_in_rack:
+                device.location = rack.id
+                device.position = position
+                batch.add(task=device.save, allow_upsert=True, node=device)
+                self.log.info(f"Assigned {device.name.value} to {rack_name} at position U{position} ({height}U device)")
+
+        # Execute the batch update
+        async for node, _ in batch.execute():
+            self.log.info(f"- Updated location for [{node.get_kind()}] {node.name.value}")
+
     async def create_address_pools(self, subnets: list[dict]) -> None:
         """Create objects of a specific kind and store in local store.
 
