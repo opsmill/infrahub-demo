@@ -18,7 +18,9 @@ from .ui import (
     display_success,
     format_colocation_table,
     format_datacenter_table,
+    get_device_color,
     load_logo,
+    truncate_device_name,
 )
 
 __all__ = [
@@ -37,5 +39,7 @@ __all__ = [
     "display_success",
     "format_colocation_table",
     "format_datacenter_table",
+    "get_device_color",
     "load_logo",
+    "truncate_device_name",
 ]

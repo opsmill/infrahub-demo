@@ -191,3 +191,44 @@ def format_colocation_table(colocations: List[Dict[str, Any]]) -> pd.DataFrame:
         )
 
     return pd.DataFrame(formatted_data)
+
+
+def get_device_color(device_type: Optional[str]) -> str:
+    """Get CSS color class for device based on type.
+
+    Args:
+        device_type: Device type name (e.g., "Cisco Catalyst 9300", "Dell PowerEdge R740").
+
+    Returns:
+        str: CSS class name for device color styling.
+    """
+    if not device_type:
+        return "device"
+
+    device_type_lower = device_type.lower()
+
+    if "switch" in device_type_lower:
+        return "device device-type-switch"
+    elif "server" in device_type_lower:
+        return "device device-type-server"
+    elif "router" in device_type_lower:
+        return "device device-type-router"
+    elif "firewall" in device_type_lower:
+        return "device device-type-firewall"
+    else:
+        return "device"
+
+
+def truncate_device_name(name: str, max_length: int = 15) -> str:
+    """Truncate device name if too long.
+
+    Args:
+        name: Device name to potentially truncate.
+        max_length: Maximum length before truncation (default: 15).
+
+    Returns:
+        str: Truncated name with ellipsis if needed, otherwise original name.
+    """
+    if len(name) <= max_length:
+        return name
+    return name[:max_length - 3] + "..."

@@ -592,6 +592,166 @@ class InfrahubClient:
         """
         return f"{self.base_url}/proposed-changes/{pc_id}"
 
+    def get_location_suites(self, branch: str = "main") -> List[Dict[str, Any]]:
+        """Fetch LocationSuite objects.
+
+        Args:
+            branch: Branch name to query (default: "main")
+
+        Returns:
+            List of LocationSuite dictionaries with id and name
+
+        Raises:
+            InfrahubConnectionError: If connection fails
+            InfrahubAPIError: If API error occurs
+        """
+        try:
+            suites = self._client.filters(
+                kind="LocationSuite",
+                branch=branch,
+                prefetch_relationships=False
+            )
+
+            result = []
+            for suite in suites:
+                suite_dict = {
+                    "id": suite.id,
+                    "name": {"value": getattr(suite.name, "value", None)},
+                }
+                result.append(suite_dict)
+
+            return result
+        except Exception as e:
+            raise InfrahubAPIError(f"Failed to fetch location suites: {str(e)}")
+
+    def get_racks_by_suite(self, suite_id: str, branch: str = "main") -> List[Dict[str, Any]]:
+        """Fetch LocationRack objects for a specific suite.
+
+        Args:
+            suite_id: LocationSuite ID
+            branch: Branch name to query (default: "main")
+
+        Returns:
+            List of LocationRack dictionaries with id, name, height, and suite relationship
+
+        Raises:
+            InfrahubConnectionError: If connection fails
+            InfrahubAPIError: If API error occurs
+        """
+        try:
+            # Use GraphQL to filter racks by parent (suite)
+            query = """
+            query GetRacksBySuite($suite_id: ID!) {
+                LocationRack(parent__ids: [$suite_id]) {
+                    edges {
+                        node {
+                            id
+                            name { value }
+                            shortname { value }
+                            parent {
+                                node {
+                                    id
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            """
+
+            result = self.execute_graphql(query, {"suite_id": suite_id}, branch)
+
+            racks = []
+            edges = result.get("LocationRack", {}).get("edges", [])
+
+            for edge in edges:
+                node = edge.get("node", {})
+                racks.append({
+                    "id": node.get("id"),
+                    "name": {"value": node.get("name", {}).get("value")},
+                    "shortname": {"value": node.get("shortname", {}).get("value")},
+                    # Default rack height to 42U (standard)
+                    "height": {"value": 42},
+                })
+
+            return racks
+        except Exception as e:
+            raise InfrahubAPIError(f"Failed to fetch racks for suite: {str(e)}")
+
+    def get_devices_by_rack(self, rack_id: str, branch: str = "main") -> List[Dict[str, Any]]:
+        """Fetch DcimPhysicalDevice objects for a specific rack.
+
+        Args:
+            rack_id: LocationRack ID
+            branch: Branch name to query (default: "main")
+
+        Returns:
+            List of DcimPhysicalDevice dictionaries with id, name, position, height, and device_type
+
+        Raises:
+            InfrahubConnectionError: If connection fails
+            InfrahubAPIError: If API error occurs
+        """
+        try:
+            # Use GraphQL to filter devices by location (rack)
+            query = """
+            query GetDevicesByRack($rack_id: ID!) {
+                DcimPhysicalDevice(location__ids: [$rack_id]) {
+                    edges {
+                        node {
+                            id
+                            name { value }
+                            position { value }
+                            device_type {
+                                node {
+                                    name { value }
+                                    height { value }
+                                }
+                            }
+                            location {
+                                node {
+                                    id
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            """
+
+            result = self.execute_graphql(query, {"rack_id": rack_id}, branch)
+
+            devices = []
+            edges = result.get("DcimPhysicalDevice", {}).get("edges", [])
+
+            for edge in edges:
+                node = edge.get("node", {})
+                
+                # Get height from device_type
+                device_height = 1
+                device_type_name = None
+                device_type_node = node.get("device_type", {}).get("node")
+                if device_type_node:
+                    device_type_name = device_type_node.get("name", {}).get("value")
+                    device_height = device_type_node.get("height", {}).get("value", 1)
+                
+                device_dict = {
+                    "id": node.get("id"),
+                    "name": {"value": node.get("name", {}).get("value")},
+                    "position": {"value": node.get("position", {}).get("value")},
+                    "height": {"value": device_height},
+                }
+
+                # Add device type if available
+                if device_type_name:
+                    device_dict["device_type"] = {"value": device_type_name}
+
+                devices.append(device_dict)
+
+            return devices
+        except Exception as e:
+            raise InfrahubAPIError(f"Failed to fetch devices for rack: {str(e)}")
+
     def _sdk_object_to_dict(self, obj: Any) -> Dict[str, Any]:
         """Convert an SDK object to a dictionary.
 
