@@ -42,8 +42,11 @@ if "selected_branch" not in st.session_state:
 if "infrahub_url" not in st.session_state:
     st.session_state.infrahub_url = INFRAHUB_ADDRESS
 
+if "device_label_mode" not in st.session_state:
+    st.session_state.device_label_mode = "Hostname"
 
-def render_rack_diagram(rack: Dict[str, Any], devices: List[Dict[str, Any]]) -> None:
+
+def render_rack_diagram(rack: Dict[str, Any], devices: List[Dict[str, Any]], label_mode: str = "Hostname") -> None:
     """Render a single rack diagram with devices.
 
     Generates HTML visualization of the rack and displays it using Streamlit.
@@ -51,13 +54,15 @@ def render_rack_diagram(rack: Dict[str, Any], devices: List[Dict[str, Any]]) -> 
     Args:
         rack: LocationRack object dictionary
         devices: List of DcimPhysicalDevice objects in this rack
+        label_mode: Display mode for device labels ("Hostname" or "Device Type")
     """
     # Generate HTML for rack diagram with Infrahub UI URL and branch
     rack_html = generate_rack_html(
-        rack, 
-        devices, 
+        rack,
+        devices,
         base_url=INFRAHUB_UI_URL,
-        branch=st.session_state.selected_branch
+        branch=st.session_state.selected_branch,
+        label_mode=label_mode
     )
 
     # Display using st.markdown with unsafe_allow_html
@@ -79,7 +84,7 @@ def render_rack_diagram(rack: Dict[str, Any], devices: List[Dict[str, Any]]) -> 
         st.caption("Empty rack")
 
 
-def render_rack_grid(client: InfrahubClient, row_id: str, branch: str) -> None:
+def render_rack_grid(client: InfrahubClient, row_id: str, branch: str, label_mode: str = "Hostname") -> None:
     """Render grid of rack diagrams for the selected row.
 
     Fetches all racks for the row and displays them in a responsive grid layout.
@@ -122,7 +127,7 @@ def render_rack_grid(client: InfrahubClient, row_id: str, branch: str) -> None:
             with cols[idx % num_cols]:
                 try:
                     devices = rack_devices.get(rack["id"], [])
-                    render_rack_diagram(rack, devices)
+                    render_rack_diagram(rack, devices, label_mode)
                 except Exception as e:
                     st.error(
                         f"Failed to render rack {rack['name']['value']}: {str(e)}"
@@ -316,6 +321,22 @@ def main() -> None:
     # Display current branch info
     st.sidebar.info(f"Current Branch: **{st.session_state.selected_branch}**")
 
+    # Device label mode selector
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("Display Options")
+
+    device_label_mode = st.sidebar.selectbox(
+        "Device Label",
+        options=["Hostname", "Device Type"],
+        index=0 if st.session_state.device_label_mode == "Hostname" else 1,
+        help="Choose what to display on device labels in the rack diagram",
+        key="device_label_selector",
+    )
+
+    # Update session state if changed
+    if device_label_mode != st.session_state.device_label_mode:
+        st.session_state.device_label_mode = device_label_mode
+
     # Row selector
     st.markdown("---")
     selected_row_id = render_row_selector(
@@ -328,7 +349,7 @@ def main() -> None:
 
     # Render rack grid
     st.markdown("---")
-    render_rack_grid(client, selected_row_id, st.session_state.selected_branch)
+    render_rack_grid(client, selected_row_id, st.session_state.selected_branch, st.session_state.device_label_mode)
 
     # Render legend
     st.markdown("---")

@@ -536,19 +536,12 @@ class TopologyCreator:
                 branch=self.branch,
             )
 
-            # Collect device IDs for rack relationship
-            device_ids = []
-
             for device, position, height in devices_in_rack:
+                # Infrahub handles bidirectional location relationships automatically
                 device.location = rack.id
                 device.position = position
-                device_ids.append(device.id)
                 batch.add(task=device.save, allow_upsert=True, node=device)
                 self.log.info(f"Assigned {device.name.value} to {rack_name} at position U{position} ({height}U device)")
-
-            # Set the devices relationship on the rack side
-            rack.devices = device_ids
-            batch.add(task=rack.save, allow_upsert=True, node=rack)
 
         # Execute the batch update
         async for node, _ in batch.execute():
