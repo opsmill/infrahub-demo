@@ -25,13 +25,19 @@ class TopologyCabling(InfrahubTransform):
 
                 source_interface = interface["node"]["name"]["value"]
 
-                # Handle cases where hfid may not have 2 elements or may be missing
+                # Get remote device from hfid (list with device name as first element)
                 hfid = connected.get("hfid")
-                if not hfid or not isinstance(hfid, list) or len(hfid) != 2:
-                    # Skip malformed connections
+                if not hfid or not isinstance(hfid, list) or len(hfid) < 1:
+                    # Skip if no hfid
                     continue
 
-                remote_device, remote_interface = hfid
+                remote_device = hfid[0]
+
+                # Get remote interface from display_label
+                remote_interface = connected.get("display_label")
+                if not remote_interface:
+                    # Skip if no interface name
+                    continue
 
                 # Create a unique identifier for this connection (sorted to handle duplicates)
                 connection_key = tuple(
