@@ -349,4 +349,29 @@ def get_interface_roles(data: list) -> dict[str, list[dict[str, Any]]]:
         roles["uplink"] + roles["downlink"] + roles["customer"] + roles["other"]
     )
 
+    # Re-sort aggregate lists to maintain interface name order
+    if roles["all_downlink"]:
+        interface_names = [iface["name"] for iface in roles["all_downlink"]]
+        try:
+            sorted_names = sort_interface_list(interface_names)
+        except (ValueError, TypeError):
+            # If netutils can't parse, fall back to alphabetical sorting
+            sorted_names = sorted(interface_names)
+        name_to_interface = {iface["name"]: iface for iface in roles["all_downlink"]}
+        roles["all_downlink"] = [
+            name_to_interface[name] for name in sorted_names if name in name_to_interface
+        ]
+
+    if roles["all_physical"]:
+        interface_names = [iface["name"] for iface in roles["all_physical"]]
+        try:
+            sorted_names = sort_interface_list(interface_names)
+        except (ValueError, TypeError):
+            # If netutils can't parse, fall back to alphabetical sorting
+            sorted_names = sorted(interface_names)
+        name_to_interface = {iface["name"]: iface for iface in roles["all_physical"]}
+        roles["all_physical"] = [
+            name_to_interface[name] for name in sorted_names if name in name_to_interface
+        ]
+
     return dict(roles)

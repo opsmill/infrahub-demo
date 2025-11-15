@@ -13,7 +13,7 @@ class TopologyCabling(InfrahubTransform):
 
         seen_connections = set()  # Track connections we've already processed
 
-        for device in data["TopologyDeployment"]["edges"][0]["node"]["devices"][
+        for device in data["TopologyDataCenter"]["edges"][0]["node"]["devices"][
             "edges"
         ]:
             source_device = device["node"]["name"]["value"]

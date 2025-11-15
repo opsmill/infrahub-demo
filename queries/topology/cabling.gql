@@ -1,5 +1,5 @@
 query topology_cables($name: String!) {
-  TopologyDeployment(name__value: $name) {
+  TopologyDataCenter(name__value: $name) {
     edges {
       node {
         devices {
