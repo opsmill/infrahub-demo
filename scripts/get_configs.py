@@ -69,13 +69,25 @@ async def get_containerlab_topologies(client: InfrahubClient) -> list[str]:
 
 
 async def get_device_configs(client: InfrahubClient) -> int:
-    """Fetch device configuration artifacts and save to files (leaf and spine only)."""
+    """Fetch device configuration artifacts and save to files (only devices in TopologyDataCenter)."""
     base_path = Path("./generated-configs/devices")
     base_path.mkdir(parents=True, exist_ok=True)
 
-    console.print("\n[cyan]→[/cyan] Fetching device configurations (leaf and spine only)...")
+    console.print("\n[cyan]→[/cyan] Fetching device configurations (topology devices only)...")
 
-    devices = await client.all(kind="DcimGenericDevice")
+    # First, get all topology deployments to find which devices belong to them
+    topologies = await client.all(kind="TopologyDataCenter")
+
+    # Build a set of device IDs that belong to topologies
+    topology_device_ids = set()
+    for topology in topologies:
+        await topology.devices.fetch()
+        for device_edge in topology.devices.peers:
+            topology_device_ids.add(device_edge.id)
+
+    if not topology_device_ids:
+        console.print("  [yellow]No devices found in topology deployments[/yellow]")
+        return 0
 
     # Artifact names to look for (from .infrahub.yml)
     artifact_names = [
@@ -89,8 +101,14 @@ async def get_device_configs(client: InfrahubClient) -> int:
     allowed_roles = ["leaf", "spine", "border_leaf"]
 
     config_count = 0
+    devices = await client.all(kind="DcimGenericDevice")
+
     for device in devices:
         try:
+            # Skip devices that are not part of a topology deployment
+            if device.id not in topology_device_ids:
+                continue
+
             # Get role value to filter devices
             # role is an attribute, not a relationship, so no need to fetch
             device_role = device.role.value if hasattr(device.role, 'value') else str(device.role) if device.role else None

@@ -4,14 +4,11 @@ kind: Object
 spec:
   kind: OrganizationProvider
   data:
-    # UNUSED: Cloud providers not referenced in any loaded objects
     - name: "AWS"
     - name: "Azure"
     - name: "Google Cloud"
     - name: "IBM"
     - name: "Oracle"
-
-    # UNUSED: Network/transit providers not referenced in any loaded objects
     - name: "Arelion"
     - name: "Colt Technology Services"
     - name: "Verizon Business"
@@ -29,11 +26,5 @@ spec:
     - name: "Comcast Cable Communication"
     - name: "Telecom Italia Sparkle"
     - name: "AT&T Services"
-
-    # USED: Colocation/datacenter provider - used in objects/pop/pop-1.yml and objects/pop/pop-2.yml
     - name: "Equinix"
-
-    # USED: Generic provider - used in objects/dc/dc-arista-s.yml, objects/dc/dc-cisco-s.yml,
-    # objects/dc/dc-juniper-s.yml, objects/dc/dc-sonic-border-leafs.yml,
-    # objects/dc/dc-cisco-s-border-leafs.yml
     - name: "Technology Partner"

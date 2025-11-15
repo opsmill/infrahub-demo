@@ -303,6 +303,7 @@ nodes:
   - name: NameServer
     namespace: Network
     description: "Represents a DNS server in the network."
+    include_in_menu: false
     label: "DNS Server"
     icon: "eos-icons:dns"
     menu_placement: "NetworkManagementServer"
@@ -315,6 +316,7 @@ nodes:
   - name: NTPServer
     namespace: Network
     description: "Represents a NTP server in the network."
+    include_in_menu: false
     label: "NTP Server"
     icon: "iconoir:time-zone"
     menu_placement: "NetworkManagementServer"

@@ -4,7 +4,6 @@ kind: Object
 spec:
   kind: CoreStandardGroup
   data:
-    # UNUSED: Vendor/platform-specific groups are not used - devices are assigned to generic groups
     - name: edge_routers
       description: Edge Routers
     - name: core_routers
@@ -33,40 +32,28 @@ spec:
       description: Sonic DC spine devices
     - name: linux_devices
       description: Linux Devices
-
-    # USED: Generic role-based groups assigned by generators
     - name: leafs
       description: All leafs
     - name: border_leafs
       description: All border leafs
     - name: spines
       description: All spines
-
-    # UNUSED: Generic firewall groups not used - specific vendor groups used instead
     - name: firewalls
       description: All firewalls
     - name: dc_firewalls
       description: All DC firewalls
     - name: edge_firewalls
       description: All edge firewalls
-
-    # USED: Load balancers group
     - name: loadbalancers
       description: All load balancers
-
-    # USED: Infrastructure device groups
     - name: oobs
       description: All OOB devices
     - name: consoles
       description: All console devices
     - name: edges
       description: All edge devices
-
-    # USED: Vendor-specific firewall group (used by generators for dc_firewall and edge_firewall roles)
     - name: juniper_firewall
       description: Juniper DC firewall
-
-    # UNUSED: Specific device type groups not used
     - name: juniper_pop_firewall
       description: Juniper POP firewall
     - name: checkpoint_firewall
@@ -81,15 +68,11 @@ spec:
       description: Juniper DC Firewall
     - name: check_point_edge_firewall
       description: Check Point Edge Firewall
-
-    # USED: Topology groups
     - name: topologies_dc
       description: Data Center Topologies
     - name: topologies_pop
       description: POP Topologies
     - name: topologies_clab
       description: Containerlab Topologies
-
-    # USED: Provider-specific groups
     - name: equinix_pop
       description: Equinix POPs

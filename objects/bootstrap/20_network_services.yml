@@ -1,0 +1,35 @@
+---
+# Network DNS Servers
+apiVersion: infrahub.app/v1
+kind: Object
+spec:
+  kind: NetworkNameServer
+  data:
+    - name: "Cloudflare DNS"
+      description: "Cloudflare DNS Servers"
+      status: "active"
+      ip_addresses:
+        kind: IpamIPAddress
+        data:
+          - address: "1.1.1.1/32"
+            description: "Cloudflare primary DNS"
+            fqdn: "one.one.one.one"
+          - address: "1.0.0.1/32"
+            description: "Cloudflare secondary DNS"
+            fqdn: "one.one.one.one"
+
+---
+# Network NTP Servers
+apiVersion: infrahub.app/v1
+kind: Object
+spec:
+  kind: NetworkNTPServer
+  data:
+    - name: "Cloudflare NTP Server"
+      description: "Cloudflare public NTP server"
+      status: "active"
+      ip_addresses:
+        kind: IpamIPAddress
+        data:
+          - address: "162.159.200.1/32"
+            description: "Cloudflare NTP"

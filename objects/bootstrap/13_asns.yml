@@ -4,7 +4,6 @@ kind: Object
 spec:
   kind: RoutingAutonomousSystem
   data:
-    # UNUSED: ASNs with owners referencing unused providers (commented out in 02_providers.yml)
     - asn: 1299
       owner: "Arelion"
       description: "AS1299 - Arelion"
@@ -26,13 +25,9 @@ spec:
     - asn: 6461
       owner: "Zayo"
       description: "AS6461 - Zayo"
-
-    # USED: Equinix ASN - owner is "Equinix", a used provider in DC/POP topologies
     - asn: 24115
       owner: "Equinix"
       description: "AS24115 - Equinix"
-
-    # UNUSED: Additional ASNs with owners referencing unused providers
     - asn: 20710
       owner: "Interxion"
       description: "AS20710 - Interxion"

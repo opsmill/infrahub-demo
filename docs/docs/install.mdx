@@ -212,6 +212,50 @@ You should see the Infrahub login screen. Use the default credentials:
 - **Username**: `admin`
 - **Password**: `infrahub`
 
+### Demo user accounts
+
+After running the bootstrap process (Step 7), additional user accounts are created to demonstrate role-based access control. These accounts provide different levels of access to Infrahub:
+
+#### Emma - read-only user
+
+- **Username**: `emma`
+- **Password**: `emma123`
+- **Access level**: Read-only
+- **Permissions**:
+  - View all objects across all branches
+  - Cannot create, update, or delete any objects
+  - Cannot manage schemas or merge proposed changes
+
+**Use this account to**:
+
+- Demonstrate read-only access for auditors or viewers
+- Show how Infrahub prevents unauthorized modifications
+- Test queries and views without risk of changing data
+
+#### Otto - schema reviewer
+
+- **Username**: `otto`
+- **Password**: `otto123`
+- **Access level**: Schema management and full object access
+- **Permissions**:
+  - Manage schemas (create, update, delete)
+  - Review and approve proposed changes
+  - Full CRUD (create, read, update, delete) operations on all objects
+
+**Use this account to**:
+
+- Demonstrate schema management workflows
+- Show the proposed change review process
+- Test advanced configurations with full object permissions
+
+:::info
+These demo accounts are created automatically when you run `uv run invoke bootstrap` (Step 7). The account creation script is located at `scripts/create_users_roles.py`.
+:::
+
+:::warning Security notice
+The passwords for these demo accounts are intentionally weak for demonstration purposes. In production environments, use strong passwords and integrate with your organization's authentication system (LDAP, SAML, or OIDC).
+:::
+
 ## Step 7: bootstrap the demo data
 
 Now that Infrahub is running, load the demo schemas and data. You can use the automated bootstrap script or run the steps manually.

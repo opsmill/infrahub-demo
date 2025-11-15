@@ -535,8 +535,10 @@ class TopologyCreator:
             # Get expanded interfaces from template
             template_interfaces = self.data["templates"][template_name]
 
-            # Create interface data
-            interface_data_list = []
+            # Separate console interfaces from physical interfaces
+            console_interface_data_list = []
+            physical_interface_data_list = []
+
             for iface in template_interfaces:
                 interface_data = {
                     "payload": {
@@ -551,16 +553,32 @@ class TopologyCreator:
                 if iface.get("role"):
                     interface_data["payload"]["role"] = iface["role"]
 
-                interface_data_list.append(interface_data)
+                # Separate by role to create the correct interface type
+                if iface.get("role") == "console":
+                    # Console interfaces need port and speed attributes
+                    interface_data["payload"]["port"] = iface.get("port", 0)
+                    interface_data["payload"]["speed"] = iface.get("speed", 9600)
+                    console_interface_data_list.append(interface_data)
+                else:
+                    physical_interface_data_list.append(interface_data)
 
-            # Create interfaces in batch
-            if interface_data_list:
+            # Create console interfaces in batch
+            if console_interface_data_list:
                 await self._create_in_batch(
-                    kind="DcimPhysicalInterface",
-                    data_list=interface_data_list,
+                    kind="DcimConsoleInterface",
+                    data_list=console_interface_data_list,
                     allow_upsert=True,
                 )
-                self.log.info(f"Created {len(interface_data_list)} interfaces for {device.name.value if hasattr(device, 'name') else device.id}")
+                self.log.info(f"Created {len(console_interface_data_list)} console interfaces for {device.name.value if hasattr(device, 'name') else device.id}")
+
+            # Create physical interfaces in batch
+            if physical_interface_data_list:
+                await self._create_in_batch(
+                    kind="DcimPhysicalInterface",
+                    data_list=physical_interface_data_list,
+                    allow_upsert=True,
+                )
+                self.log.info(f"Created {len(physical_interface_data_list)} physical interfaces for {device.name.value if hasattr(device, 'name') else device.id}")
 
     def _get_device_template_name(self, device: Any) -> str | None:
         """
