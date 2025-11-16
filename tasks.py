@@ -215,6 +215,138 @@ def demo_dc_arista(context: Context, branch: str = "add-dc3") -> None:
     console.print()
 
 
+@task(optional=["branch"], name="demo-dc-juniper")
+def demo_dc_juniper(context: Context, branch: str = "add-dc5") -> None:
+    """Create branch and load Juniper DC demo topology."""
+    console.print()
+    console.print(
+        Panel(
+            f"[bold cyan]Juniper Data Center Demo[/bold cyan]\n"
+            f"[dim]Branch:[/dim] {branch}",
+            border_style="cyan",
+            box=box.SIMPLE,
+        )
+    )
+
+    console.print(f"\n[cyan]→[/cyan] Creating branch: [bold]{branch}[/bold]")
+    context.run(f"uv run infrahubctl branch create {branch}")
+
+    console.print(
+        f"\n[cyan]→[/cyan] Loading DC Juniper topology to branch: [bold]{branch}[/bold]"
+    )
+    context.run(
+        f"uv run infrahubctl object load objects/dc/dc-juniper-s.yml --branch {branch}"
+    )
+
+    console.print(
+        f"\n[green]✓[/green] DC Juniper topology loaded to branch '[bold green]{branch}[/bold green]'"
+    )
+
+    # Wait for generator to finish creating the data
+    console.print(
+        "\n[yellow]→[/yellow] Waiting for generator to complete data creation..."
+    )
+    wait_seconds = 60  # Wait 60 seconds for generator to process
+
+    with Progress(
+        SpinnerColumn(spinner_name="dots12", style="bold bright_yellow"),
+        TextColumn("[progress.description]{task.description}", style="bold white"),
+        BarColumn(
+            bar_width=40,
+            style="yellow",
+            complete_style="bright_green",
+            finished_style="bold bright_green",
+            pulse_style="bright_yellow",
+        ),
+        TextColumn("[bold bright_cyan]{task.percentage:>3.0f}%"),
+        TextColumn("•", style="dim"),
+        TimeElapsedColumn(),
+        console=console,
+    ) as progress:
+        task = progress.add_task("⏳ Generator processing", total=wait_seconds)
+        for _ in range(wait_seconds):
+            time.sleep(1)
+            progress.update(task, advance=1)
+
+    console.print("[green]✓[/green] Generator processing complete")
+
+    # Create proposed change
+    console.print(
+        f"\n[bright_magenta]→[/bright_magenta] Creating proposed change for branch '[bold]{branch}[/bold]'..."
+    )
+    context.run(
+        f"uv run python scripts/create_proposed_change.py --branch {branch}", pty=True
+    )
+
+    console.print()
+
+
+@task(optional=["branch"], name="demo-dc-cisco")
+def demo_dc_cisco(context: Context, branch: str = "add-dc2") -> None:
+    """Create branch and load Cisco DC demo topology."""
+    console.print()
+    console.print(
+        Panel(
+            f"[bold cyan]Cisco Data Center Demo[/bold cyan]\n"
+            f"[dim]Branch:[/dim] {branch}",
+            border_style="cyan",
+            box=box.SIMPLE,
+        )
+    )
+
+    console.print(f"\n[cyan]→[/cyan] Creating branch: [bold]{branch}[/bold]")
+    context.run(f"uv run infrahubctl branch create {branch}")
+
+    console.print(
+        f"\n[cyan]→[/cyan] Loading DC Cisco topology to branch: [bold]{branch}[/bold]"
+    )
+    context.run(
+        f"uv run infrahubctl object load objects/dc/dc-cisco-s.yml --branch {branch}"
+    )
+
+    console.print(
+        f"\n[green]✓[/green] DC Cisco topology loaded to branch '[bold green]{branch}[/bold green]'"
+    )
+
+    # Wait for generator to finish creating the data
+    console.print(
+        "\n[yellow]→[/yellow] Waiting for generator to complete data creation..."
+    )
+    wait_seconds = 60  # Wait 60 seconds for generator to process
+
+    with Progress(
+        SpinnerColumn(spinner_name="dots12", style="bold bright_yellow"),
+        TextColumn("[progress.description]{task.description}", style="bold white"),
+        BarColumn(
+            bar_width=40,
+            style="yellow",
+            complete_style="bright_green",
+            finished_style="bold bright_green",
+            pulse_style="bright_yellow",
+        ),
+        TextColumn("[bold bright_cyan]{task.percentage:>3.0f}%"),
+        TextColumn("•", style="dim"),
+        TimeElapsedColumn(),
+        console=console,
+    ) as progress:
+        task = progress.add_task("⏳ Generator processing", total=wait_seconds)
+        for _ in range(wait_seconds):
+            time.sleep(1)
+            progress.update(task, advance=1)
+
+    console.print("[green]✓[/green] Generator processing complete")
+
+    # Create proposed change
+    console.print(
+        f"\n[bright_magenta]→[/bright_magenta] Creating proposed change for branch '[bold]{branch}[/bold]'..."
+    )
+    context.run(
+        f"uv run python scripts/create_proposed_change.py --branch {branch}", pty=True
+    )
+
+    console.print()
+
+
 @task(optional=["branch", "topology"])
 def containerlab(
     context: Context, branch: str = "add-dc3", topology: str = "DC-3"
@@ -280,9 +412,9 @@ def stop(context: Context) -> None:
     console.print("[green]✓[/green] All containers stopped")
 
 
-@task
-def restart(context: Context, component: str = "") -> None:
-    """Restart containers."""
+@task(name="restart-containers")
+def restart_containers(context: Context, component: str = "") -> None:
+    """Restart Docker containers (without destroying data)."""
     if component:
         console.print()
         console.print(
@@ -309,6 +441,62 @@ def restart(context: Context, component: str = "") -> None:
 
 
 @task
+def restart(context: Context) -> None:
+    """Complete restart: destroy, start, bootstrap, and load demo DC."""
+    console.print()
+    console.print(
+        Panel(
+            "[bold magenta]Complete Infrahub Restart[/bold magenta]\n"
+            "[dim]This will destroy all data and rebuild from scratch[/dim]\n\n"
+            "[yellow]Steps:[/yellow]\n"
+            "  1. Destroy all containers and volumes\n"
+            "  2. Start Infrahub\n"
+            "  3. Bootstrap (schemas, data, repository)\n"
+            "  4. Load Arista DC demo",
+            border_style="magenta",
+            box=box.SIMPLE,
+        )
+    )
+    console.print()
+
+    # Step 1: Destroy
+    console.print("[bold magenta]Step 1/4:[/bold magenta] Destroying containers...")
+    destroy(context)
+    console.print()
+
+    # Step 2: Start
+    console.print("[bold magenta]Step 2/4:[/bold magenta] Starting Infrahub...")
+    start(context)
+    console.print()
+
+    # Step 3: Bootstrap
+    console.print("[bold magenta]Step 3/4:[/bold magenta] Running bootstrap...")
+    bootstrap_py(context)
+    console.print()
+
+    # Step 4: Demo
+    console.print("[bold magenta]Step 4/4:[/bold magenta] Loading Arista DC demo...")
+    demo_dc_arista(context)
+
+    console.print()
+    console.print(
+        Panel(
+            "[bold green]✓ Complete restart finished successfully[/bold green]\n\n"
+            "[cyan]Infrahub UI:[/cyan] http://localhost:8000\n"
+            + (
+                "[cyan]Service Catalog:[/cyan] http://localhost:8501\n"
+                if INFRAHUB_SERVICE_CATALOG
+                else ""
+            )
+            + "[cyan]Branch:[/cyan] add-dc3",
+            border_style="green",
+            box=box.SIMPLE,
+        )
+    )
+    console.print()
+
+
+@task(name="run-tests")
 def run_tests(context: Context) -> None:
     """Run all tests."""
     console.print()

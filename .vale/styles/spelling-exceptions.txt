@@ -123,6 +123,7 @@ opentelemetry
 order_by
 order_weight
 Palo
+Parallelization
 populate_security_relationships
 Prefetch
 profile_name
@@ -150,6 +151,7 @@ supernet
 supernets
 SVIs
 template_path
+testcontainer
 toml
 tomek
 towncrier
