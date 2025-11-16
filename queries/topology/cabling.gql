@@ -14,7 +14,7 @@ query topology_cables($name: String!) {
                     name {
                       value
                     }
-                    ... on DcimPhysicalInterface {
+                    ... on InterfacePhysical {
                       connector {
                         node {
                           hfid

@@ -14,7 +14,7 @@ spec:
       memory: 8
       storage: 100
       interfaces:
-        kind: TemplateDcimPhysicalInterface
+        kind: TemplateInterfacePhysical
         parameters:
           expand_range: true
         data:
@@ -33,7 +33,7 @@ spec:
       memory: 8
       storage: 100
       interfaces:
-        kind: TemplateDcimPhysicalInterface
+        kind: TemplateInterfacePhysical
         parameters:
           expand_range: true
         data:
@@ -52,7 +52,7 @@ spec:
       cpu: 2
       memory: 2
       interfaces:
-        kind: TemplateDcimVirtualInterface
+        kind: TemplateInterfaceVirtual
         data:
           - template_name: PROXY_private
             name: private
@@ -67,7 +67,7 @@ spec:
       cpu: 2
       memory: 2
       interfaces:
-        kind: TemplateDcimVirtualInterface
+        kind: TemplateInterfaceVirtual
         data:
           - template_name: PROXY_private
             name: private

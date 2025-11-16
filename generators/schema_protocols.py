@@ -80,8 +80,6 @@ class DcimGenericDevice(CoreNode):
     description: StringOptional
     name: String
     os_version: StringOptional
-    role: DropdownOptional
-    status: Dropdown
     interfaces: RelationshipManager
     platform: RelatedNode
     primary_address: RelatedNode
@@ -117,6 +115,7 @@ class LocationHosting(CoreNode):
 
 class DcimInterface(CoreNode):
     description: StringOptional
+    mtu: Integer
     name: String
     role: DropdownOptional
     status: Dropdown
@@ -145,6 +144,20 @@ class ServiceRoutingPolicy(CoreNode):
 
 
 class DcimSubInterface(CoreNode):
+    sub_interfaces: RelationshipManager
+
+
+class InterfaceLayer2(CoreNode):
+    l2_mode: DropdownOptional
+
+
+class InterfaceLayer3(CoreNode):
+    dot1q_id: IntegerOptional
+    mac_address: StringOptional
+    ip_addresses: RelationshipManager
+
+
+class InterfaceHasSubInterface(CoreNode):
     sub_interfaces: RelationshipManager
 
 
@@ -354,10 +367,20 @@ class ServiceOSPFInterface(ServiceGeneric):
     settings_interfaces: RelationshipManager
 
 
-class DcimPhysicalDevice(CoreArtifactTarget, DcimGenericDevice):
+class DcimPhysicalDevice(CoreNode):
     position: IntegerOptional
     rack_face: Dropdown
     serial: StringOptional
+    device_type: RelatedNode
+    location: RelatedNode
+
+
+class DcimDevice(CoreArtifactTarget, DcimGenericDevice):
+    position: IntegerOptional
+    rack_face: Dropdown
+    serial: StringOptional
+    role: DropdownOptional
+    status: Dropdown
     device_type: RelatedNode
     location: RelatedNode
 
@@ -366,6 +389,10 @@ class DcimPhysicalInterface(DcimInterface, DcimEndpoint, DcimSubInterface):
     interface_type: Dropdown
     mtu: Integer
     ip_addresses: RelationshipManager
+
+
+class InterfacePhysical(DcimInterface, InterfaceLayer2, InterfaceLayer3, DcimEndpoint, InterfaceHasSubInterface):
+    pass
 
 
 class DcimPlatform(CoreNode):
@@ -494,6 +521,10 @@ class DcimVirtualDevice(CoreArtifactTarget, DcimGenericDevice):
 
 class DcimVirtualInterface(DcimInterface):
     ip_addresses: RelationshipManager
+    parent_interface: RelatedNode
+
+
+class InterfaceVirtual(DcimInterface, InterfaceLayer2, InterfaceLayer3):
     parent_interface: RelatedNode
 
 

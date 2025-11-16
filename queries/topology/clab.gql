@@ -60,7 +60,7 @@ query topology_info($name: String!) {
                     role {
                       value
                     }
-                    ... on DcimPhysicalInterface {
+                    ... on InterfacePhysical {
                       connector {
                         node {
                           hfid

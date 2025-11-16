@@ -2,7 +2,7 @@
 apiVersion: infrahub.app/v1
 kind: Object
 spec:
-  kind: TemplateDcimPhysicalDevice
+  kind: TemplateDcimDevice
   data:
     - template_name: N9K-C9336C-FX2_SPINE
       device_type: N9K-C9336C-FX2
@@ -11,7 +11,7 @@ spec:
         - spines
       status: active
       interfaces:
-        kind: TemplateDcimPhysicalInterface
+        kind: TemplateInterfacePhysical
         data:
           - template_name: N9K-C9336C-FX2_SPINE_Ethernet1/[1-30]
             name: Ethernet1/[1-30]
@@ -29,7 +29,7 @@ spec:
         - leafs
       status: active
       interfaces:
-        kind: TemplateDcimPhysicalInterface
+        kind: TemplateInterfacePhysical
         data:
           - template_name: N9K-C9336C-FX2_LEAF_Ethernet1/[1-30]
             name: Ethernet1/[1-30]
@@ -47,7 +47,7 @@ spec:
         - spines
       status: active
       interfaces:
-        kind: TemplateDcimPhysicalInterface
+        kind: TemplateInterfacePhysical
         data:
           - template_name: N9K-C9316D-GX_SPINE_Ethernet1/[1-12]
             name: Ethernet1/[1-12]
@@ -65,7 +65,7 @@ spec:
         - leafs
       status: active
       interfaces:
-        kind: TemplateDcimPhysicalInterface
+        kind: TemplateInterfacePhysical
         data:
           - template_name: N9K-C9316D-GX_LEAF_Ethernet1/[1-48]
             name: Ethernet1/[1-48]
@@ -83,7 +83,7 @@ spec:
         - spines
       status: active
       interfaces:
-        kind: TemplateDcimPhysicalInterface
+        kind: TemplateInterfacePhysical
         data:
           - template_name: DCS-7280DR3-24-F_SPINE_Ethernet[1-20]/1
             name: Ethernet[1-20]/1
@@ -101,7 +101,7 @@ spec:
         - leafs
       status: active
       interfaces:
-        kind: TemplateDcimPhysicalInterface
+        kind: TemplateInterfacePhysical
         data:
           - template_name: CCS-720DP-48S-2F_LEAF_Ethernet[1-48]
             name: Ethernet[1-48]
@@ -119,7 +119,7 @@ spec:
         - firewalls
       status: active
       interfaces:
-        kind: TemplateDcimPhysicalInterface
+        kind: TemplateInterfacePhysical
         data:
           - template_name: SRX-1500_EDGE_FIREWALL_fxp0
             name: fxp0
@@ -134,7 +134,7 @@ spec:
         - firewalls
       status: active
       interfaces:
-        kind: TemplateDcimPhysicalInterface
+        kind: TemplateInterfacePhysical
         data:
           - template_name: SRX-1500_DC_FIREWALL_fxp0
             name: fxp0
@@ -149,7 +149,7 @@ spec:
         - oobs
       status: active
       interfaces:
-        kind: TemplateDcimPhysicalInterface
+        kind: TemplateInterfacePhysical
         data:
           - template_name: C9200L-24P-4G_OOB_GigabitEthernet1/0/[1-24]
             name: GigabitEthernet1/0/[1-24]
@@ -164,7 +164,7 @@ spec:
         - consoles
       status: active
       interfaces:
-        kind: TemplateDcimPhysicalInterface
+        kind: TemplateInterfacePhysical
         data:
           - template_name: SCG50R_CONSOLE_Ethernet[0-1]
             name: Ethernet[0-1]
@@ -176,7 +176,7 @@ spec:
         - edges
       status: active
       interfaces:
-        kind: TemplateDcimPhysicalInterface
+        kind: TemplateInterfacePhysical
         data:
           - template_name: N9K-C9316D-GX_EDGE_Ethernet1/[1-14]
             name: Ethernet1/[1-14]
@@ -194,7 +194,7 @@ spec:
         - leafs
       status: active
       interfaces:
-        kind: TemplateDcimPhysicalInterface
+        kind: TemplateInterfacePhysical
         data:
           - template_name: 5912-54X-O-AC-F_LEAF_xe[1-48]
             name: xe[1-48]
@@ -215,7 +215,7 @@ spec:
         - spines
       status: active
       interfaces:
-        kind: TemplateDcimPhysicalInterface
+        kind: TemplateInterfacePhysical
         data:
           - template_name: 7726-32X-O_SPINE_eth0
             name: eth0

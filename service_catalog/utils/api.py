@@ -679,14 +679,14 @@ class InfrahubClient:
             raise InfrahubAPIError(f"Failed to fetch racks for row: {str(e)}")
 
     def get_devices_by_rack(self, rack_id: str, branch: str = "main") -> List[Dict[str, Any]]:
-        """Fetch DcimPhysicalDevice objects for a specific rack.
+        """Fetch DcimDevice objects for a specific rack.
 
         Args:
             rack_id: LocationRack ID
             branch: Branch name to query (default: "main")
 
         Returns:
-            List of DcimPhysicalDevice dictionaries with id, name, position, height, and device_type
+            List of DcimDevice dictionaries with id, name, position, height, and device_type
 
         Raises:
             InfrahubConnectionError: If connection fails
@@ -696,7 +696,7 @@ class InfrahubClient:
             # Use GraphQL to filter devices by location (rack)
             query = """
             query GetDevicesByRack($rack_id: ID!) {
-                DcimPhysicalDevice(location__ids: [$rack_id]) {
+                DcimDevice(location__ids: [$rack_id]) {
                     edges {
                         node {
                             id
@@ -723,7 +723,7 @@ class InfrahubClient:
             result = self.execute_graphql(query, {"rack_id": rack_id}, branch)
 
             devices = []
-            edges = result.get("DcimPhysicalDevice", {}).get("edges", [])
+            edges = result.get("DcimDevice", {}).get("edges", [])
 
             for edge in edges:
                 node = edge.get("node", {})
@@ -753,6 +753,457 @@ class InfrahubClient:
             return devices
         except Exception as e:
             raise InfrahubAPIError(f"Failed to fetch devices for rack: {str(e)}")
+
+    def get_location_buildings(self, branch: str = "main") -> List[Dict[str, Any]]:
+        """Fetch LocationBuilding objects.
+
+        Args:
+            branch: Branch name to query (default: "main")
+
+        Returns:
+            List of LocationBuilding dictionaries with id and name
+
+        Raises:
+            InfrahubConnectionError: If connection fails
+            InfrahubAPIError: If API error occurs
+        """
+        try:
+            buildings = self._client.filters(
+                kind="LocationBuilding",
+                branch=branch,
+                prefetch_relationships=False
+            )
+
+            result = []
+            for building in buildings:
+                building_dict = {
+                    "id": building.id,
+                    "name": {"value": getattr(building.name, "value", None)},
+                }
+                result.append(building_dict)
+
+            return result
+        except Exception as e:
+            raise InfrahubAPIError(f"Failed to fetch location buildings: {str(e)}")
+
+    def get_pods_by_building(
+        self, building_id: str, branch: str = "main"
+    ) -> List[Dict[str, Any]]:
+        """Fetch LocationPod objects for a specific building.
+
+        Args:
+            building_id: LocationBuilding ID
+            branch: Branch name to query (default: "main")
+
+        Returns:
+            List of LocationPod dictionaries with id, name, and parent relationship
+
+        Raises:
+            InfrahubConnectionError: If connection fails
+            InfrahubAPIError: If API error occurs
+        """
+        try:
+            # Use GraphQL to filter pods by parent (building)
+            query = """
+            query GetPodsByBuilding($building_id: ID!) {
+                LocationPod(parent__ids: [$building_id]) {
+                    edges {
+                        node {
+                            id
+                            name { value }
+                            parent {
+                                node {
+                                    id
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            """
+
+            result = self.execute_graphql(query, {"building_id": building_id}, branch)
+
+            pods = []
+            edges = result.get("LocationPod", {}).get("edges", [])
+
+            for edge in edges:
+                node = edge.get("node", {})
+                pods.append({
+                    "id": node.get("id"),
+                    "name": {"value": node.get("name", {}).get("value")},
+                })
+
+            return pods
+        except Exception as e:
+            raise InfrahubAPIError(f"Failed to fetch pods for building: {str(e)}")
+
+    def get_racks_by_pod(
+        self, pod_id: str, branch: str = "main"
+    ) -> List[Dict[str, Any]]:
+        """Fetch LocationRack objects for a specific pod.
+
+        Args:
+            pod_id: LocationPod ID
+            branch: Branch name to query (default: "main")
+
+        Returns:
+            List of LocationRack dictionaries with id, name, and parent relationship
+
+        Raises:
+            InfrahubConnectionError: If connection fails
+            InfrahubAPIError: If API error occurs
+        """
+        try:
+            # Use GraphQL to filter racks by parent (pod)
+            query = """
+            query GetRacksByPod($pod_id: ID!) {
+                LocationRack(parent__ids: [$pod_id]) {
+                    edges {
+                        node {
+                            id
+                            name { value }
+                            parent {
+                                node {
+                                    id
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            """
+
+            result = self.execute_graphql(query, {"pod_id": pod_id}, branch)
+
+            racks = []
+            edges = result.get("LocationRack", {}).get("edges", [])
+
+            for edge in edges:
+                node = edge.get("node", {})
+                racks.append({
+                    "id": node.get("id"),
+                    "name": {"value": node.get("name", {}).get("value")},
+                })
+
+            return racks
+        except Exception as e:
+            raise InfrahubAPIError(f"Failed to fetch racks for pod: {str(e)}")
+
+    def get_devices_by_location(
+        self,
+        pod_id: str,
+        rack_id: Optional[str] = None,
+        branch: str = "main"
+    ) -> List[Dict[str, Any]]:
+        """Fetch DcimDevice objects for a location.
+
+        Args:
+            pod_id: LocationPod ID
+            rack_id: Optional LocationRack ID (None for all racks in pod)
+            branch: Branch name to query (default: "main")
+
+        Returns:
+            List of DcimDevice dictionaries with id, name, and location
+
+        Raises:
+            InfrahubConnectionError: If connection fails
+            InfrahubAPIError: If API error occurs
+        """
+        try:
+            # Build query based on whether rack_id is provided
+            if rack_id:
+                # Filter by specific rack
+                query = """
+                query GetDevicesByRack($rack_id: ID!) {
+                    DcimDevice(location__ids: [$rack_id]) {
+                        edges {
+                            node {
+                                id
+                                name { value }
+                                location {
+                                    node {
+                                        id
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                """
+                variables = {"rack_id": rack_id}
+            else:
+                # Filter by pod (all racks in pod)
+                query = """
+                query GetDevicesByPod($pod_id: ID!) {
+                    DcimDevice(location__ids: [$pod_id]) {
+                        edges {
+                            node {
+                                id
+                                name { value }
+                                location {
+                                    node {
+                                        id
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                """
+                variables = {"pod_id": pod_id}
+
+            result = self.execute_graphql(query, variables, branch)
+
+            devices = []
+            edges = result.get("DcimDevice", {}).get("edges", [])
+
+            for edge in edges:
+                node = edge.get("node", {})
+                devices.append({
+                    "id": node.get("id"),
+                    "name": {"value": node.get("name", {}).get("value")},
+                })
+
+            return devices
+        except Exception as e:
+            raise InfrahubAPIError(f"Failed to fetch devices for location: {str(e)}")
+
+    def get_interfaces_by_device(
+        self,
+        device_id: str,
+        role_filter: Optional[str] = None,
+        branch: str = "main"
+    ) -> List[Dict[str, Any]]:
+        """Fetch interface objects for a specific device.
+
+        Args:
+            device_id: DcimDevice ID
+            role_filter: Optional role filter (e.g., "Customer")
+            branch: Branch name to query (default: "main")
+
+        Returns:
+            List of interface dictionaries with id, name, description, and role
+
+        Raises:
+            InfrahubConnectionError: If connection fails
+            InfrahubAPIError: If API error occurs
+        """
+        try:
+            # Build query with optional role filter
+            if role_filter:
+                query = """
+                query GetInterfacesByDevice($device_id: ID!, $role: String!) {
+                    InfrahubInterface(device__ids: [$device_id], role__value: $role) {
+                        edges {
+                            node {
+                                id
+                                name { value }
+                                description { value }
+                                role { value }
+                                device {
+                                    node {
+                                        id
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                """
+                variables = {"device_id": device_id, "role": role_filter}
+            else:
+                query = """
+                query GetInterfacesByDevice($device_id: ID!) {
+                    InfrahubInterface(device__ids: [$device_id]) {
+                        edges {
+                            node {
+                                id
+                                name { value }
+                                description { value }
+                                role { value }
+                                device {
+                                    node {
+                                        id
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                """
+                variables = {"device_id": device_id}
+
+            result = self.execute_graphql(query, variables, branch)
+
+            interfaces = []
+            edges = result.get("InfrahubInterface", {}).get("edges", [])
+
+            for edge in edges:
+                node = edge.get("node", {})
+                interfaces.append({
+                    "id": node.get("id"),
+                    "name": {"value": node.get("name", {}).get("value")},
+                    "description": {"value": node.get("description", {}).get("value")},
+                    "role": {"value": node.get("role", {}).get("value")},
+                })
+
+            return interfaces
+        except Exception as e:
+            raise InfrahubAPIError(f"Failed to fetch interfaces for device: {str(e)}")
+
+    def get_vlans_by_interface(
+        self,
+        interface_id: str,
+        branch: str = "main"
+    ) -> List[Dict[str, Any]]:
+        """Fetch InterfaceVirtual (VLAN) objects assigned to an interface.
+
+        Args:
+            interface_id: Interface ID
+            branch: Branch name to query (default: "main")
+
+        Returns:
+            List of VLAN dictionaries with id, vlan_id, and name
+
+        Raises:
+            InfrahubConnectionError: If connection fails
+            InfrahubAPIError: If API error occurs
+        """
+        try:
+            query = """
+            query GetVLANsByInterface($interface_id: ID!) {
+                InfrahubInterface(ids: [$interface_id]) {
+                    edges {
+                        node {
+                            id
+                            vlans {
+                                edges {
+                                    node {
+                                        id
+                                        vlan_id { value }
+                                        name { value }
+                                        description { value }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            """
+
+            result = self.execute_graphql(query, {"interface_id": interface_id}, branch)
+
+            vlans = []
+            interface_edges = result.get("InfrahubInterface", {}).get("edges", [])
+            
+            if interface_edges:
+                vlan_edges = interface_edges[0].get("node", {}).get("vlans", {}).get("edges", [])
+                for edge in vlan_edges:
+                    node = edge.get("node", {})
+                    vlans.append({
+                        "id": node.get("id"),
+                        "vlan_id": {"value": node.get("vlan_id", {}).get("value")},
+                        "name": {"value": node.get("name", {}).get("value")},
+                        "description": {"value": node.get("description", {}).get("value")},
+                    })
+
+            return vlans
+        except Exception as e:
+            raise InfrahubAPIError(f"Failed to fetch VLANs for interface: {str(e)}")
+
+    def get_all_vlans(self, branch: str = "main") -> List[Dict[str, Any]]:
+        """Fetch all InterfaceVirtual (VLAN) objects.
+
+        Args:
+            branch: Branch name to query (default: "main")
+
+        Returns:
+            List of VLAN dictionaries with id, vlan_id, and name
+
+        Raises:
+            InfrahubConnectionError: If connection fails
+            InfrahubAPIError: If API error occurs
+        """
+        try:
+            vlans = self._client.filters(
+                kind="InterfaceVirtual",
+                branch=branch,
+                prefetch_relationships=False
+            )
+
+            result = []
+            for vlan in vlans:
+                vlan_dict = {
+                    "id": vlan.id,
+                    "vlan_id": {"value": getattr(vlan.vlan_id, "value", None) if hasattr(vlan, "vlan_id") else None},
+                    "name": {"value": getattr(vlan.name, "value", None)},
+                    "description": {"value": getattr(vlan.description, "value", None) if hasattr(vlan, "description") else None},
+                }
+                result.append(vlan_dict)
+
+            return result
+        except Exception as e:
+            raise InfrahubAPIError(f"Failed to fetch VLANs: {str(e)}")
+
+    def assign_vlan_to_interface(
+        self,
+        interface_id: str,
+        vlan_id: str,
+        branch: str
+    ) -> Dict[str, Any]:
+        """Assign a VLAN to an interface using GraphQL mutation.
+
+        Args:
+            interface_id: Interface ID
+            vlan_id: VLAN ID to assign
+            branch: Branch to apply the change to
+
+        Returns:
+            Result dictionary with success status
+
+        Raises:
+            InfrahubConnectionError: If connection fails
+            InfrahubAPIError: If mutation fails
+        """
+        try:
+            # Use GraphQL mutation to update interface with VLAN
+            mutation = """
+            mutation AssignVLANToInterface($interface_id: String!, $vlan_id: String!) {
+                InfrahubInterfaceUpdate(
+                    data: {
+                        id: $interface_id
+                        vlans: [{ id: $vlan_id }]
+                    }
+                ) {
+                    ok
+                    object {
+                        id
+                        name { value }
+                    }
+                }
+            }
+            """
+
+            variables = {
+                "interface_id": interface_id,
+                "vlan_id": vlan_id
+            }
+
+            result = self.execute_graphql(mutation, variables, branch)
+
+            # Check if mutation was successful
+            if result.get("InfrahubInterfaceUpdate", {}).get("ok"):
+                return {
+                    "success": True,
+                    "interface": result["InfrahubInterfaceUpdate"]["object"]
+                }
+            else:
+                raise InfrahubAPIError(f"VLAN assignment mutation failed: {result}")
+
+        except Exception as e:
+            raise InfrahubAPIError(f"Failed to assign VLAN to interface: {str(e)}")
 
     def _sdk_object_to_dict(self, obj: Any) -> Dict[str, Any]:
         """Convert an SDK object to a dictionary.

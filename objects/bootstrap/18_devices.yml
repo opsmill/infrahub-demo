@@ -13,113 +13,113 @@ spec:
       member_of_groups:
         - juniper_firewall
       interfaces:
-        kind: DcimPhysicalInterface
+        kind: InterfacePhysical
         data:
           - name: fxp0
             role: management
-            status: free
+            status: active
           - name: ge-0/0/0
             role: leaf
-            status: free
+            status: active
           - name: ge-0/0/1
             role: leaf
-            status: free
+            status: active
           - name: ge-0/0/2
             role: leaf
-            status: free
+            status: active
           - name: ge-0/0/3
             role: leaf
-            status: free
+            status: active
 
 ---
 apiVersion: infrahub.app/v1
 kind: Object
 spec:
-  kind: DcimPhysicalDevice
+  kind: DcimDevice
   data:
     - name: cisco-switch-01
       role: leaf
       device_type: N9K-C93108TC-FX
       platform: Cisco NX-OS
-      location: London
+      location: LON-1
       status: active
       member_of_groups:
         - leafs
       interfaces:
-        kind: DcimPhysicalInterface
+        kind: InterfacePhysical
         parameters:
           expand_range: true
         data:
           - name: mgmt0
             role: management
-            status: free
+            status: active
           - name: Ethernet1/[1-4]
             role: customer
-            status: free
+            status: active
 
     - name: juniper-switch-01
       role: spine
       device_type: QFX5220-32CD
       platform: Juniper JunOS
-      location: Frankfurt
+      location: FRA-1
       status: active
       member_of_groups:
         - spines
       interfaces:
-        kind: DcimPhysicalInterface
+        kind: InterfacePhysical
         parameters:
           expand_range: true
         data:
           - name: fxp0
             role: management
-            status: free
+            status: active
           - name: et-0/0/[0-3]
             role: leaf
-            status: free
+            status: active
 
     - name: arista-switch-01
       role: spine
       device_type: DCS-7280DR3-24-F
       platform: Arista EOS
-      location: Barcelona
+      location: BCN-1
       status: active
       member_of_groups:
         - spines
       interfaces:
-        kind: DcimPhysicalInterface
+        kind: InterfacePhysical
         parameters:
           expand_range: true
         data:
           - name: Management1
             role: management
-            status: free
+            status: active
           - name: Ethernet[1-4]
             role: leaf
-            status: free
+            status: active
 
     - name: edgecore-switch-01
       role: leaf
       device_type: 5912-54X-O-AC-F
       platform: Sonic OS
-      location: Chicago
+      location: CHI-1
       status: active
       member_of_groups:
         - leafs
       interfaces:
-        kind: DcimPhysicalInterface
+        kind: InterfacePhysical
         data:
           - name: eth0
             role: management
-            status: free
+            status: active
           - name: Ethernet0
             role: customer
-            status: free
+            status: active
           - name: Ethernet4
             role: customer
-            status: free
+            status: active
           - name: Ethernet8
             role: customer
-            status: free
+            status: active
           - name: Ethernet12
             role: customer
-            status: free
+            status: active

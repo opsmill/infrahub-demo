@@ -309,7 +309,7 @@ The `transforms/common.py` module provides helper functions for data processing:
 
 ### Naming Conventions
 
-- **Nodes**: PascalCase (e.g., `LocationBuilding`, `DcimGenericDevice`)
+- **Nodes**: PascalCase (e.g., `LocationBuilding`, `DcimDevice`)
 - **Attributes**: snake_case (e.g., `device_type`, `ip_address`)
 - **Relationships**: snake_case (e.g., `parent_location`, `connected_interfaces`)
 - **Namespaces**: PascalCase (e.g., `Dcim`, `Ipam`, `Service`, `Design`)
@@ -322,7 +322,7 @@ nodes:
     namespace: Dcim
     description: "Device description"
     inherit_from:
-      - DcimGenericDevice
+      - DcimDevice
     attributes:
       - name: custom_field
         kind: Text
@@ -497,7 +497,7 @@ Queries are defined in `queries/` and referenced by name in transforms/checks:
 
 ```graphql
 query GetDeviceConfig($device_name: String!) {
-  DcimGenericDevice(name__value: $device_name) {
+  DcimDevice(name__value: $device_name) {
     edges {
       node {
         id

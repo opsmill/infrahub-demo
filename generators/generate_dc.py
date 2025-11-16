@@ -4,7 +4,7 @@ from infrahub_sdk.generator import InfrahubGenerator
 from infrahub_sdk.protocols import CoreNumberPool
 
 from .common import TopologyCreator, clean_data, safe_sort_interface_list
-from .schema_protocols import DcimPhysicalInterface, DcimVirtualInterface
+from .schema_protocols import InterfacePhysical, InterfaceVirtual
 
 
 class DCTopologyCreator(TopologyCreator):
@@ -95,12 +95,12 @@ class DCTopologyCreator(TopologyCreator):
         # Assign roles and connectors
         for connection in connections:
             source_endpoint = await self.client.get(
-                kind=DcimPhysicalInterface,
+                kind=InterfacePhysical,
                 name__value=connection["source_interface"],
                 device__name__value=connection["source"],
             )
             target_endpoint = await self.client.get(
-                kind=DcimPhysicalInterface,
+                kind=InterfacePhysical,
                 name__value=connection["destination_interface"],
                 device__name__value=connection["target"],
             )
@@ -168,7 +168,7 @@ class DCTopologyCreator(TopologyCreator):
                         "status": "active",
                         "router_id": self.client.store.get(
                             key=f"{device.name.value}-loopback0",
-                            kind=DcimVirtualInterface,
+                            kind=InterfaceVirtual,
                             branch=self.branch,
                         )
                         .ip_addresses[0]
@@ -407,17 +407,17 @@ class DCTopologyCreator(TopologyCreator):
                     "remote_as": leaf_asn,
                     "router_id": self.client.store.get(
                         key=f"{spine_device.name.value}-loopback0",
-                        kind=DcimVirtualInterface, branch=self.branch)
+                        kind=InterfaceVirtual, branch=self.branch)
                     .ip_addresses[0]
                     .id,
                     "local_ip": self.client.store.get(
                         key=f"{spine_device.name.value}-loopback0",
-                        kind=DcimVirtualInterface, branch=self.branch)
+                        kind=InterfaceVirtual, branch=self.branch)
                     .ip_addresses[0]
                     .id,
                     "remote_ip": self.client.store.get(
                         key=f"{leaf_device.name.value}-loopback0",
-                        kind=DcimVirtualInterface, branch=self.branch)
+                        kind=InterfaceVirtual, branch=self.branch)
                     .ip_addresses[0]
                     .id,
                     # Associate with unnumbered interfaces like OSPF does
@@ -458,17 +458,17 @@ class DCTopologyCreator(TopologyCreator):
                     "remote_as": spine_asn,
                     "router_id": self.client.store.get(
                         key=f"{leaf_device.name.value}-loopback0",
-                        kind=DcimVirtualInterface, branch=self.branch)
+                        kind=InterfaceVirtual, branch=self.branch)
                     .ip_addresses[0]
                     .id,
                     "local_ip": self.client.store.get(
                         key=f"{leaf_device.name.value}-loopback0",
-                        kind=DcimVirtualInterface, branch=self.branch)
+                        kind=InterfaceVirtual, branch=self.branch)
                     .ip_addresses[0]
                     .id,
                     "remote_ip": self.client.store.get(
                         key=f"{spine_device.name.value}-loopback0",
-                        kind=DcimVirtualInterface, branch=self.branch)
+                        kind=InterfaceVirtual, branch=self.branch)
                     .ip_addresses[0]
                     .id,
                     # Associate with unnumbered interfaces like OSPF does
@@ -554,17 +554,17 @@ class DCTopologyCreator(TopologyCreator):
                     "remote_as": asn_id,
                     "router_id": self.client.store.get(
                         key=f"{spine_device.name.value}-loopback0",
-                        kind=DcimVirtualInterface, branch=self.branch)
+                        kind=InterfaceVirtual, branch=self.branch)
                     .ip_addresses[0]
                     .id,
                     "local_ip": self.client.store.get(
                         key=f"{spine_device.name.value}-{loopback_name}",
-                        kind=DcimVirtualInterface, branch=self.branch)
+                        kind=InterfaceVirtual, branch=self.branch)
                     .ip_addresses[0]
                     .id,
                     "remote_ip": self.client.store.get(
                         key=f"{leaf_device.name.value}-{loopback_name}",
-                        kind=DcimVirtualInterface, branch=self.branch)
+                        kind=InterfaceVirtual, branch=self.branch)
                     .ip_addresses[0]
                     .id,
                     "session_type": "INTERNAL",
@@ -596,17 +596,17 @@ class DCTopologyCreator(TopologyCreator):
                     "remote_as": asn_id,
                     "router_id": self.client.store.get(
                         key=f"{leaf_device.name.value}-loopback0",
-                        kind=DcimVirtualInterface, branch=self.branch)
+                        kind=InterfaceVirtual, branch=self.branch)
                     .ip_addresses[0]
                     .id,
                     "local_ip": self.client.store.get(
                         key=f"{leaf_device.name.value}-{loopback_name}",
-                        kind=DcimVirtualInterface, branch=self.branch)
+                        kind=InterfaceVirtual, branch=self.branch)
                     .ip_addresses[0]
                     .id,
                     "remote_ip": self.client.store.get(
                         key=f"{spine_device.name.value}-{loopback_name}",
-                        kind=DcimVirtualInterface, branch=self.branch)
+                        kind=InterfaceVirtual, branch=self.branch)
                     .ip_addresses[0]
                     .id,
                     "session_type": "INTERNAL",
