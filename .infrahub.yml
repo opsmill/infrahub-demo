@@ -69,7 +69,7 @@ artifact_definitions:
 
   - name: Cable matrix for Topology
     artifact_name: topology-cabling
-    content_type: text/plain
+    content_type: text/csv
     targets: topologies_dc
     transformation: topology_cabling
     parameters:
