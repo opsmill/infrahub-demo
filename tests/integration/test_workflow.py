@@ -456,6 +456,8 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
             name__value=f"Add DC-3 - Test {default_branch}",
         )
 
+        logging.info("Proposed change state: %s", pc.state.value if hasattr(pc.state, 'value') else pc.state)
+
         # Merge the proposed change
         mutation = Mutation(
             mutation="CoreProposedChangeMerge",
@@ -472,6 +474,18 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
         task = client_main.task.wait_for_completion(
             id=response["CoreProposedChangeMerge"]["task"]["id"], timeout=600
         )
+
+        logging.info(
+            "Merge task %s finished with state: %s",
+            task.id,
+            task.state,
+        )
+
+        # Log task logs if available
+        if hasattr(task, 'logs') and task.logs:
+            logging.info("Merge task logs:")
+            for log_entry in task.logs[:10]:  # Show first 10 log entries
+                logging.info("  %s", log_entry)
 
         # The merge task can fail due to check failures even if the merge completes.
         # test_14 will verify that the data actually made it to main.
@@ -494,13 +508,40 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
         client = async_client_main
         client.default_branch = "main"
 
-        # Verify DC-3 exists in main
-        dc3_main = await client.get(
-            kind="TopologyDataCenter",
-            name__value="DC-3",
-        )
+        # Add a small delay to allow for data propagation after merge
+        logging.info("Waiting 5 seconds for data propagation...")
+        time.sleep(5)
 
-        assert dc3_main, "DC-3 not found in main branch after merge"
+        # Try to get DC-3 from main branch
+        try:
+            dc3_main = await client.get(
+                kind="TopologyDataCenter",
+                name__value="DC-3",
+                raise_when_missing=False,
+            )
+        except Exception as e:
+            logging.error("Error querying for DC-3 in main: %s", str(e))
+            dc3_main = None
+
+        # If DC-3 not found, query all datacenters to see what's there
+        if not dc3_main:
+            logging.info("DC-3 not found in main, querying all datacenters...")
+            all_dcs = await client.all(kind="TopologyDataCenter")
+            dc_names = [dc.name.value if hasattr(dc, 'name') else str(dc) for dc in all_dcs]
+            logging.info("Datacenters in main branch: %s", dc_names)
+
+            # Also check the proposed changes to see if merge actually succeeded
+            proposed_changes = await client.all(kind="CoreProposedChange")
+            logging.info("Total proposed changes: %d", len(proposed_changes))
+            for pc in proposed_changes:
+                if hasattr(pc, 'name') and 'DC-3' in pc.name.value:
+                    pc_state = pc.state.value if hasattr(pc.state, 'value') else pc.state
+                    logging.info("Found PC '%s' with state: %s", pc.name.value, pc_state)
+
+        assert dc3_main, (
+            "DC-3 not found in main branch after merge. "
+            "The merge in test_13 may have failed. Check logs above for merge task state."
+        )
         logging.info("DC-3 verified in main branch")
 
         # Verify devices exist in main

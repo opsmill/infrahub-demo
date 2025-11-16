@@ -19,7 +19,7 @@ This repository is demoing the key Infrahub features for an example data center 
 
 ## Running the demo
 
-Documentation for loading and using this demo is available on the Infrahub docs site [docs.infrahub.app/demo/](https://docs.infrahub.app/demo/)
+Documentation for loading and using this demo is available on the Infrahub docs site [docs.infrahub.app/bundle-dc/](https://docs.infrahub.app/bundle-dc)
 
 ## Service Catalog
 

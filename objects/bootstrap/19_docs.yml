@@ -4,9 +4,11 @@ kind: Object
 spec:
   kind: DocsDocs
   data:
+    - name: Bundle-DC Example Docs
+      link: https://docs.infrahub.app/bundle-dc/
     - name: Infrahub Docs
       link: https://docs.infrahub.app
-    - name: Demo Docs
-      link: https://docs.infrahub.app/demo/
+    - name: Discord Community
+      link: https://discord.gg/opsmill
     - name: OpsMill Website
       link: https://opsmill.com
