@@ -123,6 +123,7 @@ class DCTopologyCreator(TopologyCreator):
                     "cable_type": "dac-passive",
                 },
             )
+            await cable.connected_endpoints.fetch()
             cable.connected_endpoints.add(source_endpoint.id)
             cable.connected_endpoints.add(target_endpoint.id)
 

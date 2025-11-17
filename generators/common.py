@@ -957,6 +957,7 @@ class TopologyCreator:
                     "cable_type": "cat6",  # Use cat6 for management/console connections
                 },
             )
+            await cable.connected_endpoints.fetch()
             cable.connected_endpoints.add(source_endpoint.id)
             cable.connected_endpoints.add(target_endpoint.id)
 
