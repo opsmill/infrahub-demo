@@ -955,11 +955,9 @@ class TopologyCreator:
                 data={
                     "status": "connected",
                     "cable_type": "cat6",  # Use cat6 for management/console connections
+                    "connected_endpoints": [source_endpoint.id, target_endpoint.id],
                 },
             )
-            await cable.connected_endpoints.fetch()
-            cable.connected_endpoints.add(source_endpoint.id)
-            cable.connected_endpoints.add(target_endpoint.id)
 
             batch.add(
                 task=source_endpoint.save, allow_upsert=True, node=source_endpoint
