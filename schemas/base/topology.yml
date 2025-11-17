@@ -60,10 +60,7 @@ generics:
       - name: name
         kind: Text
         order_weight: 1
-        description: "3 letter deployment code"
-        parameters:
-          min_length: 3
-          max_length: 5
+        description: "DC Name"
       - name: description
         kind: Text
         order_weight: 2

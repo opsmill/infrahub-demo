@@ -441,12 +441,12 @@ def restart_containers(context: Context, component: str = "") -> None:
 
 
 @task
-def restart(context: Context) -> None:
-    """Complete restart: destroy, start, bootstrap, and load demo DC."""
+def init(context: Context) -> None:
+    """Initialize Infrahub: destroy, start, bootstrap, and load demo DC."""
     console.print()
     console.print(
         Panel(
-            "[bold magenta]Complete Infrahub Restart[/bold magenta]\n"
+            "[bold magenta]Initialize Infrahub[/bold magenta]\n"
             "[dim]This will destroy all data and rebuild from scratch[/dim]\n\n"
             "[yellow]Steps:[/yellow]\n"
             "  1. Destroy all containers and volumes\n"
@@ -481,7 +481,7 @@ def restart(context: Context) -> None:
     console.print()
     console.print(
         Panel(
-            "[bold green]✓ Complete restart finished successfully[/bold green]\n\n"
+            "[bold green]✓ Infrahub initialized successfully[/bold green]\n\n"
             "[cyan]Infrahub UI:[/cyan] http://localhost:8000\n"
             + (
                 "[cyan]Service Catalog:[/cyan] http://localhost:8501\n"
