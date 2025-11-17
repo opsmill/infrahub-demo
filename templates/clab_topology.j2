@@ -68,6 +68,7 @@ topology:
      Link Definitions
      Generate physical connections between devices from interface connectors.
      Deduplicates bidirectional links and normalizes interface naming.
+     Uses DcimCable connected_endpoints for robust connection tracking.
      ============================================================================ #}
   links:
 {% set processed_endpoints = [] %}
@@ -81,10 +82,29 @@ topology:
 {%- for interface in device.node.interfaces.edges %}
 {#- Only process interfaces with valid connectors (skip console/management) -#}
 {%- if interface.node.connector is defined and interface.node.connector.node is not none and interface.node.role.value not in ["console", "management"] %}
-{%- set connected_endpoint = interface.node.connector.node %}
-{#- Build endpoint identifiers (device:interface) -#}
-{%- set endpoint1 = device.node.name.value + ":" + interface.node.name.value %}
-{%- set endpoint2 = connected_endpoint.hfid | join(":") %}
+{%- set cable = interface.node.connector.node %}
+{%- set source_device = device.node.name.value %}
+{%- set source_interface = interface.node.name.value %}
+{#- Build endpoint1 (source) -#}
+{%- set endpoint1 = source_device + ":" + source_interface %}
+{#- Find remote endpoint from cable's connected_endpoints -#}
+{%- set remote_device = "" %}
+{%- set remote_interface = "" %}
+{%- if cable.connected_endpoints and cable.connected_endpoints.edges %}
+{%- for endpoint in cable.connected_endpoints.edges %}
+{%- set ep_device = endpoint.node.device.node.name.value %}
+{%- set ep_interface = endpoint.node.name.value %}
+{#- Skip if this is the current interface (we want the remote one) -#}
+{%- if ep_device != source_device or ep_interface != source_interface %}
+{%- set remote_device = ep_device %}
+{%- set remote_interface = ep_interface %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{#- Only proceed if we found a remote endpoint -#}
+{%- if remote_device and remote_interface %}
+{#- Build endpoint2 (remote) -#}
+{%- set endpoint2 = remote_device + ":" + remote_interface %}
 {#- Create sorted tuple to ensure consistent ordering for deduplication -#}
 {%- set endpoint_tuple = [endpoint1, endpoint2] | sort %}
 {%- set endpoint_key = endpoint_tuple | join("|") %}
@@ -105,7 +125,8 @@ topology:
 {%- set endpoint2 = endpoint2.split("/")[0] %}
 {%- endif %}
     - endpoints: ["{{ endpoint1 }}", "{{ endpoint2 }}"]
-{% endif %}
+{%- endif %}
+{%- endif %}
 {%- endif %}
 {%- endfor %}
 {%- endfor %}

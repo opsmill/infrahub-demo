@@ -19,6 +19,54 @@ query topology_cables($name: String!) {
                         node {
                           hfid
                           display_label
+                          ... on DcimCable {
+                            status {
+                              value
+                            }
+                            cable_type {
+                              value
+                            }
+                            color {
+                              value
+                            }
+                            label {
+                              value
+                            }
+                            length {
+                              value
+                            }
+                          }
+                          connected_endpoints {
+                            edges {
+                              node {
+                                __typename
+                                ... on InterfacePhysical {
+                                  name {
+                                    value
+                                  }
+                                  device {
+                                    node {
+                                      name {
+                                        value
+                                      }
+                                    }
+                                  }
+                                }
+                                ... on DcimConsoleInterface {
+                                  name {
+                                    value
+                                  }
+                                  device {
+                                    node {
+                                      name {
+                                        value
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
                         }
                       }
                     }
@@ -27,6 +75,54 @@ query topology_cables($name: String!) {
                         node {
                           hfid
                           display_label
+                          ... on DcimCable {
+                            status {
+                              value
+                            }
+                            cable_type {
+                              value
+                            }
+                            color {
+                              value
+                            }
+                            label {
+                              value
+                            }
+                            length {
+                              value
+                            }
+                          }
+                          connected_endpoints {
+                            edges {
+                              node {
+                                __typename
+                                ... on InterfacePhysical {
+                                  name {
+                                    value
+                                  }
+                                  device {
+                                    node {
+                                      name {
+                                        value
+                                      }
+                                    }
+                                  }
+                                }
+                                ... on DcimConsoleInterface {
+                                  name {
+                                    value
+                                  }
+                                  device {
+                                    node {
+                                      name {
+                                        value
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
                         }
                       }
                     }

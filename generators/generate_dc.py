@@ -4,7 +4,7 @@ from infrahub_sdk.generator import InfrahubGenerator
 from infrahub_sdk.protocols import CoreNumberPool
 
 from .common import TopologyCreator, clean_data, safe_sort_interface_list
-from .schema_protocols import InterfacePhysical, InterfaceVirtual
+from .schema_protocols import DcimCable, InterfacePhysical, InterfaceVirtual
 
 
 class DCTopologyCreator(TopologyCreator):
@@ -109,20 +109,27 @@ class DCTopologyCreator(TopologyCreator):
                 f"Peering connection to {' -> '.join(target_endpoint.hfid or [])}"
             )
             source_endpoint.role.value = interface_role
-            # Infrahub handles bidirectional connector relationships automatically
-            source_endpoint.connector = target_endpoint.id  # type: ignore[assignment]
             target_endpoint.status.value = "active"
             target_endpoint.description.value = (
                 f"Peering connection to {' -> '.join(source_endpoint.hfid or [])}"
             )
             target_endpoint.role.value = interface_role
-            # Note: Don't set target_endpoint.connector - Infrahub creates bidirectional relationship automatically
+
+            # Create cable to connect the endpoints
+            cable = await self.client.create(kind=DcimCable)
+            cable.status.value = "connected"
+            cable.cable_type.value = "dac-passive"
+            cable.connected_endpoints.add(source_endpoint.id)
+            cable.connected_endpoints.add(target_endpoint.id)
 
             batch.add(
                 task=source_endpoint.save, allow_upsert=True, node=source_endpoint
             )
             batch.add(
                 task=target_endpoint.save, allow_upsert=True, node=target_endpoint
+            )
+            batch.add(
+                task=cable.save, allow_upsert=True, node=cable
             )
 
         async for node, _ in batch.execute():

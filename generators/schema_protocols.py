@@ -394,6 +394,18 @@ class InterfacePhysical(DcimInterface, InterfaceLayer2, InterfaceLayer3, DcimEnd
     pass
 
 
+class DcimConnector(CoreNode):
+    connected_endpoints: RelationshipManager
+
+
+class DcimCable(DcimConnector):
+    status: DropdownOptional
+    cable_type: DropdownOptional
+    color: DropdownOptional
+    label: StringOptional
+    length: IntegerOptional
+
+
 class DcimPlatform(CoreNode):
     ansible_network_os: StringOptional
     containerlab_os: StringOptional

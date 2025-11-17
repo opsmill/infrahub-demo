@@ -83,6 +83,36 @@ query topology_info($name: String!) {
                         node {
                           hfid
                           display_label
+                          ... on DcimCable {
+                            status {
+                              value
+                            }
+                            cable_type {
+                              value
+                            }
+                          }
+                          connected_endpoints {
+                            edges {
+                              node {
+                                __typename
+                                ... on InterfacePhysical {
+                                  name {
+                                    value
+                                  }
+                                  role {
+                                    value
+                                  }
+                                  device {
+                                    node {
+                                      name {
+                                        value
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
                         }
                       }
                     }

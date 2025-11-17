@@ -7,7 +7,7 @@ from infrahub_sdk.exceptions import GraphQLError, ValidationError
 from infrahub_sdk.protocols import CoreIPAddressPool
 from netutils.interface import sort_interface_list
 
-from .schema_protocols import DcimConsoleInterface, InterfacePhysical
+from .schema_protocols import DcimCable, DcimConsoleInterface, InterfacePhysical
 
 # Range expansion pattern from infrahub_sdk
 RANGE_PATTERN = re.compile(r"(\[[\w,-]*[-,][\w,-]*\])")
@@ -944,18 +944,27 @@ class TopologyCreator:
             source_endpoint.description.value = (
                 f"Connection to {' -> '.join(target_endpoint.hfid or [])}"
             )
-            # Infrahub handles bidirectional connector relationships automatically
-            source_endpoint.connector = target_endpoint.id  # type: ignore[assignment]
             target_endpoint.status.value = "active"
             target_endpoint.description.value = (
                 f"Connection to {' -> '.join(source_endpoint.hfid or [])}"
             )
-            # Note: Don't set target_endpoint.connector - Infrahub creates bidirectional relationship automatically
+
+            # Create cable to connect the endpoints
+            cable = await self.client.create(kind=DcimCable)
+            cable.status.value = "connected"
+            # Use cat6 for management/console connections
+            cable.cable_type.value = "cat6"
+            cable.connected_endpoints.add(source_endpoint.id)
+            cable.connected_endpoints.add(target_endpoint.id)
+
             batch.add(
                 task=source_endpoint.save, allow_upsert=True, node=source_endpoint
             )
             batch.add(
                 task=target_endpoint.save, allow_upsert=True, node=target_endpoint
+            )
+            batch.add(
+                task=cable.save, allow_upsert=True, node=cable
             )
         try:
             async for node, _ in batch.execute():

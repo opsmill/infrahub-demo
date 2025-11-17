@@ -8,8 +8,10 @@ class TopologyCabling(InfrahubTransform):
         # Create a list to hold CSV rows
         csv_rows = []
 
-        # Add CSV header
-        csv_rows.append("Source Device,Source Interface,Remote Device,Remote Interface")
+        # Add CSV header with cable details
+        csv_rows.append(
+            "Source Device,Source Interface,Remote Device,Remote Interface,Cable Type,Cable Status,Cable Color,Cable Label"
+        )
 
         seen_connections = set()  # Track connections we've already processed
 
@@ -19,24 +21,44 @@ class TopologyCabling(InfrahubTransform):
             source_device = device["node"]["name"]["value"]
 
             for interface in device["node"]["interfaces"]["edges"]:
-                connected = interface["node"].get("connector", {}).get("node")
-                if not connected:
+                cable = interface["node"].get("connector", {}).get("node")
+                if not cable:
                     continue
 
                 source_interface = interface["node"]["name"]["value"]
 
-                # Get remote device from hfid (list with device name as first element)
-                hfid = connected.get("hfid")
-                if not hfid or not isinstance(hfid, list) or len(hfid) < 1:
-                    # Skip if no hfid
+                # Get cable details
+                cable_type = cable.get("cable_type", {}).get("value", "")
+                cable_status = cable.get("status", {}).get("value", "")
+                cable_color = cable.get("color", {}).get("value", "")
+                cable_label = cable.get("label", {}).get("value", "")
+
+                # Get connected endpoints
+                endpoints = cable.get("connected_endpoints", {}).get("edges", [])
+                if not endpoints:
                     continue
 
-                remote_device = hfid[0]
+                # Find the remote endpoint (the one that's not the current interface)
+                remote_endpoint = None
+                for endpoint in endpoints:
+                    endpoint_node = endpoint.get("node", {})
+                    endpoint_device = endpoint_node.get("device", {}).get("node", {}).get("name", {}).get("value")
+                    endpoint_interface = endpoint_node.get("name", {}).get("value")
 
-                # Get remote interface from display_label
-                remote_interface = connected.get("display_label")
-                if not remote_interface:
-                    # Skip if no interface name
+                    # Skip if this is the current interface
+                    if endpoint_device == source_device and endpoint_interface == source_interface:
+                        continue
+
+                    remote_endpoint = endpoint_node
+                    break
+
+                if not remote_endpoint:
+                    continue
+
+                remote_device = remote_endpoint.get("device", {}).get("node", {}).get("name", {}).get("value")
+                remote_interface = remote_endpoint.get("name", {}).get("value")
+
+                if not remote_device or not remote_interface:
                     continue
 
                 # Create a unique identifier for this connection (sorted to handle duplicates)
@@ -58,8 +80,17 @@ class TopologyCabling(InfrahubTransform):
 
                 # Format this row and add to our list
                 # Escape any commas in field values with quotes
-                row = [source_device, source_interface, remote_device, remote_interface]
-                escaped_row = [f'"{field}"' if "," in field else field for field in row]
+                row = [
+                    source_device,
+                    source_interface,
+                    remote_device,
+                    remote_interface,
+                    cable_type,
+                    cable_status,
+                    cable_color,
+                    cable_label,
+                ]
+                escaped_row = [f'"{field}"' if "," in str(field) else str(field) for field in row]
                 csv_rows.append(",".join(escaped_row))
 
         # Join all rows with newlines to create CSV string
