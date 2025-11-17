@@ -19,13 +19,10 @@ query topology_info($name: String!) {
             }
           }
         }
-        devices(role__values: [ "leaf", "spine", "dc_firewall", "edge", "core", "border_leaf", "edge_firewall"]) {
+        devices {
           edges {
             node {
               name {
-                value
-              }
-              role {
                 value
               }
               os_version {
@@ -49,6 +46,9 @@ query topology_info($name: String!) {
                 }
               }
               ... on DcimDevice {
+                role {
+                  value
+                }
                 device_type {
                   node {
                     name {
@@ -58,6 +58,9 @@ query topology_info($name: String!) {
                 }
               }
               ... on DcimVirtualDevice {
+                role {
+                  value
+                }
                 device_type {
                   node {
                     name {
