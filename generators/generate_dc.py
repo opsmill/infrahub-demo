@@ -182,20 +182,20 @@ class DCTopologyCreator(TopologyCreator):
                 },
             )
 
+            # Save the cable first so it exists in the database
+            await cable.save(allow_upsert=True)
+
             # Set bidirectional connector relationship
             # This allows queries to traverse: interface → connector → cable → connected_endpoints
             source_endpoint.connector = cable.id
             target_endpoint.connector = cable.id
 
-            # Queue all objects for batch save
+            # Queue interface saves for batch
             batch.add(
                 task=source_endpoint.save, allow_upsert=True, node=source_endpoint
             )
             batch.add(
                 task=target_endpoint.save, allow_upsert=True, node=target_endpoint
-            )
-            batch.add(
-                task=cable.save, allow_upsert=True, node=cable
             )
 
         # Execute batch and log results

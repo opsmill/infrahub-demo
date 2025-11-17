@@ -4,9 +4,9 @@ kind: Object
 spec:
   kind: TopologyDataCenter
   data:
-    - name: DC-1
+    - name: DC-Cisco-Border
       location: Katowice
-      description: Katowice Data Center
+      description: Cisco Data Center with border leafs
       strategy: ospf-ibgp
       design: PHYSICAL DC CISCO S WITH BORDER LEAFS
       emulation: true

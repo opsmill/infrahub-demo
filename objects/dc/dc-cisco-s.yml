@@ -4,9 +4,9 @@ kind: Object
 spec:
   kind: TopologyDataCenter
   data:
-    - name: DC-2
+    - name: DC-Cisco
       location: Munich
-      description: Munich Data Center
+      description: Cisco Data Center with Nexus switches
       strategy: ebgp-ibgp
       design: PHYSICAL DC CISCO S
       emulation: true

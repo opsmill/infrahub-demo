@@ -959,6 +959,9 @@ class TopologyCreator:
                 },
             )
 
+            # Save the cable first so it exists in the database
+            await cable.save(allow_upsert=True)
+
             # Set the connector relationship on both interfaces
             source_endpoint.connector = cable.id
             target_endpoint.connector = cable.id
@@ -968,9 +971,6 @@ class TopologyCreator:
             )
             batch.add(
                 task=target_endpoint.save, allow_upsert=True, node=target_endpoint
-            )
-            batch.add(
-                task=cable.save, allow_upsert=True, node=cable
             )
         try:
             async for node, _ in batch.execute():
