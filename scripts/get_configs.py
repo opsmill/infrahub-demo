@@ -101,7 +101,7 @@ async def get_device_configs(client: InfrahubClient) -> int:
     allowed_roles = ["leaf", "spine", "border_leaf"]
 
     config_count = 0
-    devices = await client.all(kind="DcimGenericDevice")
+    devices = await client.all(kind="DcimDevice")
 
     for device in devices:
         try:

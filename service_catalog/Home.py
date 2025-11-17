@@ -179,7 +179,7 @@ def main() -> None:
                         # Query for generic devices
                         device_query = """
                         query {
-                          DcimGenericDevice {
+                          DcimDevice {
                             count
                             edges {
                               node {
@@ -192,11 +192,11 @@ def main() -> None:
                         }
                         """
                         result = client.execute_graphql(device_query, branch=st.session_state.selected_branch)
-                        device_count = result.get("DcimGenericDevice", {}).get("count", 0)
-                        st.write(f"- DcimGenericDevice: {device_count} object(s)")
+                        device_count = result.get("DcimDevice", {}).get("count", 0)
+                        st.write(f"- DcimDevice: {device_count} object(s)")
 
                         if device_count > 0:
-                            devices = result.get("DcimGenericDevice", {}).get("edges", [])
+                            devices = result.get("DcimDevice", {}).get("edges", [])
                             for device in devices[:5]:  # Show first 5
                                 dev_name = device.get("node", {}).get("name", {}).get("value", "Unknown")
                                 st.write(f"  - {dev_name}")

@@ -12,31 +12,46 @@ nodes:
     inherit_from:
       - CoreArtifactTarget
       - DcimGenericDevice
+      - DcimPhysicalDevice
     attributes:
-      - name: position
-        label: Position (U)
-        description: Lowest unit.
-        kind: Number
-        optional: true
-        order_weight: 1500
-      - name: serial
-        kind: Text
-        optional: true
-        order_weight: 1500
-      - name: rack_face
-        label: Rack Face
-        description: On which face of the rack the device is mounted.
+      - name: status
         kind: Dropdown
         optional: false
-        default_value: front
-        order_weight: 1515
+        order_weight: 1100
         choices:
-          - name: front
-            label: Front
-            description: Device mounted on the front face of the rack.
-          - name: rear
-            label: Rear
-            description: Device mounted on the rear face of the rack.
+          - name: active
+            label: Active
+            description: Fully operational and currently in service.
+            color: "#7fbf7f"
+          - name: provisioning
+            label: Provisioning
+            description: In the process of being set up and configured.
+            color: "#ffff7f"
+          - name: maintenance
+            label: Maintenance
+            description: Undergoing routine maintenance or repairs.
+            color: "#ffd27f"
+          - name: drained
+            label: Drained
+            description: Temporarily taken out of service.
+            color: "#bfbfbf"
+      - name: role
+        kind: Dropdown
+        optional: true
+        order_weight: 1400
+        choices:
+          - name: dc_firewall
+            label: DC Firewall
+            description: "Security boundary with external network"
+            color: "#6e5abd"
+          - name: edge_firewall
+            label: Edge Firewall
+            description: "Security boundary with external network"
+            color: "#6a5acd"
+          - name: branch_firewall
+            label: Branch Firewall
+            description: "Security boundary with external network"
+            color: "#6a5bdd"
     relationships:
       - name: policies
         peer: SecurityPolicy

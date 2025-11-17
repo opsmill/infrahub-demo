@@ -1,5 +1,5 @@
 query firewall_config($device: String!) {
-  DcimPhysicalDevice(name__value: $device) {
+  DcimDevice(name__value: $device) {
     edges {
       node {
         name {

@@ -75,7 +75,7 @@ query topology_dc($name: String!) {
                     template {
                       node {
                         id
-                        ... on TemplateDcimPhysicalDevice {
+                        ... on TemplateDcimDevice {
                           template_name {
                             value
                           }
@@ -83,7 +83,7 @@ query topology_dc($name: String!) {
                           interfaces {
                             edges {
                               node {
-                                ... on TemplateDcimPhysicalInterface {
+                                ... on TemplateInterfacePhysical {
                                   name {
                                     value
                                   }
@@ -120,7 +120,7 @@ query topology_dc($name: String!) {
                           interfaces {
                             edges {
                               node {
-                                ... on TemplateDcimPhysicalInterface {
+                                ... on TemplateInterfacePhysical {
                                   name {
                                     value
                                   }

@@ -53,7 +53,7 @@ def render_rack_diagram(rack: Dict[str, Any], devices: List[Dict[str, Any]], lab
 
     Args:
         rack: LocationRack object dictionary
-        devices: List of DcimPhysicalDevice objects in this rack
+        devices: List of DcimDevice objects in this rack
         label_mode: Display mode for device labels ("Hostname" or "Device Type")
     """
     # Generate HTML for rack diagram with Infrahub UI URL and branch

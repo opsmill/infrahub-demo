@@ -16,7 +16,7 @@ def create_rack_unit_map(
 
     Args:
         rack_height: Total number of rack units in the rack (e.g., 42).
-        devices: List of DcimPhysicalDevice objects with attributes:
+        devices: List of DcimDevice objects with attributes:
             - name: Device name
             - position: Starting rack unit (1-based)
             - height: Number of rack units occupied
@@ -116,7 +116,7 @@ def generate_rack_html(rack: Dict[str, Any], devices: List[Dict[str, Any]], base
             - name: Rack identifier
             - height: Total rack units (e.g., 42)
             - id: Rack ID
-        devices: List of DcimPhysicalDevice objects in this rack
+        devices: List of DcimDevice objects in this rack
         base_url: Base URL of Infrahub instance for generating device links
         branch: Branch name for device links
         label_mode: Display mode for device labels ("Hostname" or "Device Type")
@@ -238,7 +238,7 @@ def _generate_device_html(unit_info: Dict[str, Any], unit_num: int, base_url: st
     height_px = span * 20
 
     # Generate Infrahub URL for the device
-    device_url = f"{base_url}/objects/DcimPhysicalDevice/{device_id}?branch={branch}" if device_id else "#"
+    device_url = f"{base_url}/objects/DcimDevice/{device_id}?branch={branch}" if device_id else "#"
 
     # For 1U devices, only show main text. For 2U+, show main text and secondary info
     if span == 1:

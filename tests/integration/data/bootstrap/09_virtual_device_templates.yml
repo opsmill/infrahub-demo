@@ -12,7 +12,7 @@ spec:
       memory: 8
       storage: 100
       interfaces:
-        kind: TemplateDcimPhysicalInterface
+        kind: TemplateInterfacePhysical
         data:
           - template_name: C8000V_EDGE_Ethernet1/[1-24]
             name: Ethernet1/[1-24]
@@ -31,7 +31,7 @@ spec:
       memory: 8
       storage: 100
       interfaces:
-        kind: TemplateDcimPhysicalInterface
+        kind: TemplateInterfacePhysical
         data:
           - template_name: CloudGuard_EDGE_eth0
             name: eth0

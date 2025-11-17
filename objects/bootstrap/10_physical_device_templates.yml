@@ -2,7 +2,7 @@
 apiVersion: infrahub.app/v1
 kind: Object
 spec:
-  kind: TemplateDcimPhysicalDevice
+  kind: TemplateDcimDevice
   parameters:
     expand_range: true
   data:
@@ -11,7 +11,7 @@ spec:
       role: spine
       status: active
       interfaces:
-        kind: TemplateDcimPhysicalInterface
+        kind: TemplateInterfacePhysical
         parameters:
           expand_range: true
         data:
@@ -29,7 +29,7 @@ spec:
       role: leaf
       status: active
       interfaces:
-        kind: TemplateDcimPhysicalInterface
+        kind: TemplateInterfacePhysical
         parameters:
           expand_range: true
         data:
@@ -47,7 +47,7 @@ spec:
       role: spine
       status: active
       interfaces:
-        kind: TemplateDcimPhysicalInterface
+        kind: TemplateInterfacePhysical
         parameters:
           expand_range: true
         data:
@@ -65,7 +65,7 @@ spec:
       role: leaf
       status: active
       interfaces:
-        kind: TemplateDcimPhysicalInterface
+        kind: TemplateInterfacePhysical
         parameters:
           expand_range: true
         data:
@@ -83,7 +83,7 @@ spec:
       role: spine
       status: active
       interfaces:
-        kind: TemplateDcimPhysicalInterface
+        kind: TemplateInterfacePhysical
         parameters:
           expand_range: true
         data:
@@ -101,7 +101,7 @@ spec:
       role: leaf
       status: active
       interfaces:
-        kind: TemplateDcimPhysicalInterface
+        kind: TemplateInterfacePhysical
         parameters:
           expand_range: true
         data:
@@ -119,7 +119,7 @@ spec:
       role: edge_firewall
       status: active
       interfaces:
-        kind: TemplateDcimPhysicalInterface
+        kind: TemplateInterfacePhysical
         parameters:
           expand_range: true
         data:
@@ -134,7 +134,7 @@ spec:
       role: dc_firewall
       status: active
       interfaces:
-        kind: TemplateDcimPhysicalInterface
+        kind: TemplateInterfacePhysical
         parameters:
           expand_range: true
         data:
@@ -149,7 +149,7 @@ spec:
       role: oob
       status: active
       interfaces:
-        kind: TemplateDcimPhysicalInterface
+        kind: TemplateInterfacePhysical
         parameters:
           expand_range: true
         data:
@@ -164,7 +164,7 @@ spec:
       role: console
       status: active
       interfaces:
-        kind: TemplateDcimPhysicalInterface
+        kind: TemplateInterfacePhysical
         parameters:
           expand_range: true
         data:
@@ -176,7 +176,7 @@ spec:
       role: edge
       status: active
       interfaces:
-        kind: TemplateDcimPhysicalInterface
+        kind: TemplateInterfacePhysical
         parameters:
           expand_range: true
         data:
@@ -194,7 +194,7 @@ spec:
       role: leaf
       status: active
       interfaces:
-        kind: TemplateDcimPhysicalInterface
+        kind: TemplateInterfacePhysical
         parameters:
           expand_range: true
         data:
@@ -212,7 +212,7 @@ spec:
       role: spine
       status: active
       interfaces:
-        kind: TemplateDcimPhysicalInterface
+        kind: TemplateInterfacePhysical
         data:
           - template_name: 7726-32X-O_SPINE_eth0
             name: eth0
@@ -318,7 +318,7 @@ spec:
       role: spine
       status: active
       interfaces:
-        kind: TemplateDcimPhysicalInterface
+        kind: TemplateInterfacePhysical
         parameters:
           expand_range: true
         data:
@@ -333,7 +333,7 @@ spec:
       role: leaf
       status: active
       interfaces:
-        kind: TemplateDcimPhysicalInterface
+        kind: TemplateInterfacePhysical
         parameters:
           expand_range: true
         data:

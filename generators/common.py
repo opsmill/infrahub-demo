@@ -7,7 +7,7 @@ from infrahub_sdk.exceptions import GraphQLError, ValidationError
 from infrahub_sdk.protocols import CoreIPAddressPool
 from netutils.interface import sort_interface_list
 
-from .schema_protocols import DcimConsoleInterface, DcimPhysicalInterface
+from .schema_protocols import DcimConsoleInterface, InterfacePhysical
 
 # Range expansion pattern from infrahub_sdk
 RANGE_PATTERN = re.compile(r"(\[[\w,-]*[-,][\w,-]*\])")
@@ -752,7 +752,7 @@ class TopologyCreator:
                     physical_devices.append(device_entry)
 
         for kind, devices in [
-            ("DcimPhysicalDevice", physical_devices),
+            ("DcimDevice", physical_devices),
             ("DcimVirtualDevice", virtual_devices),
             ("SecurityFirewall", firewall_devices),
         ]:
@@ -827,7 +827,7 @@ class TopologyCreator:
             # Create physical interfaces in batch
             if physical_interface_data_list:
                 await self._create_in_batch(
-                    kind="DcimPhysicalInterface",
+                    kind="InterfacePhysical",
                     data_list=physical_interface_data_list,
                     allow_upsert=True,
                 )
@@ -923,7 +923,7 @@ class TopologyCreator:
         for connection in connections:
             source_endpoint = await self.client.get(
                 kind=(
-                    DcimPhysicalInterface
+                    InterfacePhysical
                     if connection_type == "management"
                     else DcimConsoleInterface
                 ),
@@ -932,7 +932,7 @@ class TopologyCreator:
             )
             target_endpoint = await self.client.get(
                 kind=(
-                    DcimPhysicalInterface
+                    InterfacePhysical
                     if connection_type == "management"
                     else DcimConsoleInterface
                 ),
@@ -983,7 +983,7 @@ class TopologyCreator:
         """
         self.log.info(f"Creating {loopback_name} {loopback_type.lower()} interfaces")
         await self._create_in_batch(
-            kind="DcimVirtualInterface",
+            kind="InterfaceVirtual",
             data_list=[
                 {
                     "payload": {

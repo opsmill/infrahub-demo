@@ -273,15 +273,24 @@ def main(branch: str = "main") -> int:
 
     console.print(Rule(style="dim bright_yellow"))
 
-    # Load event actions
-    console.print("\n[bold bright_cyan on black][8/8][/bold bright_cyan on black] ⚡ [bold white]Loading event actions[/bold white]")
-    run_command(
+    # Load event actions (optional - may fail if repository not fully synced)
+    console.print("\n[bold bright_cyan on black][8/8][/bold bright_cyan on black] ⚡ [bold white]Loading event actions (optional)[/bold white]")
+    events_loaded = run_command(
         f"uv run infrahubctl object load objects/events/ --branch {branch}",
         "Event actions loading",
         "",
         "bright_cyan",
         "⚡",
     )
+
+    if not events_loaded:
+        console.print(
+            "[bold yellow on black]⚠[/bold yellow on black] ⚡ [bold bright_cyan]Event actions skipped (repository may need time to sync)[/bold bright_cyan]"
+        )
+        console.print(
+            "[dim]Event actions can be loaded later with:[/dim]\n"
+            f"  [bold]uv run infrahubctl object load objects/events/ --branch {branch}[/bold]"
+        )
 
     console.print(Rule(style="dim bright_cyan"))
 

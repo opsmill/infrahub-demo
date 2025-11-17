@@ -30,7 +30,7 @@ spec:
       memory: 8
       description: "Production Zscaler gateway with tunnel integration"
       interfaces:
-        kind: DcimVirtualInterface
+        kind: InterfaceVirtual
         data:
           - name: management
             role: management
@@ -53,7 +53,7 @@ spec:
       memory: 4
       description: "Production Zscaler proxy gateway"
       interfaces:
-        kind: DcimVirtualInterface
+        kind: InterfaceVirtual
         data:
           - name: management
             role: management
@@ -76,7 +76,7 @@ spec:
       memory: 4
       description: "Development Zscaler gateway with transparent proxy"
       interfaces:
-        kind: DcimVirtualInterface
+        kind: InterfaceVirtual
         data:
           - name: management
             role: management

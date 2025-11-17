@@ -2,7 +2,7 @@
 apiVersion: infrahub.app/v1
 kind: Object
 spec:
-  kind: TemplateDcimPhysicalDevice
+  kind: TemplateDcimDevice
   data:
     - template_name: N9K-C9336C-FX2_SPINE
       device_type: N9K-C9336C-FX2

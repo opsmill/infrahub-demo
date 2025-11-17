@@ -307,7 +307,7 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
         client.default_branch = default_branch
 
         # Query for devices
-        devices = await client.all(kind="DcimGenericDevice")
+        devices = await client.all(kind="DcimDevice")
 
         assert devices, (
             "No devices found after generator run. "
@@ -545,6 +545,6 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
         logging.info("DC-3 verified in main branch")
 
         # Verify devices exist in main
-        devices_main = await client.all(kind="DcimGenericDevice")
+        devices_main = await client.all(kind="DcimDevice")
         assert devices_main, "No devices found in main branch after merge"
         logging.info("Found %d devices in main branch", len(devices_main))

@@ -62,7 +62,7 @@ query device($name: String!) {
                     template {
                       node {
                         id
-                        ... on TemplateDcimPhysicalDevice {
+                        ... on TemplateDcimDevice {
                           template_name {
                             value
                           }
@@ -70,7 +70,7 @@ query device($name: String!) {
                           interfaces {
                             edges {
                               node {
-                                ... on TemplateDcimPhysicalInterface {
+                                ... on TemplateInterfacePhysical {
                                   name {
                                     value
                                   }
@@ -108,7 +108,7 @@ query device($name: String!) {
                             __typename
                             edges {
                               node {
-                                ... on TemplateDcimPhysicalInterface {
+                                ... on TemplateInterfacePhysical {
                                   name {
                                     value
                                   }

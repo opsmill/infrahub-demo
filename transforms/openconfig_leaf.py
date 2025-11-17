@@ -12,7 +12,7 @@ class OpenConfigLeaf(InfrahubTransform):
         response_payload["openconfig-interfaces:interfaces"]["interface"] = []
 
         # Extract device data
-        device_node = data["DcimGenericDevice"]["edges"][0]["node"]
+        device_node = data["DcimDevice"]["edges"][0]["node"]
 
         # Process each interface
         for intf in device_node["interfaces"]["edges"]:

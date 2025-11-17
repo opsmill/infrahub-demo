@@ -45,7 +45,7 @@ query loadbalancer_validation($device: String!) {
               role {
                 value
               }
-              ... on DcimVirtualInterface {
+              ... on InterfaceVirtual {
                 ip_addresses {
                   edges {
                     node {
