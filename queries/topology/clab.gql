@@ -48,8 +48,23 @@ query topology_info($name: String!) {
                   }
                 }
               }
-              device_type{
-                node{ name { value} }
+              ... on DcimDevice {
+                device_type {
+                  node {
+                    name {
+                      value
+                    }
+                  }
+                }
+              }
+              ... on DcimVirtualDevice {
+                device_type {
+                  node {
+                    name {
+                      value
+                    }
+                  }
+                }
               }
               interfaces {
                 edges {

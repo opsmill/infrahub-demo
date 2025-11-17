@@ -11,10 +11,21 @@ query equinix_pop($name: String!) {
               name {
                 value
               }
-              device_type{
-                node{
-                  name{
-                    value
+              ... on DcimDevice {
+                device_type {
+                  node {
+                    name {
+                      value
+                    }
+                  }
+                }
+              }
+              ... on DcimVirtualDevice {
+                device_type {
+                  node {
+                    name {
+                      value
+                    }
                   }
                 }
               }
