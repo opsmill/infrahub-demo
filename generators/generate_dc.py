@@ -136,13 +136,14 @@ class DCTopologyCreator(TopologyCreator):
             )
 
         async for node, _ in batch.execute():
+            hfid_str = ' -> '.join(node.hfid) if isinstance(node.hfid, list) else str(node.hfid)
             if hasattr(node, "description"):
                 self.log.info(
-                    f"- Created/Updated [{node.get_kind()}] {node.description.value} from {' -> '.join(node.hfid)}"
+                    f"- Created/Updated [{node.get_kind()}] {node.description.value} from {hfid_str}"
                 )
             else:
                 self.log.info(
-                    f"- Created/Updated [{node.get_kind()}] from {' -> '.join(node.hfid)}"
+                    f"- Created/Updated [{node.get_kind()}] from {hfid_str}"
                 )
 
     async def create_ospf_underlay(self) -> None:
