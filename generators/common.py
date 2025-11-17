@@ -970,9 +970,14 @@ class TopologyCreator:
             )
         try:
             async for node, _ in batch.execute():
-                self.log.info(
-                    f"- Created [{node.get_kind()}] {node.description.value} from {' -> '.join(node.hfid)}"
-                )
+                if hasattr(node, "description"):
+                    self.log.info(
+                        f"- Created [{node.get_kind()}] {node.description.value} from {' -> '.join(node.hfid)}"
+                    )
+                else:
+                    self.log.info(
+                        f"- Created [{node.get_kind()}] from {' -> '.join(node.hfid)}"
+                    )
 
         except ValidationError as exc:
             self.log.debug(f"- Creation failed due to {exc}")

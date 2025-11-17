@@ -136,9 +136,14 @@ class DCTopologyCreator(TopologyCreator):
             )
 
         async for node, _ in batch.execute():
-            self.log.info(
-                f"- Created/Updated [{node.get_kind()}] {node.description.value} from {' -> '.join(node.hfid)}"
-            )
+            if hasattr(node, "description"):
+                self.log.info(
+                    f"- Created/Updated [{node.get_kind()}] {node.description.value} from {' -> '.join(node.hfid)}"
+                )
+            else:
+                self.log.info(
+                    f"- Created/Updated [{node.get_kind()}] from {' -> '.join(node.hfid)}"
+                )
 
     async def create_ospf_underlay(self) -> None:
         """Create underlay service and associate it to the respective switches."""
