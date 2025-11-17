@@ -125,6 +125,10 @@ class DCTopologyCreator(TopologyCreator):
                 },
             )
 
+            # Set the connector relationship on both interfaces
+            source_endpoint.connector.id = cable.id
+            target_endpoint.connector.id = cable.id
+
             batch.add(
                 task=source_endpoint.save, allow_upsert=True, node=source_endpoint
             )
