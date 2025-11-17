@@ -287,7 +287,6 @@ def get_interfaces(data: list) -> list[dict[str, Any]]:
             "description": description,
             "status": iface.get("status"),
             "role": iface.get("role"),
-            "interface_type": iface.get("interface_type"),
             "mtu": iface.get("mtu"),
             "ip_addresses": iface.get("ip_addresses", []),
         }

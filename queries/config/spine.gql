@@ -119,7 +119,6 @@ query spine_config($device: String!) {
               status { value }
               role { value }
               ... on InterfacePhysical {
-                interface_type { value }
                 mtu { value }
                 ip_addresses {
                   edges {

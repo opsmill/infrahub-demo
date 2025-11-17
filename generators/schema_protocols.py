@@ -386,7 +386,6 @@ class DcimDevice(CoreArtifactTarget, DcimGenericDevice):
 
 
 class DcimPhysicalInterface(DcimInterface, DcimEndpoint, DcimSubInterface):
-    interface_type: Dropdown
     mtu: Integer
     ip_addresses: RelationshipManager
 
