@@ -1,4 +1,18 @@
-"""Infrastructure generator."""
+"""Data Center Topology Generator.
+
+This module generates complete data center network topologies in Infrahub, including:
+- Physical infrastructure (sites, racks, devices)
+- Network connectivity (fabric peering, cables)
+- Routing protocols (OSPF or eBGP for underlay, iBGP EVPN for overlay)
+- IP addressing (loopbacks, management, VTEP)
+
+Supports two deployment scenarios:
+1. OSPF + iBGP: OSPF for underlay routing, iBGP EVPN for overlay
+2. eBGP + iBGP: eBGP for underlay routing, iBGP EVPN for overlay
+
+The generator creates a fully operational spine-leaf fabric with route reflection,
+dual loopbacks (underlay + VTEP), and proper BGP peer group configuration.
+"""
 
 from infrahub_sdk.generator import InfrahubGenerator
 from infrahub_sdk.protocols import CoreNumberPool
@@ -8,24 +22,44 @@ from .schema_protocols import DcimCable, InterfacePhysical, InterfaceVirtual
 
 
 class DCTopologyCreator(TopologyCreator):
-    """Create data center topology."""
+    """Create data center topology with spine-leaf architecture."""
+
+    # ============================================================================
+    # Physical Fabric Connectivity
+    # ============================================================================
 
     async def create_fabric_peering(self) -> None:
-        """
-        Create fabric peering connections for a single site (unnumbered only).
+        """Create physical fabric peering connections between spine and leaf devices.
+
+        This method creates the physical layer connectivity for a spine-leaf fabric:
+        - Connects each spine to all leaf devices (full mesh)
+        - Connects each spine to all border leaf devices (full mesh)
+        - Uses unnumbered point-to-point interfaces
+        - Creates explicit DcimCable objects with bidirectional connector relationships
+
+        The connections are based on device templates which define available interfaces
+        and their roles (uplink, leaf, etc.).
         """
         batch = await self.client.create_batch()
 
-        # Build interface mapping using template lookup
+        # ========================================
+        # Step 1: Build interface mappings from device templates
+        # ========================================
+        # Extract available interfaces from each device's template
         interfaces: dict = {}
         for device in self.devices:
+            # Only process fabric devices (skip edge, servers, etc.)
             if device.role.value not in ["leaf", "spine", "border_leaf"]:
                 continue
 
+            # Get the device template to know which interfaces are available
             template_name = self._get_device_template_name(device)
             if not template_name or template_name not in self.data["templates"]:
                 continue
 
+            # Extract interfaces that participate in fabric peering
+            # - "leaf" role: spine-facing ports (on spine devices)
+            # - "uplink" role: spine-facing ports (on leaf/border_leaf devices)
             interfaces[device.name.value] = [
                 {
                     "name": interface["name"],
@@ -35,6 +69,10 @@ class DCTopologyCreator(TopologyCreator):
                 if interface["role"] in ["leaf", "uplink"]
             ]
 
+        # ========================================
+        # Step 2: Group interfaces by device type and role
+        # ========================================
+        # Spine interfaces facing leaf devices (role="leaf" on spine)
         spines_leaves = {
             name: safe_sort_interface_list(
                 [iface.get("name") for iface in ifaces if iface.get("role") == "leaf"]
@@ -42,6 +80,7 @@ class DCTopologyCreator(TopologyCreator):
             for name, ifaces in interfaces.items()
             if "spine" in name
         }
+        # Spine interfaces facing border leaf devices (role="uplink" on spine for borders)
         spine_borders = {
             name: safe_sort_interface_list(
                 [iface.get("name") for iface in ifaces if iface.get("role") == "uplink"]
@@ -50,6 +89,7 @@ class DCTopologyCreator(TopologyCreator):
             if "spine" in name
         }
 
+        # Leaf uplink interfaces (facing spine)
         leafs = {
             name: safe_sort_interface_list(
                 [iface.get("name") for iface in ifaces if iface.get("role") == "uplink"]
@@ -58,6 +98,7 @@ class DCTopologyCreator(TopologyCreator):
             if "leaf" in name and "border" not in name
         }
 
+        # Border leaf uplink interfaces (facing spine)
         border_leafs = {
             name: safe_sort_interface_list(
                 [iface.get("name") for iface in ifaces if iface.get("role") == "uplink"]
@@ -66,6 +107,11 @@ class DCTopologyCreator(TopologyCreator):
             if "border_leaf" in name
         }
 
+        # ========================================
+        # Step 3: Build connection matrix
+        # ========================================
+        # Create spine-to-leaf connections (full mesh)
+        # Each spine connects to each leaf using next available interface from each list
         connections: list = [
             {
                 "source": spine,
@@ -78,6 +124,7 @@ class DCTopologyCreator(TopologyCreator):
             if spine_interfaces and leaf_interfaces  # Guard against empty lists
         ]
 
+        # Add spine-to-border-leaf connections (full mesh)
         connections.extend(
             {
                 "source": spine,
@@ -90,10 +137,15 @@ class DCTopologyCreator(TopologyCreator):
             if spine_interfaces and leaf_interfaces  # Guard against empty lists
         )
 
-        # Always use unnumbered interface role for both OSPF and eBGP
+        # ========================================
+        # Step 4: Create physical connections with cables
+        # ========================================
+        # All connections use unnumbered P2P interfaces (supports both OSPF and eBGP)
         interface_role = "unnumbered"
-        # Assign roles and connectors
+
+        # Process each connection: configure interfaces and create cables
         for connection in connections:
+            # Fetch both endpoints from Infrahub
             source_endpoint = await self.client.get(
                 kind=InterfacePhysical,
                 name__value=connection["source_interface"],
@@ -104,18 +156,23 @@ class DCTopologyCreator(TopologyCreator):
                 name__value=connection["destination_interface"],
                 device__name__value=connection["target"],
             )
+
+            # Configure source interface
             source_endpoint.status.value = "active"
             source_endpoint.description.value = (
                 f"Peering connection to {' -> '.join(target_endpoint.hfid or [])}"
             )
             source_endpoint.role.value = interface_role
+
+            # Configure target interface
             target_endpoint.status.value = "active"
             target_endpoint.description.value = (
                 f"Peering connection to {' -> '.join(source_endpoint.hfid or [])}"
             )
             target_endpoint.role.value = interface_role
 
-            # Create cable to connect the endpoints
+            # Create cable object connecting both endpoints
+            # Uses DAC (Direct Attach Copper) passive cables for fabric links
             cable = await self.client.create(
                 kind=DcimCable,
                 data={
@@ -125,10 +182,12 @@ class DCTopologyCreator(TopologyCreator):
                 },
             )
 
-            # Set the connector relationship on both interfaces
-            source_endpoint.connector.id = cable.id
-            target_endpoint.connector.id = cable.id
+            # Set bidirectional connector relationship
+            # This allows queries to traverse: interface → connector → cable → connected_endpoints
+            source_endpoint.connector = cable.id
+            target_endpoint.connector = cable.id
 
+            # Queue all objects for batch save
             batch.add(
                 task=source_endpoint.save, allow_upsert=True, node=source_endpoint
             )
@@ -139,6 +198,7 @@ class DCTopologyCreator(TopologyCreator):
                 task=cable.save, allow_upsert=True, node=cable
             )
 
+        # Execute batch and log results
         async for node, _ in batch.execute():
             hfid_str = ' -> '.join(node.hfid) if isinstance(node.hfid, list) else str(node.hfid)
             if hasattr(node, "description"):
@@ -150,10 +210,23 @@ class DCTopologyCreator(TopologyCreator):
                     f"- Created/Updated [{node.get_kind()}] from {hfid_str}"
                 )
 
+    # ============================================================================
+    # Routing Protocol Configuration - OSPF Underlay
+    # ============================================================================
+
     async def create_ospf_underlay(self) -> None:
-        """Create underlay service and associate it to the respective switches."""
+        """Create OSPF underlay routing for the fabric.
+
+        Creates OSPFv3 instances on all spine, leaf, and border_leaf devices:
+        - Single area (area 0)
+        - Associates all unnumbered and loopback interfaces
+        - Uses loopback0 as router-id
+        - Enables IPv4/IPv6 reachability across the fabric
+        """
         topology_name = self.data.get("name")
         self.log.info(f"Creating OSPF underlay for {topology_name}")
+
+        # Create OSPF Area 0 for the entire fabric
         await self._create(
             kind="RoutingOSPFArea",
             data={
@@ -167,9 +240,9 @@ class DCTopologyCreator(TopologyCreator):
                 "store_key": f"UNDERLAY-{topology_name}",
             },
         )
-        # self.log.info(self.client.store._branches[self.branch].__dict__)
+
+        # Create OSPF instance on each fabric device
         self.log.info(f"Creating OSPF instances for {topology_name}")
-        # self.log.info(self.client.store.get_by_hfid(f"ServiceOSPFArea__{topology_name}-UNDERLAY"))
         await self._create_in_batch(
             kind="ServiceOSPF",
             data_list=[
@@ -206,12 +279,27 @@ class DCTopologyCreator(TopologyCreator):
             ],
         )
 
-        # self.client.log.info(self.data)
-
-        # ... any additional steps ...
+    # ============================================================================
+    # Routing Protocol Configuration - BGP
+    # ============================================================================
 
     async def create_bgp_peer_groups(self, scenario: str) -> None:
-        """Create all BGP peer groups (underlay and overlay) based on scenario."""
+        """Create BGP peer groups based on deployment scenario.
+
+        Two scenarios are supported:
+        1. eBGP scenario: Creates underlay + overlay peer groups
+           - SPINE-TO-LEAF-UNDERLAY (for spine perspective)
+           - LEAF-TO-SPINE-UNDERLAY (for leaf perspective)
+           - RR-SERVERS-OVERLAY (spine route reflectors)
+           - RR-CLIENTS-OVERLAY (leaf route reflector clients)
+
+        2. OSPF scenario: Creates only overlay peer groups
+           - RR-SERVERS-OVERLAY (spine route reflectors)
+           - RR-CLIENTS-OVERLAY (leaf route reflector clients)
+
+        Args:
+            scenario: Either "ebgp" or "ospf"
+        """
         topology_name = self.data.get("name")
         if not topology_name:
             raise ValueError("Topology name is required")
@@ -220,7 +308,9 @@ class DCTopologyCreator(TopologyCreator):
             f"Creating BGP peer groups for {topology_name} ({scenario} scenario)"
         )
 
-        # Underlay peer groups (only for eBGP scenario)
+        # ========================================
+        # Underlay peer groups (eBGP scenario only)
+        # ========================================
         if scenario == "ebgp":
             # Create SPINE-TO-LEAF UNDERLAY peer group
             await self._create(
@@ -258,7 +348,10 @@ class DCTopologyCreator(TopologyCreator):
                 },
             )
 
-        # Overlay peer groups (always created)
+        # ========================================
+        # Overlay peer groups (both scenarios)
+        # ========================================
+        # These are always created for EVPN overlay
         await self._create(
             kind="RoutingBGPPeerGroup",
             data={
@@ -296,13 +389,28 @@ class DCTopologyCreator(TopologyCreator):
         )
 
     async def create_autonomous_systems(self, scenario: str) -> None:
-        """Create autonomous systems for spines, leafs, and overlay based on scenario."""
+        """Create AS numbers for BGP routing.
+
+        Two scenarios:
+        1. eBGP scenario: Creates separate ASNs for each routing domain
+           - SPINE-ASN: Shared by all spines
+           - LEAF-ASN-<device>: Unique ASN per leaf/border_leaf
+           - OVERLAY-ASN: Shared by all devices for iBGP EVPN
+
+        2. OSPF scenario: Creates only overlay ASN
+           - OVERLAY-ASN: Shared by all devices for iBGP EVPN
+
+        All ASNs are allocated from the PRIVATE-ASN4 pool.
+
+        Args:
+            scenario: Either "ebgp" or "ospf"
+        """
         topology_name = self.data.get("name")
         self.log.info(
             f"Creating autonomous systems for {topology_name} (scenario: {scenario})"
         )
 
-        # Get the PRIVATE-ASN4 pool
+        # Get the PRIVATE-ASN4 pool (4-byte private ASNs: 4200000000-4294967294)
         asn_pool = await self.client.get(
             kind=CoreNumberPool,
             name__value="PRIVATE-ASN4",
@@ -378,13 +486,26 @@ class DCTopologyCreator(TopologyCreator):
             )
 
     async def create_ebgp_underlay(self, loopback_name: str) -> None:
-        """Create eBGP underlay sessions using interface-based peering (unidirectional from spine perspective)."""
+        """Create eBGP underlay peering sessions between spine and leaf devices.
+
+        Creates full mesh of eBGP sessions:
+        - Each spine creates sessions to all leafs (SPINE-TO-LEAF peer group)
+        - Each leaf creates sessions to all spines (LEAF-TO-SPINE peer group)
+        - Uses unnumbered interfaces for peering
+        - Uses loopback0 IPs as router-id and session endpoints
+        - Different ASNs: SPINE-ASN for spines, unique LEAF-ASN per leaf
+
+        This provides IP reachability for the overlay iBGP sessions.
+
+        Args:
+            loopback_name: Loopback interface name (typically "loopback0")
+        """
         topology_name = self.data.get("name")
         self.log.info(
-            f"Creating eBGP UNDERLAY for {topology_name} (interface-based peering, unidirectional)"
+            f"Creating eBGP UNDERLAY for {topology_name} (interface-based peering)"
         )
 
-        # Get peer groups
+        # Get peer groups created in create_bgp_peer_groups()
         server_pg = self.client.store.get(
             kind="RoutingBGPPeerGroup", key=f"SPINE-TO-LEAF-UNDERLAY-PG-{topology_name}", branch=self.branch
         )
@@ -524,15 +645,22 @@ class DCTopologyCreator(TopologyCreator):
     async def create_ibgp_overlay(
         self, loopback_name: str, session_type: str = "overlay"
     ) -> None:
-        """Create iBGP overlay sessions using peer groups.
+        """Create iBGP EVPN overlay sessions for VXLAN control plane.
+
+        Creates full mesh of iBGP sessions using route reflection:
+        - Spines act as route reflectors (RR-SERVERS-OVERLAY peer group)
+        - Leafs act as route reflector clients (RR-CLIENTS-OVERLAY peer group)
+        - Uses loopback1 (VTEP) IPs for session endpoints
+        - All devices share same OVERLAY-ASN (iBGP requirement)
+        - Enables EVPN address family for VXLAN fabric
 
         Args:
-            loopback_name: Name of the loopback interface to use
+            loopback_name: Loopback interface for BGP session (typically "loopback1" for VTEP)
             session_type: Type of session - "overlay" for traditional iBGP or "evpn" for EVPN
         """
         topology_name = self.data.get("name")
 
-        # Always use the overlay ASN for iBGP overlay sessions
+        # Get the shared overlay ASN (all devices use same ASN for iBGP)
         overlay_asn = self.client.store.get(
             kind="RoutingAutonomousSystem", key=f"OVERLAY-ASN-{topology_name}", branch=self.branch
         )
@@ -649,8 +777,28 @@ class DCTopologyCreator(TopologyCreator):
                 f"- Created [{node.get_kind()}] {node.name.value} (iBGP EVPN overlay)"
             )
 
+    # ============================================================================
+    # IP Addressing - Loopback Interfaces
+    # ============================================================================
+
     async def create_dual_loopbacks(self) -> None:
-        """Create both underlay (loopback0) and VTEP (loopback1) loopback interfaces"""
+        """Create dual loopback interfaces on all fabric devices.
+
+        Creates two loopbacks with different purposes:
+        1. loopback0 (underlay):
+           - Used for underlay routing (OSPF/eBGP router-id)
+           - IP from loopback_ip_pool
+           - Role: "loopback"
+
+        2. loopback1 (VTEP):
+           - Used for VXLAN tunnel endpoints
+           - Used for iBGP EVPN overlay sessions
+           - IP from loopback-vtep_ip_pool
+           - Role: "loopback-vtep"
+
+        This separation allows for independent scaling and troubleshooting of
+        underlay vs overlay routing.
+        """
         self.log.info(
             "Creating dual loopback interfaces: loopback0 (underlay) and loopback1 (VTEP)"
         )
@@ -666,20 +814,41 @@ class DCTopologyCreator(TopologyCreator):
         )
 
 
+# ==============================================================================
+# Main Generator Class
+# ==============================================================================
+
+
 class DCTopologyGenerator(InfrahubGenerator):
-    """Generate topology."""
+    """Main generator entry point for data center topology creation.
+
+    This generator orchestrates the complete creation of a data center fabric
+    by calling methods on DCTopologyCreator in the proper sequence.
+    """
 
     async def generate(self, data: dict) -> None:
-        """Generate topology."""
+        """Generate complete data center topology from design specification.
+
+        Creates a full spine-leaf data center fabric including:
+        - Physical infrastructure (sites, racks, devices)
+        - Network connectivity (cables, fabric peering)
+        - IP addressing (management, loopbacks, VTEP)
+        - Routing protocols (OSPF or eBGP underlay, iBGP EVPN overlay)
+
+        Args:
+            data: Topology design specification from TopologyDataCenter object
+        """
+        # ========================================
+        # Data preparation and scenario detection
+        # ========================================
         cleaned_data = clean_data(data)
         if isinstance(cleaned_data, dict):
             data = cleaned_data["TopologyDataCenter"][0]
         else:
             raise ValueError("clean_data() did not return a dictionary")
-        # Determine scenario from data or default to OSPF
-        # Check both 'scenario' and 'strategy' fields, and also description for EBGP indicator
+
+        # Determine deployment scenario (OSPF or eBGP for underlay)
         scenario = data.get("scenario", data.get("strategy", "ospf")).lower()
-        # Map strategy values to scenario values
         if scenario in ["ebgp-ibgp", "ebgp"]:
             scenario = "ebgp"
         elif scenario in ["ospf-ibgp", "ospf"]:
@@ -691,19 +860,28 @@ class DCTopologyGenerator(InfrahubGenerator):
             f"Using {scenario} scenario for topology generation (unnumbered P2P only)"
         )
 
+        # ========================================
+        # Phase 1: Physical Infrastructure
+        # ========================================
         network_creator = DCTopologyCreator(
             client=self.client, log=self.logger, branch=self.branch, data=data
         )
+        # Load existing devices, platforms, templates, etc.
         await network_creator.load_data()
+
+        # Create building/site object
         await network_creator.create_site()
 
-        # Create location hierarchy (Pod-1 and Row-1)
+        # Create location hierarchy within the site (Pod-1, Row-1, etc.)
         await network_creator.create_location_hierarchy()
 
-        # Create racks based on number of leaf devices
+        # Create rack objects (number based on leaf count)
         await network_creator.create_racks()
 
-        # Load technical_subnet as an object if it exists
+        # ========================================
+        # Phase 2: IP Address Planning
+        # ========================================
+        # Load technical_subnet (used for loopbacks) if it exists
         if data.get("technical_subnet"):
             technical_subnet_obj = await self.client.get(
                 kind="IpamPrefix", id=data["technical_subnet"]["id"], branch=self.branch
@@ -711,7 +889,7 @@ class DCTopologyGenerator(InfrahubGenerator):
         else:
             technical_subnet_obj = None
 
-        # Build subnets list for address pools
+        # Build management subnet list
         subnets = []
         if data.get("management_subnet"):
             subnets.append(
@@ -721,44 +899,77 @@ class DCTopologyGenerator(InfrahubGenerator):
                 }
             )
 
-        # Handle technical subnet - split for VTEP functionality
+        # Create IP address pools
         if technical_subnet_obj:
-            # Create management pool first
+            # Create management pool
             await network_creator.create_address_pools(subnets)
-            # Then use the new split loopback pools method
+            # Split technical subnet into separate pools for loopback0 and loopback1
             await network_creator.create_split_loopback_pools(technical_subnet_obj)
         else:
             # Fallback to regular address pool creation if no technical subnet
             await network_creator.create_address_pools(subnets)
+
+        # Create VLAN pool for Layer 2 services
         await network_creator.create_L2_pool()
+
+        # ========================================
+        # Phase 3: Device Creation and Placement
+        # ========================================
+        # Create device objects (spines, leafs, border_leafs)
         await network_creator.create_devices()
 
-        # Assign devices to racks with proper positioning
+        # Assign devices to racks with proper positioning (U-position, face)
         await network_creator.assign_devices_to_racks()
-        # Create default network segments for EVPN fabric connectivity
+
+        # ========================================
+        # Phase 4: Physical Connectivity
+        # ========================================
+        # Create out-of-band management connections (Cat6 cables)
         await network_creator.create_oob_connections("management")
+        # Create console connections (Cat6 cables)
         await network_creator.create_oob_connections("console")
 
-        # Create fabric peering with unnumbered interfaces only
+        # Create spine-leaf fabric peering (DAC cables with unnumbered interfaces)
         await network_creator.create_fabric_peering()
 
-        # Create dual loopbacks: loopback0 (underlay) and loopback1 (VTEP)
+        # ========================================
+        # Phase 5: IP Addressing
+        # ========================================
+        # Create dual loopbacks on all fabric devices
+        # - loopback0: underlay routing
+        # - loopback1: VTEP and overlay routing
         await network_creator.create_dual_loopbacks()
 
+        # ========================================
+        # Phase 6: Routing Protocol Configuration
+        # ========================================
         if scenario == "ospf":
-            # Traditional OSPF + iBGP scenario
+            # ========================================
+            # OSPF + iBGP Scenario
+            # ========================================
+            # Underlay: OSPFv3 provides IP reachability between loopbacks
             await network_creator.create_ospf_underlay()
-            await network_creator.create_autonomous_systems(
-                "ospf"
-            )  # Create overlay ASN for BGP peer groups
-            await network_creator.create_bgp_peer_groups(
-                "ospf"
-            )  # Create peer groups first
+
+            # Create overlay ASN (shared by all devices for iBGP)
+            await network_creator.create_autonomous_systems("ospf")
+
+            # Create BGP peer groups (route reflector model)
+            await network_creator.create_bgp_peer_groups("ospf")
+
+            # Overlay: iBGP EVPN sessions for VXLAN control plane
             await network_creator.create_ibgp_overlay("loopback1", "overlay")
         else:
+            # ========================================
+            # eBGP + iBGP Scenario
+            # ========================================
+            # Create ASNs: SPINE-ASN, LEAF-ASN-<device>, OVERLAY-ASN
             await network_creator.create_autonomous_systems("ebgp")
-            await network_creator.create_bgp_peer_groups(
-                "ebgp"
-            )  # Create peer groups first
+
+            # Create BGP peer groups (underlay + overlay)
+            await network_creator.create_bgp_peer_groups("ebgp")
+
+            # Underlay: eBGP provides IP reachability between loopbacks
             await network_creator.create_ebgp_underlay("loopback0")
+
+            # Overlay: iBGP EVPN sessions for VXLAN control plane
             await network_creator.create_ibgp_overlay("loopback1", "evpn")

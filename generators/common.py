@@ -960,8 +960,8 @@ class TopologyCreator:
             )
 
             # Set the connector relationship on both interfaces
-            source_endpoint.connector.id = cable.id
-            target_endpoint.connector.id = cable.id
+            source_endpoint.connector = cable.id
+            target_endpoint.connector = cable.id
 
             batch.add(
                 task=source_endpoint.save, allow_upsert=True, node=source_endpoint

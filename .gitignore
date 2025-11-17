@@ -16,5 +16,6 @@
 docker-compose.yml
 generated-configs/
 infrahub_bundle_dc.egg-info
+infrahub-backup
 scripts/debug/
 service_catalog/.streamlit/
