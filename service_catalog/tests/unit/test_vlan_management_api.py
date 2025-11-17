@@ -14,7 +14,7 @@ class TestLocationMethods:
     """Test location-related API methods."""
 
     @patch('utils.api.InfrahubClientSync')
-    def test_get_location_buildings_success(self, mock_sdk):
+    def test_get_location_buildings_success(self, mock_sdk: Mock) -> None:
         """Test successful retrieval of location buildings."""
         # Setup mock
         mock_building = Mock()
@@ -41,7 +41,7 @@ class TestLocationMethods:
         )
 
     @patch('utils.api.InfrahubClientSync')
-    def test_get_location_buildings_empty(self, mock_sdk):
+    def test_get_location_buildings_empty(self, mock_sdk: Mock) -> None:
         """Test retrieval when no buildings exist."""
         mock_client_instance = Mock()
         mock_client_instance.filters.return_value = []
@@ -53,7 +53,7 @@ class TestLocationMethods:
         assert len(buildings) == 0
 
     @patch('utils.api.InfrahubClientSync')
-    def test_get_pods_by_building_success(self, mock_sdk):
+    def test_get_pods_by_building_success(self, mock_sdk: Mock) -> None:
         """Test successful retrieval of pods by building."""
         mock_client_instance = Mock()
         mock_client_instance.execute_graphql.return_value = {
@@ -78,7 +78,7 @@ class TestLocationMethods:
         assert pods[0]["name"]["value"] == "Pod 1"
 
     @patch('utils.api.InfrahubClientSync')
-    def test_get_racks_by_pod_success(self, mock_sdk):
+    def test_get_racks_by_pod_success(self, mock_sdk: Mock) -> None:
         """Test successful retrieval of racks by pod."""
         mock_client_instance = Mock()
         mock_client_instance.execute_graphql.return_value = {
@@ -103,7 +103,7 @@ class TestLocationMethods:
         assert racks[0]["name"]["value"] == "Rack A1"
 
     @patch('utils.api.InfrahubClientSync')
-    def test_get_devices_by_location_with_rack(self, mock_sdk):
+    def test_get_devices_by_location_with_rack(self, mock_sdk: Mock) -> None:
         """Test retrieval of devices filtered by specific rack."""
         mock_client_instance = Mock()
         mock_client_instance.execute_graphql.return_value = {
@@ -128,7 +128,7 @@ class TestLocationMethods:
         assert devices[0]["name"]["value"] == "leaf-switch-01"
 
     @patch('utils.api.InfrahubClientSync')
-    def test_get_devices_by_location_all_racks(self, mock_sdk):
+    def test_get_devices_by_location_all_racks(self, mock_sdk: Mock) -> None:
         """Test retrieval of devices from all racks in pod."""
         mock_client_instance = Mock()
         mock_client_instance.execute_graphql.return_value = {
@@ -161,7 +161,7 @@ class TestInterfaceMethods:
     """Test interface-related API methods."""
 
     @patch('utils.api.InfrahubClientSync')
-    def test_get_interfaces_by_device_with_role_filter(self, mock_sdk):
+    def test_get_interfaces_by_device_with_role_filter(self, mock_sdk: Mock) -> None:
         """Test retrieval of interfaces filtered by role."""
         mock_client_instance = Mock()
         mock_client_instance.execute_graphql.return_value = {
@@ -188,7 +188,7 @@ class TestInterfaceMethods:
         assert interfaces[0]["role"]["value"] == "Customer"
 
     @patch('utils.api.InfrahubClientSync')
-    def test_get_interfaces_by_device_no_filter(self, mock_sdk):
+    def test_get_interfaces_by_device_no_filter(self, mock_sdk: Mock) -> None:
         """Test retrieval of all interfaces without role filter."""
         mock_client_instance = Mock()
         mock_client_instance.execute_graphql.return_value = {
@@ -225,7 +225,7 @@ class TestVLANMethods:
     """Test VLAN-related API methods."""
 
     @patch('utils.api.InfrahubClientSync')
-    def test_get_vlans_by_interface_success(self, mock_sdk):
+    def test_get_vlans_by_interface_success(self, mock_sdk: Mock) -> None:
         """Test retrieval of VLANs assigned to interface."""
         mock_client_instance = Mock()
         mock_client_instance.execute_graphql.return_value = {
@@ -261,7 +261,7 @@ class TestVLANMethods:
         assert vlans[0]["name"]["value"] == "Production"
 
     @patch('utils.api.InfrahubClientSync')
-    def test_get_vlans_by_interface_empty(self, mock_sdk):
+    def test_get_vlans_by_interface_empty(self, mock_sdk: Mock) -> None:
         """Test retrieval when no VLANs assigned."""
         mock_client_instance = Mock()
         mock_client_instance.execute_graphql.return_value = {
@@ -286,7 +286,7 @@ class TestVLANMethods:
         assert len(vlans) == 0
 
     @patch('utils.api.InfrahubClientSync')
-    def test_get_all_vlans_success(self, mock_sdk):
+    def test_get_all_vlans_success(self, mock_sdk: Mock) -> None:
         """Test retrieval of all VLANs."""
         mock_vlan = Mock()
         mock_vlan.id = "vlan-1"
@@ -308,7 +308,7 @@ class TestVLANMethods:
         assert vlans[0]["vlan_id"]["value"] == 100
 
     @patch('utils.api.InfrahubClientSync')
-    def test_assign_vlan_to_interface_success(self, mock_sdk):
+    def test_assign_vlan_to_interface_success(self, mock_sdk: Mock) -> None:
         """Test successful VLAN assignment."""
         mock_client_instance = Mock()
         mock_client_instance.execute_graphql.return_value = {
@@ -329,7 +329,7 @@ class TestVLANMethods:
         assert result["interface"]["id"] == "iface-1"
 
     @patch('utils.api.InfrahubClientSync')
-    def test_assign_vlan_to_interface_failure(self, mock_sdk):
+    def test_assign_vlan_to_interface_failure(self, mock_sdk: Mock) -> None:
         """Test VLAN assignment failure."""
         mock_client_instance = Mock()
         mock_client_instance.execute_graphql.return_value = {
@@ -349,7 +349,7 @@ class TestErrorHandling:
     """Test error handling in API methods."""
 
     @patch('utils.api.InfrahubClientSync')
-    def test_get_location_buildings_error(self, mock_sdk):
+    def test_get_location_buildings_error(self, mock_sdk: Mock) -> None:
         """Test error handling when fetching buildings fails."""
         mock_client_instance = Mock()
         mock_client_instance.filters.side_effect = Exception("Connection failed")
@@ -363,7 +363,7 @@ class TestErrorHandling:
         assert "Failed to fetch location buildings" in str(exc_info.value)
 
     @patch('utils.api.InfrahubClientSync')
-    def test_get_pods_by_building_error(self, mock_sdk):
+    def test_get_pods_by_building_error(self, mock_sdk: Mock) -> None:
         """Test error handling when fetching pods fails."""
         mock_client_instance = Mock()
         mock_client_instance.execute_graphql.side_effect = Exception("GraphQL error")

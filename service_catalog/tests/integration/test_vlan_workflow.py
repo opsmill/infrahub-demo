@@ -14,7 +14,7 @@ class TestVLANWorkflowIntegration:
     """Test complete VLAN change workflow."""
 
     @patch('utils.api.InfrahubClientSync')
-    def test_complete_workflow_success(self, mock_sdk):
+    def test_complete_workflow_success(self, mock_sdk: Mock) -> None:
         """Test successful execution of complete workflow."""
         mock_client_instance = Mock()
         
@@ -64,7 +64,7 @@ class TestVLANWorkflowIntegration:
         assert pc["id"] == "pc-1"
 
     @patch('utils.api.InfrahubClientSync')
-    def test_workflow_branch_creation_failure(self, mock_sdk):
+    def test_workflow_branch_creation_failure(self, mock_sdk: Mock) -> None:
         """Test workflow failure at branch creation step."""
         mock_client_instance = Mock()
         mock_client_instance.branch.create.side_effect = Exception("Branch creation failed")
@@ -78,7 +78,7 @@ class TestVLANWorkflowIntegration:
         assert "Failed to create branch" in str(exc_info.value)
 
     @patch('utils.api.InfrahubClientSync')
-    def test_workflow_vlan_assignment_failure(self, mock_sdk):
+    def test_workflow_vlan_assignment_failure(self, mock_sdk: Mock) -> None:
         """Test workflow failure at VLAN assignment step."""
         mock_client_instance = Mock()
         
@@ -111,7 +111,7 @@ class TestVLANWorkflowIntegration:
         assert "VLAN assignment mutation failed" in str(exc_info.value)
 
     @patch('utils.api.InfrahubClientSync')
-    def test_workflow_proposed_change_failure(self, mock_sdk):
+    def test_workflow_proposed_change_failure(self, mock_sdk: Mock) -> None:
         """Test workflow failure at proposed change creation step."""
         mock_client_instance = Mock()
         
@@ -159,7 +159,7 @@ class TestVLANWorkflowIntegration:
         assert "Failed to create proposed change" in str(exc_info.value)
 
     @patch('utils.api.InfrahubClientSync')
-    def test_workflow_error_recovery(self, mock_sdk):
+    def test_workflow_error_recovery(self, mock_sdk: Mock) -> None:
         """Test error recovery and messaging."""
         mock_client_instance = Mock()
         
@@ -202,7 +202,7 @@ class TestDataValidation:
     """Test data validation in workflow."""
 
     @patch('utils.api.InfrahubClientSync')
-    def test_interface_with_no_vlans(self, mock_sdk):
+    def test_interface_with_no_vlans(self, mock_sdk: Mock) -> None:
         """Test handling of interface with no VLANs."""
         mock_client_instance = Mock()
         mock_client_instance.execute_graphql.return_value = {
@@ -227,7 +227,7 @@ class TestDataValidation:
         assert len(vlans) == 0
 
     @patch('utils.api.InfrahubClientSync')
-    def test_device_with_no_customer_interfaces(self, mock_sdk):
+    def test_device_with_no_customer_interfaces(self, mock_sdk: Mock) -> None:
         """Test handling of device with no customer interfaces."""
         mock_client_instance = Mock()
         mock_client_instance.execute_graphql.return_value = {
@@ -243,7 +243,7 @@ class TestDataValidation:
         assert len(interfaces) == 0
 
     @patch('utils.api.InfrahubClientSync')
-    def test_location_with_no_devices(self, mock_sdk):
+    def test_location_with_no_devices(self, mock_sdk: Mock) -> None:
         """Test handling of location with no devices."""
         mock_client_instance = Mock()
         mock_client_instance.execute_graphql.return_value = {
@@ -262,7 +262,7 @@ class TestDataValidation:
 class TestBranchNaming:
     """Test branch naming conventions."""
 
-    def test_branch_name_format(self):
+    def test_branch_name_format(self) -> None:
         """Test branch name follows expected format."""
         device_name = "leaf-switch-01"
         interface_name = "eth1"
@@ -275,7 +275,7 @@ class TestBranchNaming:
         assert interface_name in branch_name
         assert len(timestamp) == 15  # YYYYMMDD-HHMMSS
 
-    def test_branch_name_uniqueness(self):
+    def test_branch_name_uniqueness(self) -> None:
         """Test that branch names are unique due to timestamp."""
         import time
         

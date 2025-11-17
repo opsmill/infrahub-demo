@@ -54,7 +54,7 @@ def render_location_selectors(client: InfrahubClient) -> Dict[str, Optional[str]
             "device_id": str or None
         }
     """
-    selections = {
+    selections: Dict[str, Optional[str]] = {
         "building_id": None,
         "pod_id": None,
         "rack_id": None,
@@ -96,9 +96,13 @@ def render_location_selectors(client: InfrahubClient) -> Dict[str, Optional[str]
         selections["building_id"] = building_map.get(selected_building_name)
 
         # Pod selector
+        building_id = selections["building_id"]
+        if not building_id:
+            return selections
+
         with st.spinner("Loading pods..."):
             try:
-                pods = client.get_pods_by_building(selections["building_id"], "main")
+                pods = client.get_pods_by_building(building_id, "main")
             except (InfrahubAPIError, InfrahubConnectionError) as e:
                 display_error("Failed to load pods", str(e))
                 return selections
@@ -121,9 +125,13 @@ def render_location_selectors(client: InfrahubClient) -> Dict[str, Optional[str]
             selections["pod_id"] = pod_map.get(selected_pod_name)
 
             # Rack selector (optional)
+            pod_id = selections["pod_id"]
+            if not pod_id:
+                return selections
+
             with st.spinner("Loading racks..."):
                 try:
-                    racks = client.get_racks_by_pod(selections["pod_id"], "main")
+                    racks = client.get_racks_by_pod(pod_id, "main")
                 except (InfrahubAPIError, InfrahubConnectionError) as e:
                     display_error("Failed to load racks", str(e))
                     return selections
@@ -145,7 +153,7 @@ def render_location_selectors(client: InfrahubClient) -> Dict[str, Optional[str]
             with st.spinner("Loading devices..."):
                 try:
                     devices = client.get_devices_by_location(
-                        selections["pod_id"],
+                        pod_id,
                         selections["rack_id"],
                         "main"
                     )
@@ -363,13 +371,13 @@ def execute_vlan_change_workflow(
     try:
         # Step 1: Create branch
         with st.spinner("Creating branch..."):
-            display_progress("Creating branch", 1, 3)
+            display_progress("Creating branch", 0.33)
             client.create_branch(branch_name, from_branch="main")
             st.success(f"✅ Branch created: {branch_name}")
 
         # Step 2: Assign VLAN
         with st.spinner("Assigning VLAN..."):
-            display_progress("Assigning VLAN to interface", 2, 3)
+            display_progress("Assigning VLAN to interface", 0.67)
             client.assign_vlan_to_interface(
                 interface_id,
                 vlan_id,
@@ -379,7 +387,7 @@ def execute_vlan_change_workflow(
 
         # Step 3: Create proposed change
         with st.spinner("Creating proposed change..."):
-            display_progress("Creating proposed change", 3, 3)
+            display_progress("Creating proposed change", 1.0)
             pc = client.create_proposed_change(
                 branch=branch_name,
                 name=f"VLAN Change: {device_name} {interface_name}",
@@ -459,19 +467,22 @@ def main() -> None:
     # Only proceed if device is selected
     if location_selections.get("device_id"):
         device_id = location_selections["device_id"]
-        
+
+        # Type guard - device_id is guaranteed to be str here due to the if check
+        assert device_id is not None, "device_id should not be None after check"
+
         # Get device name for display
         device_name = None
         for key in st.session_state.keys():
             if key == "device_selector":
                 device_name = st.session_state[key]
                 break
-        
+
         if not device_name:
             device_name = "Selected Device"
 
         st.markdown("---")
-        
+
         # Render interface selector
         interface_info = render_interface_selector(client, device_id, device_name)
 
