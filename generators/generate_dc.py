@@ -116,7 +116,7 @@ class DCTopologyCreator(TopologyCreator):
             target_endpoint.role.value = interface_role
 
             # Create cable to connect the endpoints
-            cable = await self.client.create(kind=DcimCable)
+            cable = await self.client.create(kind=DcimCable, data={})
             cable.status.value = "connected"
             cable.cable_type.value = "dac-passive"
             cable.connected_endpoints.add(source_endpoint.id)

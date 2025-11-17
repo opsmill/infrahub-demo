@@ -950,7 +950,7 @@ class TopologyCreator:
             )
 
             # Create cable to connect the endpoints
-            cable = await self.client.create(kind=DcimCable)
+            cable = await self.client.create(kind=DcimCable, data={})
             cable.status.value = "connected"
             # Use cat6 for management/console connections
             cable.cable_type.value = "cat6"
