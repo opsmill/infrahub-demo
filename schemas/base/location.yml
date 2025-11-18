@@ -59,5 +59,6 @@ generics:
       - name: devices
         label: Devices
         peer: DcimGenericDevice
+        identifier: hosting__devices
         cardinality: many
         optional: true
