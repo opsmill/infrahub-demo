@@ -9,6 +9,16 @@ services:
       - NEO4J_dbms_memory_heap_max__size=4g
       - NEO4J_dbms_memory_pagecache_size=2g
 
+  # Mount local repository for local development
+  # Used when INFRAHUB_GIT_LOCAL=true to work with local generator/transform changes
+  infrahub-git:
+    volumes:
+      - ./:/upstream
+
+  task-worker:
+    volumes:
+      - ./:/upstream
+
   streamlit-service-catalog:
     build:
       context: ./service_catalog
