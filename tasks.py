@@ -40,7 +40,7 @@ def get_compose_command() -> str:
         # Use local docker-compose.yml file
         if override_file.exists():
             return f"docker compose -p infrahub -f {local_compose_file} -f {override_file}"
-        return f"docker compose -p infrahub -f {local_compose_file}"
+        return f"docker compose -p infrahub-bundle-dc -f {local_compose_file}"
 
     # Fall back to downloading from infrahub.opsmill.io
     # Determine the base URL based on edition
