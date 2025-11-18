@@ -1,3 +1,20 @@
+"""
+Common utilities for topology generators.
+
+This module provides the TopologyCreator class and utility functions for creating
+network topologies in Infrahub. It handles:
+
+- Device creation (physical, virtual, firewall devices)
+- Location hierarchy (buildings, pods, rows, racks)
+- Interface creation with range expansion (e.g., Ethernet[1-48])
+- IP address pool management (loopback, management, VTEP)
+- Cable connections (management, console, data)
+- Device rack assignment and positioning
+
+The TopologyCreator class is designed to be used by specific topology generators
+(DC, POP, etc.) to create standardized network infrastructure.
+"""
+
 import logging
 import re
 from typing import Any
@@ -9,8 +26,18 @@ from netutils.interface import sort_interface_list
 
 from .schema_protocols import DcimCable, DcimConsoleInterface, InterfacePhysical
 
-# Range expansion pattern from infrahub_sdk
+# ============================================================================
+# CONSTANTS
+# ============================================================================
+
+# Regex pattern for expanding interface ranges like "Ethernet[1-48]"
+# Matches bracket notation: [1-48], [1,3,5], etc.
 RANGE_PATTERN = re.compile(r"(\[[\w,-]*[-,][\w,-]*\])")
+
+
+# ============================================================================
+# UTILITY FUNCTIONS
+# ============================================================================
 
 
 def expand_interface_range(interface_name: str) -> list[str]:
@@ -77,8 +104,14 @@ def clean_data(data: Any) -> Any:
     """
     Recursively transforms the input data by extracting 'value', 'node', or 'edges' from dictionaries.
 
+    This function unwraps GraphQL response structures to extract actual values:
+    - Extracts 'value' from attribute objects: {"name": {"value": "foo"}} -> {"name": "foo"}
+    - Unwraps 'node' relationships: {"device": {"node": {...}}} -> {"device": {...}}
+    - Flattens 'edges' arrays: {"items": {"edges": [...]}} -> {"items": [...]}
+    - Removes double underscores from keys (GraphQL field aliases)
+
     Args:
-        data: The input data to clean.
+        data: The input data to clean (can be dict, list, or primitive).
 
     Returns:
         The cleaned data with extracted values.
@@ -87,16 +120,20 @@ def clean_data(data: Any) -> Any:
         dict_result = {}
         for key, value in data.items():
             if isinstance(value, dict):
+                # Extract the actual value from GraphQL attribute structure
                 if value.get("value"):
                     dict_result[key] = value["value"]
+                # Unwrap relationship nodes
                 elif value.get("node"):
                     dict_result[key] = clean_data(value["node"])
+                # Flatten edges arrays
                 elif value.get("edges"):
                     dict_result[key] = clean_data(value["edges"])
                 elif not value.get("value"):
                     dict_result[key] = None
                 else:
                     dict_result[key] = clean_data(value)
+            # Remove double underscores from GraphQL aliases
             elif "__" in key:
                 dict_result[key.replace("__", "")] = value
             else:
@@ -105,6 +142,7 @@ def clean_data(data: Any) -> Any:
     if isinstance(data, list):
         list_result = []
         for item in data:
+            # Extract nodes from edge objects
             if isinstance(item, dict) and item.get("node", None) is not None:
                 list_result.append(clean_data(item["node"]))
                 continue
@@ -113,9 +151,53 @@ def clean_data(data: Any) -> Any:
     return data
 
 
+# ============================================================================
+# TOPOLOGY CREATOR CLASS
+# ============================================================================
+
+
 class TopologyCreator:
     """
-    Handles the creation of topology elements in Infrahub.
+    Orchestrates the creation of network topology elements in Infrahub.
+
+    This class handles the end-to-end creation of a network topology including:
+
+    1. Location Hierarchy:
+       - Buildings (sites)
+       - Pods (groups of rows)
+       - Rows (groups of racks)
+       - Racks (physical device containers)
+
+    2. Devices:
+       - Physical devices (switches, routers)
+       - Virtual devices
+       - Security devices (firewalls)
+       - Device interfaces (physical, virtual, console)
+
+    3. IP Address Management:
+       - IP address pools (management, loopback, VTEP)
+       - Prefix allocation and splitting
+       - VLAN number pools
+
+    4. Connectivity:
+       - Management connections (OOB network)
+       - Console connections (serial access)
+       - Loopback interfaces for routing protocols
+
+    5. Rack Assignment:
+       - Physical device positioning in racks
+       - Automatic rack distribution for spine/leaf topologies
+
+    The class uses the Infrahub SDK's batch operations for efficient bulk creation
+    and maintains a local store for cross-referencing created objects.
+
+    Attributes:
+        client: InfrahubClient instance for API communication
+        log: Logger instance for operation tracking
+        branch: Infrahub branch name for isolated changes
+        data: Topology data dictionary containing design elements
+        devices: List of created device objects
+        device_to_template: Mapping of device names to template names
     """
 
     def __init__(
@@ -125,17 +207,28 @@ class TopologyCreator:
         Initialize the TopologyCreator.
 
         Args:
-            client: InfrahubClient instance.
-            log: Logger instance.
-            branch: Branch name.
-            data: Topology data dictionary.
+            client: InfrahubClient instance for API operations.
+            log: Logger instance for tracking operations.
+            branch: Branch name where topology will be created.
+            data: Topology data dictionary containing:
+                  - name: Topology name (used for site/device naming)
+                  - design: Design definition with elements list
+                  - location: Parent location reference
+                  - id: Topology object ID
         """
         self.client = client
         self.log = log
         self.branch = branch
         self.data = data
-        self.devices: list = []
-        self.device_to_template: dict[str, str] = {}  # Map device name to template name
+        self.devices: list = []  # Stores all created devices for later reference
+        self.device_to_template: dict[str, str] = {}  # Maps device names to their template names
+
+    # ========================================================================
+    # INTERNAL HELPER METHODS
+    # ========================================================================
+    # These methods handle low-level object creation operations using the
+    # Infrahub SDK. They provide batch and single-object creation with
+    # automatic storage in the local client store for later reference.
 
     async def _create_in_batch(
         self,
@@ -144,12 +237,19 @@ class TopologyCreator:
         allow_upsert: bool = True,
     ) -> None:
         """
-        Create objects of a specific kind and store in local store.
+        Create multiple objects of a specific kind in a single batch operation.
+
+        This method uses the Infrahub SDK's batch API to efficiently create
+        multiple objects with a single API call. Objects are automatically
+        stored in the client's local store if a store_key is provided.
 
         Args:
-            kind: The kind of object to create.
-            data_list: List of data dictionaries for creation.
+            kind: The kind of object to create (e.g., "DcimDevice", "LocationRack").
+            data_list: List of dictionaries containing:
+                      - payload: Object data for creation
+                      - store_key: Optional key for local store reference
             allow_upsert: Whether to allow idempotent upsert operations (default: True).
+                         When True, existing objects with same HFID will be updated.
         """
         batch = await self.client.create_batch()
         for data in data_list:
@@ -208,9 +308,27 @@ class TopologyCreator:
             self.log.error(f"- Unexpected error creating {kind}: {type(exc).__name__}: {exc}")
             raise
 
+    # ========================================================================
+    # DATA LOADING AND PREPARATION
+    # ========================================================================
+    # These methods prepare and cache topology data before creation.
+    # They handle interface range expansion and pre-load referenced objects
+    # (groups, templates) into the local store for efficient access.
+
     async def load_data(self) -> None:
-        """Load data and store in cache."""
-        # Expand interface ranges in templates
+        """
+        Load and prepare topology data, expanding interface ranges and caching references.
+
+        This method performs several preparation steps:
+        1. Expands interface ranges (e.g., "Ethernet[1-48]") into individual interfaces
+        2. Stores expanded templates in self.data["templates"]
+        3. Pre-loads required groups (role-based, manufacturer-based) into local store
+        4. Pre-loads device templates into local store
+
+        The pre-loaded objects can then be efficiently referenced during device creation
+        without additional API calls.
+        """
+        # Expand interface ranges in templates (e.g., "Ethernet[1-48]" -> ["Ethernet1", "Ethernet2", ...])
         expanded_templates = {}
         for item in self.data["design"]["elements"]:
             template_name = item["template"]["template_name"]
@@ -269,8 +387,24 @@ class TopologyCreator:
             populate_store=True,
         )
 
+    # ========================================================================
+    # LOCATION AND SITE CREATION
+    # ========================================================================
+    # These methods create the physical location hierarchy for the topology:
+    # Building -> Pod -> Row -> Rack
+    # Devices are then assigned to specific racks with rack unit positions.
+
     async def create_site(self) -> None:
-        """Create site."""
+        """
+        Create the top-level building (site) for the topology.
+
+        The building is created as a LocationBuilding object with the topology name
+        and stored in the local store for later reference. It serves as the parent
+        location for all other location objects (pods, rows, racks) and devices.
+
+        Raises:
+            ValueError: If location data is missing or malformed.
+        """
         site_name = self.data.get('name')
         self.log.info(f"Create site {site_name}")
 
@@ -378,30 +512,53 @@ class TopologyCreator:
         )
 
     async def assign_devices_to_racks(self) -> None:
-        """Assign devices to racks with proper positioning."""
+        """
+        Assign devices to racks with intelligent positioning.
+
+        This method implements a spine-leaf topology rack distribution strategy:
+
+        Distribution Strategy:
+        - Leaf switches: One leaf per rack (numbered sequentially)
+        - Spine switches: Distributed in middle racks for optimal cable lengths
+        - Border leafs: Placed in middle racks with spines
+        - Console/OOB: Distributed in middle racks
+
+        Rack Positioning (U position in 42U racks):
+        - Devices are positioned from top of rack downward
+        - Standard position: U42 for 1U devices, U41 for 2U devices, etc.
+        - Multiple devices in a rack stack downward from the top
+
+        Example for 4-leaf topology:
+        - Rack 1: leaf-01 (U42)
+        - Rack 2: leaf-02 (U42), spine-01 (U40), console-01 (U39), oob-01 (U38)
+        - Rack 3: leaf-03 (U42), spine-02 (U40), console-02 (U39), oob-02 (U38)
+        - Rack 4: leaf-04 (U42)
+        """
         site_name = self.data.get('name')
         self.log.info(f"Assigning devices to racks for {site_name}")
 
-        # Group devices by role
+        # Group devices by role for distribution
         leaf_devices = [d for d in self.devices if d.role.value == "leaf"]
         border_leaf_devices = [d for d in self.devices if d.role.value == "border_leaf"]
         spine_devices = [d for d in self.devices if d.role.value == "spine"]
         console_devices = [d for d in self.devices if "console" in d.role.value.lower()]
         oob_devices = [d for d in self.devices if "oob" in d.role.value.lower()]
 
-        # Calculate total rack count and middle racks
+        # Total racks equals number of leaf devices (one leaf per rack)
         total_racks = len(leaf_devices)
 
         if total_racks == 0:
             self.log.warning("No leaf devices found, skipping rack assignment")
             return
 
-        # Calculate middle rack positions for devices that go in the middle
-        # (spines, border_leafs, console, oob)
+        # Calculate middle rack positions for infrastructure devices (spines, border_leafs, console, oob)
+        # These devices are centrally located to minimize cable runs to all leaf racks
+        # Example: In a 10-rack row, racks 4-7 would be middle racks
         middle_device_count = max(
-            len(spine_devices),
-            len(border_leaf_devices) + len(console_devices) + len(oob_devices)
+            len(spine_devices),  # Need at least this many racks for spines
+            len(border_leaf_devices) + len(console_devices) + len(oob_devices)  # Or this many for other infrastructure
         )
+        # Center the middle rack range in the row
         middle_start = (total_racks // 2) - (middle_device_count // 2)
         middle_racks = list(range(middle_start + 1, middle_start + middle_device_count + 1))
 
@@ -412,13 +569,26 @@ class TopologyCreator:
 
         # Helper function to extract device number from name
         def get_device_number(device_name: str) -> int:
-            """Extract device number from name like 'dc-3-leaf-01' -> 1"""
+            """
+            Extract device number from standardized device name.
+
+            Device names follow pattern: {site}-{role}-{number}
+            Examples: 'dc-arista-leaf-01' -> 1, 'dc-juniper-spine-02' -> 2
+            """
             parts = device_name.split("-")
             return int(parts[-1])
 
-        # Helper function to get device height
+        # Helper function to get device height from device type
         async def get_device_height(device: Any) -> int:
-            """Get device height from device_type"""
+            """
+            Get device height in rack units (U) from device_type.
+
+            Accesses the device_type relationship to find the height attribute.
+            Defaults to 1U if height cannot be determined.
+
+            Returns:
+                Device height in rack units (1U, 2U, etc.)
+            """
             if hasattr(device, "device_type"):
                 device_type = device.device_type
                 if hasattr(device_type, "peers") and device_type.peers:
@@ -426,12 +596,13 @@ class TopologyCreator:
                     if hasattr(device_type_obj, "height"):
                         height = device_type_obj.height
                         return height.value if hasattr(height, "value") else int(height)
-            return 1  # Default to 1U
+            return 1  # Default to 1U if height cannot be determined
 
-        # Assign leaf devices to racks
+        # Assign leaf devices to racks (one leaf per rack, matched by device number)
+        # leaf-01 goes to rack 1, leaf-02 to rack 2, etc.
         for device in leaf_devices:
             device_num = get_device_number(device.name.value)
-            rack_num = device_num
+            rack_num = device_num  # Direct mapping: leaf device number = rack number
 
             if rack_num > total_racks:
                 self.log.warning(f"Device {device.name.value} number ({device_num}) exceeds rack count ({total_racks}), skipping")
@@ -547,11 +718,28 @@ class TopologyCreator:
         async for node, _ in batch.execute():
             self.log.info(f"- Updated location for [{node.get_kind()}] {node.name.value}")
 
+    # ========================================================================
+    # IP ADDRESS AND NUMBER POOL MANAGEMENT
+    # ========================================================================
+    # These methods create and manage IP address pools for different purposes:
+    # - Management: OOB network IPs for device management
+    # - Loopback: Routing protocol loopbacks (underlay)
+    # - VTEP: VXLAN Tunnel Endpoint addresses
+    # - VLAN: Layer 2 VLAN ID allocation
+    # Pools are created as CoreIPAddressPool or CoreNumberPool objects.
+
     async def create_address_pools(self, subnets: list[dict]) -> None:
-        """Create objects of a specific kind and store in local store.
+        """
+        Create IP address pools for automatic IP allocation.
+
+        IP address pools allow the generator to automatically allocate IP addresses
+        for interfaces without manual assignment. Each pool is associated with a
+        specific prefix and purpose (management, loopback, etc.).
 
         Args:
-            subnets: List of subnet dicts with 'type' and 'prefix_id' keys.
+            subnets: List of subnet dictionaries containing:
+                    - type: Pool type/purpose (e.g., "Management", "Loopback")
+                    - prefix_id: ID of the IpamPrefix to allocate from
                     Format: [{"type": "Management", "prefix_id": "subnet_id"}, ...]
         """
         self.log.info("Creating address pools")
@@ -679,9 +867,34 @@ class TopologyCreator:
             },
         )
 
+    # ========================================================================
+    # DEVICE CREATION
+    # ========================================================================
+    # These methods handle device and interface creation from design templates.
+    # Devices are created with automatic naming, group membership, and IP allocation.
+    # Interfaces are expanded from templates (handling range notation) and created
+    # as physical, virtual, or console interfaces based on their role.
+
     async def create_devices(self) -> None:
+        """
+        Create all devices defined in the topology design.
+
+        This method:
+        1. Generates unique device names based on role and sequence number
+        2. Allocates management IPs from the management pool
+        3. Assigns devices to appropriate groups (role-based, manufacturer-based)
+        4. Creates devices in batches by type (physical, virtual, firewall)
+        5. Creates interfaces from expanded templates for each device
+        6. Stores device-to-template mapping for later reference
+
+        Device names follow the pattern: {topology_name}-{role}-{sequence_number}
+        Example: dc-arista-spine-01, dc-arista-leaf-02
+
+        The devices are stored in self.devices for later use in rack assignment
+        and connectivity operations.
+        """
         self.log.info(f"Create devices for {self.data.get('name')}")
-        # ... fetch device groups and templates logic ...
+        # Initialize lists for different device types
         physical_devices: list = []
         virtual_devices: list = []
         firewall_devices: list = []
@@ -865,11 +1078,37 @@ class TopologyCreator:
 
         return None
 
+    # ========================================================================
+    # CONNECTIVITY AND CABLING
+    # ========================================================================
+    # These methods create physical and logical connections between devices:
+    # - Management connections: Physical cables between OOB switches and devices
+    # - Console connections: Serial cables from console servers to devices
+    # - Loopback interfaces: Virtual interfaces for routing protocols
+    # Each connection creates a cable object and updates interface descriptions.
+
     async def create_oob_connections(
         self,
         connection_type: str,
     ) -> None:
-        """Create objects of a specific kind and store in local store."""
+        """
+        Create out-of-band management or console connections between devices.
+
+        This method:
+        1. Identifies source devices (OOB switches or console servers)
+        2. Identifies destination devices (all other devices)
+        3. Matches devices with even/odd numbering for redundancy
+        4. Creates cables connecting appropriate interfaces
+        5. Updates interface descriptions to document connections
+
+        The pairing logic ensures redundancy by matching devices with the same
+        parity (both even or both odd numbered).
+
+        Args:
+            connection_type: Type of connection to create:
+                           - "management": Physical management network connections
+                           - "console": Serial console connections
+        """
         batch = await self.client.create_batch()
         interfaces: dict = {}
 
