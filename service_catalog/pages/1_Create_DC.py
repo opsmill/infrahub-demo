@@ -14,6 +14,7 @@ from utils import (
     GENERATOR_WAIT_TIME,
     INFRAHUB_ADDRESS,
     INFRAHUB_API_TOKEN,
+    INFRAHUB_UI_URL,
     InfrahubClient,
     display_error,
     display_logo,
@@ -445,7 +446,8 @@ def main() -> None:
     # Initialize API client to fetch locations
     client = InfrahubClient(
         st.session_state.infrahub_url,
-        api_token=INFRAHUB_API_TOKEN or None
+        api_token=INFRAHUB_API_TOKEN or None,
+        ui_url=INFRAHUB_UI_URL
     )
 
     # Fetch locations (cache in session state)

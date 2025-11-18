@@ -11,10 +11,6 @@ services:
 
   # Mount local repository for local development
   # Used when INFRAHUB_GIT_LOCAL=true to work with local generator/transform changes
-  infrahub-git:
-    volumes:
-      - ./:/upstream
-
   task-worker:
     volumes:
       - ./:/upstream
