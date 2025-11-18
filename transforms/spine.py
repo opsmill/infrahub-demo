@@ -42,8 +42,8 @@ class Spine(InfrahubTransform):
         # Extract first OSPF config or use empty dict
         ospf = ospf_configs[0] if ospf_configs else {}
 
-        # Restructure BGP data for template
-        # Template expects: bgp.local_as, bgp.router_id, bgp.neighbors
+        # Create both flattened BGP dict (for Arista/Juniper templates)
+        # and pass original bgp_profiles list (for Cisco template)
         bgp = {}
         if bgp_profiles:
             # Get common BGP settings from first profile
@@ -69,7 +69,8 @@ class Spine(InfrahubTransform):
 
         config = {
             "hostname": data.get("name"),
-            "bgp": bgp,
+            "bgp": bgp,  # Flattened dict for Arista/Juniper/SONiC templates
+            "bgp_profiles": bgp_profiles,  # Original list for Cisco template
             "ospf": ospf,
             "interface_roles": get_interface_roles(data.get("interfaces")),
             "loopbacks": get_loopbacks(data.get("interfaces")),

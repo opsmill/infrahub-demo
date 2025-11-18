@@ -50,7 +50,7 @@ router ospf {{ ospf_config.process_id }}
 {%- endfor %}
 !
 ! BGP Configuration
-{%- for bgp_config in bgp %}
+{%- for bgp_config in bgp_profiles %}
 router bgp {{ bgp_config.local_as.asn }}
   router-id {{ bgp_config.router_id.address.split('/')[0] }}
 {%- if bgp_config.graceful_restart %}
