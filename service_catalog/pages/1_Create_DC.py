@@ -48,6 +48,12 @@ if "form_data" not in st.session_state:
 if "dc_template" not in st.session_state:
     st.session_state.dc_template = None
 
+if "selected_dc_template" not in st.session_state:
+    st.session_state.selected_dc_template = "None (Manual Entry)"
+
+if "available_dc_templates" not in st.session_state:
+    st.session_state.available_dc_templates = []
+
 
 def load_dc_template() -> Optional[Dict[str, Any]]:
     """Load and parse the DC template YAML file.
@@ -72,6 +78,95 @@ def load_dc_template() -> Optional[Dict[str, Any]]:
         return None
     except Exception as e:
         st.error(f"Unexpected error loading template: {e}")
+        return None
+
+
+def get_available_dc_templates() -> List[str]:
+    """Scan the /objects/dc/ directory for available DC template files.
+
+    Returns:
+        List of template names (without .yml extension), with "None (Manual Entry)" as first option.
+    """
+    dc_dir = Path("/objects/dc")
+    templates = ["None (Manual Entry)"]
+
+    try:
+        if dc_dir.exists() and dc_dir.is_dir():
+            # Get all .yml files in the dc directory
+            yaml_files = sorted(dc_dir.glob("*.yml"))
+            for yaml_file in yaml_files:
+                # Extract the filename without extension (e.g., "dc-arista-s" from "dc-arista-s.yml")
+                template_name = yaml_file.stem
+                templates.append(template_name)
+        return templates
+    except Exception as e:
+        st.warning(f"Could not scan DC templates directory: {e}")
+        return templates
+
+
+def load_specific_dc_template(template_name: str) -> Optional[Dict[str, Any]]:
+    """Load and parse a specific DC template YAML file.
+
+    Args:
+        template_name: Name of the template file (without .yml extension)
+
+    Returns:
+        Dictionary containing the parsed template data, or None if file not found.
+    """
+    template_path = Path(f"/objects/dc/{template_name}.yml")
+
+    try:
+        with open(template_path, "r") as f:
+            template_data = yaml.safe_load(f)
+        return template_data
+    except FileNotFoundError:
+        st.error(f"Template file not found at {template_path}")
+        return None
+    except yaml.YAMLError as e:
+        st.error(f"Error parsing template YAML: {e}")
+        return None
+    except Exception as e:
+        st.error(f"Unexpected error loading template: {e}")
+        return None
+
+
+def extract_template_values(template: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Extract form values from a DC template.
+
+    Args:
+        template: Parsed template dictionary
+
+    Returns:
+        Dictionary containing extracted values for form pre-population, or None if extraction fails.
+    """
+    try:
+        spec = template.get("spec", {})
+        data_list = spec.get("data", [])
+
+        if not data_list:
+            return None
+
+        # Get the first data item
+        data = data_list[0]
+
+        # Extract values
+        values = {
+            "name": data.get("name", ""),
+            "location": data.get("location", ""),
+            "description": data.get("description", ""),
+            "strategy": data.get("strategy", "ospf-ibgp"),
+            "design": data.get("design", ""),
+            "emulation": data.get("emulation", True),
+            "provider": data.get("provider", ""),
+            "management_subnet_data": data.get("management_subnet", {}).get("data", {}),
+            "customer_subnet_data": data.get("customer_subnet", {}).get("data", {}),
+            "technical_subnet_data": data.get("technical_subnet", {}).get("data", {}),
+            "member_of_groups": data.get("member_of_groups", ["topologies_dc", "topologies_clab"]),
+        }
+
+        return values
+    except Exception as e:
+        st.error(f"Failed to extract template values: {e}")
         return None
 
 
@@ -420,7 +515,59 @@ def main() -> None:
         )
         st.stop()
 
+    # Load available DC templates
+    if not st.session_state.available_dc_templates:
+        st.session_state.available_dc_templates = get_available_dc_templates()
+
     # DC Creation Form
+    st.markdown("---")
+
+    # Template selector (outside form for immediate response)
+    st.subheader("📋 Template Selection")
+    st.markdown("Optionally select a pre-defined datacenter template to pre-populate the form values.")
+
+    selected_template = st.selectbox(
+        "Select DC Template",
+        options=st.session_state.available_dc_templates,
+        index=st.session_state.available_dc_templates.index(st.session_state.selected_dc_template)
+        if st.session_state.selected_dc_template in st.session_state.available_dc_templates
+        else 0,
+        help="Choose a template to pre-fill form fields, or select 'None (Manual Entry)' to fill manually",
+        disabled=dc_creation_active,
+        key="template_selector",
+    )
+
+    # If template selection changed, load it
+    template_values = None
+    if selected_template != st.session_state.selected_dc_template:
+        st.session_state.selected_dc_template = selected_template
+
+        # Only show template loading messages if not in creation mode
+        if not dc_creation_active:
+            if selected_template != "None (Manual Entry)":
+                with st.spinner(f"Loading template {selected_template}..."):
+                    template = load_specific_dc_template(selected_template)
+                    if template:
+                        template_values = extract_template_values(template)
+                        if template_values:
+                            st.success(f"✓ Template '{selected_template}' loaded successfully!")
+                        else:
+                            st.error(f"Failed to extract values from template '{selected_template}'")
+            else:
+                st.info("Manual entry mode - fill in all fields below")
+        else:
+            # Still load template but don't show messages during DC creation
+            if selected_template != "None (Manual Entry)":
+                template = load_specific_dc_template(selected_template)
+                if template:
+                    template_values = extract_template_values(template)
+
+    # Load template values if a template is selected
+    if st.session_state.selected_dc_template != "None (Manual Entry)" and template_values is None:
+        template = load_specific_dc_template(st.session_state.selected_dc_template)
+        if template:
+            template_values = extract_template_values(template)
+
     st.markdown("---")
 
     with st.form("dc_creation_form"):
@@ -430,8 +577,11 @@ def main() -> None:
         col1, col2 = st.columns(2)
 
         with col1:
+            # Pre-fill name from template if available
+            default_name = template_values.get("name", "") if template_values else ""
             name = st.text_input(
                 "Name *",
+                value=default_name,
                 placeholder="e.g., DC-4",
                 help="Unique name for the data center",
                 disabled=dc_creation_active,
@@ -444,9 +594,14 @@ def main() -> None:
                 for loc in st.session_state.locations
             }
 
+            # Pre-select location from template if available
+            default_location = template_values.get("location", "") if template_values else ""
+            location_index = location_names.index(default_location) if default_location in location_names else 0
+
             location_name = st.selectbox(
                 "Location *",
                 options=location_names,
+                index=location_index,
                 help="Physical location of the data center",
                 disabled=dc_creation_active,
             )
@@ -454,9 +609,15 @@ def main() -> None:
             # Get the location ID for the selected name
             location_id = location_map.get(location_name) if location_name else None
 
+            # Pre-select strategy from template if available
+            strategy_options = ["ospf-ibgp", "isis-ibgp", "ospf-ebgp"]
+            default_strategy = template_values.get("strategy", "ospf-ibgp") if template_values else "ospf-ibgp"
+            strategy_index = strategy_options.index(default_strategy) if default_strategy in strategy_options else 0
+
             strategy = st.selectbox(
                 "Strategy *",
-                options=["ospf-ibgp", "isis-ibgp", "ospf-ebgp"],
+                options=strategy_options,
+                index=strategy_index,
                 help="Routing strategy for the data center",
                 disabled=dc_creation_active,
             )
@@ -468,9 +629,14 @@ def main() -> None:
                 for p in st.session_state.providers
             }
 
+            # Pre-select provider from template if available
+            default_provider = template_values.get("provider", "") if template_values else ""
+            provider_index = provider_names.index(default_provider) if default_provider in provider_names else 0
+
             provider_name = st.selectbox(
                 "Provider *",
                 options=provider_names,
+                index=provider_index,
                 help="Infrastructure provider",
                 disabled=dc_creation_active,
             )
@@ -479,8 +645,12 @@ def main() -> None:
             provider_id = provider_map.get(provider_name) if provider_name else None
 
         with col2:
+            # Pre-fill description from template if available
+            default_description = template_values.get("description", "") if template_values else ""
+
             description = st.text_area(
                 "Description",
+                value=default_description,
                 placeholder="e.g., London Data Center",
                 help="Optional description of the data center",
                 disabled=dc_creation_active,
@@ -493,9 +663,14 @@ def main() -> None:
                 for d in st.session_state.designs
             }
 
+            # Pre-select design from template if available
+            default_design = template_values.get("design", "") if template_values else ""
+            design_index = design_names.index(default_design) if default_design in design_names else 0
+
             design_name = st.selectbox(
                 "Design *",
                 options=design_names,
+                index=design_index,
                 help="Network design template",
                 disabled=dc_creation_active,
             )
@@ -503,8 +678,11 @@ def main() -> None:
             # Get the design ID for the selected name
             design_id = design_map.get(design_name) if design_name else None
 
+            # Pre-fill emulation from template if available
+            default_emulation = template_values.get("emulation", True) if template_values else True
+
             emulation = st.checkbox(
-                "Emulation", value=True, help="Enable emulation mode", disabled=dc_creation_active
+                "Emulation", value=default_emulation, help="Enable emulation mode", disabled=dc_creation_active
             )
 
         # Subnet configuration
@@ -524,11 +702,33 @@ def main() -> None:
 
         option_list = list(prefix_options.keys()) if prefix_options else ["No active prefixes available"]
 
+        # Extract subnet prefix values from template if available
+        mgmt_subnet_prefix = ""
+        cust_subnet_prefix = ""
+        tech_subnet_prefix = ""
+
+        if template_values:
+            mgmt_subnet_data = template_values.get("management_subnet_data", {})
+            mgmt_subnet_prefix = mgmt_subnet_data.get("prefix", "")
+
+            cust_subnet_data = template_values.get("customer_subnet_data", {})
+            cust_subnet_prefix = cust_subnet_data.get("prefix", "")
+
+            tech_subnet_data = template_values.get("technical_subnet_data", {})
+            tech_subnet_prefix = tech_subnet_data.get("prefix", "")
+
         # Management Subnet
         st.markdown("**Management Subnet**")
+
+        # Find index of management prefix from template
+        mgmt_index = 0
+        if mgmt_subnet_prefix and mgmt_subnet_prefix in option_list:
+            mgmt_index = option_list.index(mgmt_subnet_prefix)
+
         mgmt_prefix_display = st.selectbox(
             "Select Management Prefix *",
             options=option_list,
+            index=mgmt_index,
             key="mgmt_prefix_select",
             help="Select an active prefix for management subnet",
             disabled=dc_creation_active or not prefix_options,
@@ -537,9 +737,16 @@ def main() -> None:
 
         # Customer Subnet
         st.markdown("**Customer Subnet**")
+
+        # Find index of customer prefix from template
+        cust_index = 0
+        if cust_subnet_prefix and cust_subnet_prefix in option_list:
+            cust_index = option_list.index(cust_subnet_prefix)
+
         cust_prefix_display = st.selectbox(
             "Select Customer Prefix *",
             options=option_list,
+            index=cust_index,
             key="cust_prefix_select",
             help="Select an active prefix for customer subnet",
             disabled=dc_creation_active or not prefix_options,
@@ -548,9 +755,16 @@ def main() -> None:
 
         # Technical Subnet
         st.markdown("**Technical Subnet**")
+
+        # Find index of technical prefix from template
+        tech_index = 0
+        if tech_subnet_prefix and tech_subnet_prefix in option_list:
+            tech_index = option_list.index(tech_subnet_prefix)
+
         tech_prefix_display = st.selectbox(
             "Select Technical Prefix *",
             options=option_list,
+            index=tech_index,
             key="tech_prefix_select",
             help="Select an active prefix for technical subnet",
             disabled=dc_creation_active or not prefix_options,
@@ -609,17 +823,25 @@ def main() -> None:
                 # Execute DC creation workflow (reuse the client from initialization)
                 handle_dc_creation(client, form_data)
 
-    # After the form, check if DC creation is in progress and show progress at bottom
+    # Create placeholder for progress section at the very bottom
+    st.markdown("---")
+    progress_section = st.container()
+
+    # Render progress section if DC creation is active
     if dc_creation_active:
-        st.markdown("---")
-        st.markdown("## 🔄 Datacenter Creation Progress")
+        with progress_section:
+            st.markdown("## 🔄 Datacenter Creation Progress")
+            st.markdown("")  # Add spacing
 
-        # Execute current step
-        execute_dc_creation_step(client)
+            # Render progress tracker first
+            render_progress_tracker()
 
-        # Render progress tracker at the bottom
-        st.markdown("---")
-        render_progress_tracker()
+            st.markdown("---")
+            st.markdown("### Status Updates")
+            st.markdown("")  # Add spacing
+
+            # Execute current step (this will render status widgets below the tracker)
+            execute_dc_creation_step(client)
 
 
 if __name__ == "__main__":

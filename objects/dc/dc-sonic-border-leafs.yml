@@ -4,7 +4,7 @@ kind: Object
 spec:
   kind: TopologyDataCenter
   data:
-    - name: DC-SONiC
+    - name: dc-sonic
       location: Barcelona
       description: SONiC Data Center with border leafs
       strategy: ebgp-ibgp

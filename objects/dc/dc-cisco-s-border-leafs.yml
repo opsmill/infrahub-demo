@@ -4,7 +4,7 @@ kind: Object
 spec:
   kind: TopologyDataCenter
   data:
-    - name: DC-Cisco-Border
+    - name: dc-cisco-border
       location: Katowice
       description: Cisco Data Center with border leafs
       strategy: ospf-ibgp
