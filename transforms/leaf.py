@@ -40,8 +40,8 @@ class Leaf(InfrahubTransform):
         # Extract first OSPF config or use empty dict
         ospf = ospf_configs[0] if ospf_configs else {}
 
-        # Restructure BGP data for template
-        # Template expects: bgp.local_as, bgp.router_id, bgp.neighbors
+        # Create both flattened BGP dict (for Arista/Cisco templates)
+        # and pass original bgp_profiles list (for Juniper template)
         bgp = {}
         if bgp_profiles:
             # Get common BGP settings from first profile
@@ -67,7 +67,8 @@ class Leaf(InfrahubTransform):
 
         config = {
             "hostname": data.get("name"),
-            "bgp": bgp,
+            "bgp": bgp,  # Flattened dict for Arista/Cisco/SONiC templates
+            "bgp_profiles": bgp_profiles,  # Original list for Juniper template
             "ospf": ospf,
             "interfaces": get_interface_roles(data.get("interfaces")),
             "vlans": get_vlans(data.get("interfaces")),
