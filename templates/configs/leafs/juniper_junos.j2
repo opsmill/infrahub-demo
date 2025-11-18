@@ -122,8 +122,8 @@ protocols {
 {%- endfor %}
 {%- endif %}
 
-{%- if bgp %}
-{%- for bgp_config in bgp %}
+{%- if bgp_profiles %}
+{%- for bgp_config in bgp_profiles %}
 
 routing-options {
 {%- if bgp_config.router_id and bgp_config.router_id.address %}
