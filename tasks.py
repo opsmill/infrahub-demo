@@ -25,19 +25,30 @@ INFRAHUB_ENTERPRISE = os.getenv("INFRAHUB_ENTERPRISE", "false").lower() == "true
 INFRAHUB_SERVICE_CATALOG = (
     os.getenv("INFRAHUB_SERVICE_CATALOG", "false").lower() == "true"
 )
+INFRAHUB_GIT_LOCAL = os.getenv("INFRAHUB_GIT_LOCAL", "false").lower() == "true"
 MAIN_DIRECTORY_PATH = Path(__file__).parent
 
 
 # Download compose file and use with override
 def get_compose_command() -> str:
     """Generate docker compose command with override support."""
+    local_compose_file = MAIN_DIRECTORY_PATH / "docker-compose.yml"
+    override_file = MAIN_DIRECTORY_PATH / "docker-compose.override.yml"
+
+    # Check if local docker-compose.yml exists
+    if local_compose_file.exists():
+        # Use local docker-compose.yml file
+        if override_file.exists():
+            return f"docker compose -p infrahub -f {local_compose_file} -f {override_file}"
+        return f"docker compose -p infrahub -f {local_compose_file}"
+
+    # Fall back to downloading from infrahub.opsmill.io
     # Determine the base URL based on edition
     if INFRAHUB_ENTERPRISE:
         base_url = f"https://infrahub.opsmill.io/enterprise/{INFRAHUB_VERSION}"
     else:
         base_url = f"https://infrahub.opsmill.io/{INFRAHUB_VERSION}"
 
-    override_file = MAIN_DIRECTORY_PATH / "docker-compose.override.yml"
     if override_file.exists():
         return (
             f"curl -s {base_url} | docker compose -p infrahub -f - -f {override_file}"
@@ -45,7 +56,18 @@ def get_compose_command() -> str:
     return f"curl -s {base_url} | docker compose -p infrahub -f -"
 
 
+def get_compose_source() -> str:
+    """Get a human-readable description of the compose file source."""
+    local_compose_file = MAIN_DIRECTORY_PATH / "docker-compose.yml"
+    if local_compose_file.exists():
+        return "Local (docker-compose.yml)"
+
+    edition = "Enterprise" if INFRAHUB_ENTERPRISE else "Community"
+    return f"infrahub.opsmill.io ({edition} {INFRAHUB_VERSION})"
+
+
 COMPOSE_COMMAND = get_compose_command()
+COMPOSE_SOURCE = get_compose_source()
 CURRENT_DIRECTORY = Path(__file__).resolve()
 DOCUMENTATION_DIRECTORY = CURRENT_DIRECTORY.parent / "docs"
 
@@ -99,10 +121,17 @@ def info(context: Context) -> None:
     """Show current Infrahub configuration."""
     edition = "Enterprise" if INFRAHUB_ENTERPRISE else "Community"
 
-    info_panel = Panel(
+    info_msg = (
         f"[cyan]Edition:[/cyan] {edition}\n"
         f"[cyan]Version:[/cyan] {INFRAHUB_VERSION}\n"
-        f"[cyan]Command:[/cyan] [dim]{COMPOSE_COMMAND}[/dim]",
+        f"[cyan]Compose Source:[/cyan] {COMPOSE_SOURCE}\n"
+        f"[cyan]Service Catalog:[/cyan] {'Enabled' if INFRAHUB_SERVICE_CATALOG else 'Disabled'}\n"
+        f"[cyan]Local Git Repository:[/cyan] {'Enabled' if INFRAHUB_GIT_LOCAL else 'Disabled'}\n"
+        f"[cyan]Command:[/cyan] [dim]{COMPOSE_COMMAND}[/dim]"
+    )
+
+    info_panel = Panel(
+        info_msg,
         title="[bold]Infrahub Configuration[/bold]",
         border_style="blue",
         box=box.SIMPLE,
@@ -124,10 +153,13 @@ def start(context: Context, rebuild: bool = False) -> None:
 
     console.print()
     status_msg = (
-        f"[green]Starting Infrahub {edition}[/green] [dim]({INFRAHUB_VERSION})[/dim]"
+        f"[green]Starting Infrahub {edition}[/green] [dim]({INFRAHUB_VERSION})[/dim]\n"
+        f"[dim]Compose:[/dim] {COMPOSE_SOURCE}"
     )
     if INFRAHUB_SERVICE_CATALOG:
         status_msg += "\n[cyan]Service Catalog:[/cyan] Enabled"
+    if INFRAHUB_GIT_LOCAL:
+        status_msg += "\n[cyan]Local Git Repository:[/cyan] Enabled"
     if rebuild:
         status_msg += "\n[yellow]Rebuild:[/yellow] Enabled"
 
