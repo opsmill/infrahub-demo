@@ -342,8 +342,8 @@ def _generate_rack_css() -> str:
 
     .device {
         height: 100%;
-        border: 2px solid #2E7D32;
-        color: white;
+        border: 2px solid #a8a8cc;
+        color: #333;
         padding: 2px 8px;
         text-align: center;
         font-size: 12px;
@@ -353,7 +353,7 @@ def _generate_rack_css() -> str:
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        background-color: #4CAF50;
+        background-color: #e6e6fa;
         border-radius: 3px;
         box-sizing: border-box;
         transition: all 0.2s ease;
@@ -371,7 +371,7 @@ def _generate_rack_css() -> str:
         overflow: hidden;
         text-overflow: ellipsis;
         line-height: 1.2;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        text-shadow: 0 1px 1px rgba(255,255,255,0.5);
         width: 100%;
     }
 
@@ -383,43 +383,57 @@ def _generate_rack_css() -> str:
         text-overflow: ellipsis;
         margin-top: 1px;
         line-height: 1.1;
-        text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+        text-shadow: 0 1px 1px rgba(255,255,255,0.3);
         width: 100%;
     }
 
-    /* Role-based color classes */
+    /* Role-based color classes - colors match schemas/base/dcim.yml */
     .device-role-leaf {
-        background-color: #4CAF50;
-        border-color: #2E7D32;
+        background-color: #e6e6fa;
+        border-color: #a8a8cc;
     }
 
     .device-role-spine {
-        background-color: #2196F3;
-        border-color: #1565C0;
+        background-color: #aeeeee;
+        border-color: #7cb8b8;
     }
 
     .device-role-border-leaf {
-        background-color: #9C27B0;
-        border-color: #6A1B9A;
+        background-color: #dda0dd;
+        border-color: #b070b0;
     }
 
     .device-role-console {
-        background-color: #FF9800;
-        border-color: #E65100;
+        background-color: #e8e7ad;
+        border-color: #b8b77d;
     }
 
     .device-role-oob {
-        background-color: #795548;
-        border-color: #4E342E;
+        background-color: #e8e7ed;
+        border-color: #b8b7bd;
     }
 
     .device-role-edge {
-        background-color: #00BCD4;
-        border-color: #00838F;
+        background-color: #bf7fbf;
+        border-color: #8f4f8f;
     }
 
     .device-role-firewall {
-        background-color: #F44336;
-        border-color: #C62828;
+        background-color: #6a5acd;
+        border-color: #4a3a9d;
+        color: white;
+    }
+
+    .device-role-firewall .device-name {
+        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    }
+
+    .device-role-firewall .device-type-label {
+        text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+    }
+
+    .device-role-load-balancer {
+        background-color: #38e7fb;
+        border-color: #08b7cb;
     }
     """

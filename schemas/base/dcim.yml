@@ -457,6 +457,7 @@ nodes:
     label: Network Device
     description: A configurable network device for managing and directing data traffic, including routers, switches...
     icon: clarity:network-switch-solid
+    include_in_menu: false
     generate_template: true
     namespace: Dcim
     inherit_from:

@@ -197,7 +197,7 @@ def get_device_color(device_role: Optional[str]) -> str:
     """Get CSS color class for device based on role.
 
     Args:
-        device_role: Device role (e.g., "leaf", "spine", "border_leaf", "console", "oob").
+        device_role: Device role (e.g., "leaf", "spine", "border_leaf", "console", "oob", "load_balancer").
 
     Returns:
         str: CSS class name for device color styling.
@@ -217,6 +217,7 @@ def get_device_color(device_role: Optional[str]) -> str:
         "edge": "device device-role-edge",
         "dc_firewall": "device device-role-firewall",
         "edge_firewall": "device device-role-firewall",
+        "load_balancer": "device device-role-load-balancer",
     }
 
     return role_color_map.get(device_role_lower, "device")
@@ -227,15 +228,17 @@ def get_role_legend() -> Dict[str, str]:
 
     Returns:
         Dict mapping role names to color hex codes for legend display.
+        Colors match the DcimDevice role attribute in schemas/base/dcim.yml
     """
     return {
-        "Leaf": "#4CAF50",           # Green
-        "Spine": "#2196F3",          # Blue
-        "Border Leaf": "#9C27B0",    # Purple
-        "Console": "#FF9800",        # Orange
-        "OOB": "#795548",            # Brown
-        "Edge": "#00BCD4",           # Cyan
-        "Firewall": "#F44336",       # Red
+        "Leaf": "#e6e6fa",           # Lavender
+        "Spine": "#aeeeee",          # Pale cyan
+        "Border Leaf": "#dda0dd",    # Plum
+        "Console": "#e8e7ad",        # Pale yellow
+        "OOB": "#e8e7ed",            # Very pale lavender
+        "Edge": "#bf7fbf",           # Medium purple
+        "Firewall": "#6a5acd",       # Slate blue (dc_firewall and edge_firewall)
+        "Load Balancer": "#38e7fb",  # Cyan
     }
 
 

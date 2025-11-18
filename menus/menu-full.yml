@@ -42,6 +42,12 @@ spec:
                   icon: "mdi:ethernet"
                   kind: DcimInterface
 
+                - name: VLAN
+                  namespace: Dcim
+                  label: "VLANs"
+                  icon: "mdi:ethernet"
+                  kind: IpamVLAN
+
                 - name: GenericSFP
                   namespace: Dcim
                   label: "SFP Modules"
