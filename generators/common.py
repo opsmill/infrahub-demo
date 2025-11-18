@@ -362,14 +362,14 @@ class TopologyCreator:
         # Create racks
         rack_data_list = []
         for i in range(1, num_leafs + 1):
-            rack_name = f"Rack-{i}"
+            rack_name = f"{site_name}-Rack-{i}"
             rack_data_list.append({
                 "payload": {
                     "name": rack_name,
                     "shortname": rack_name,
                     "parent": row.id,
                 },
-                "store_key": f"{site_name}-{rack_name}",
+                "store_key": rack_name,
             })
 
         await self._create_in_batch(
@@ -529,10 +529,10 @@ class TopologyCreator:
                 continue
 
             # Get rack object
-            rack_name = f"Rack-{rack_num}"
+            rack_name = f"{site_name}-Rack-{rack_num}"
             rack = self.client.store.get(
                 kind="LocationRack",
-                key=f"{site_name}-{rack_name}",
+                key=rack_name,
                 branch=self.branch,
             )
 
