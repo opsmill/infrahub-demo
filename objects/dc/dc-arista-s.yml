@@ -4,9 +4,9 @@ kind: Object
 spec:
   kind: TopologyDataCenter
   data:
-    - name: DC-3
+    - name: dc-arista
       location: Frankfurt
-      description: Frankfurt Data Center
+      description: Arista Data Center with cEOS switches
       strategy: ospf-ibgp
       design: PHYSICAL DC ARISTA S
       emulation: true

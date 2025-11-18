@@ -4,9 +4,9 @@ kind: Object
 spec:
   kind: TopologyDataCenter
   data:
-    - name: DC-4
+    - name: dc-sonic
       location: Barcelona
-      description: Barcelona Data Center 4
+      description: SONiC Data Center with border leafs
       strategy: ebgp-ibgp
       design: PHYSICAL DC SONIC S WITH BORDER LEAFS
       emulation: true

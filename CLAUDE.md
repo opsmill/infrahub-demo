@@ -45,8 +45,10 @@ uv run infrahubctl object load objects/bootstrap --branch main
 # Load security data
 uv run infrahubctl object load objects/security/ --branch main
 
-# Add demo repository
-uv run infrahubctl repository add DEMO https://github.com/opsmill/infrahub-bundle-dc.git --read-only --ref main
+# Add bundle-dc repository (loaded from objects/git-repo/*.yml based on INFRAHUB_GIT_LOCAL)
+# - objects/git-repo/github.yml for GitHub (default)
+# - objects/git-repo/local-dev.yml for local /upstream mount
+uv run infrahubctl object load objects/git-repo/github.yml --branch main
 
 # Load event actions (optional)
 uv run infrahubctl object load objects/events/ --branch main
@@ -344,7 +346,22 @@ INFRAHUB_ADDRESS="http://localhost:8000"
 INFRAHUB_API_TOKEN="06438eb2-8019-4776-878c-0941b1f1d1ec"
 ```
 
-Note: The token above is a demo token for local development only.
+Optional environment variables for development:
+
+```bash
+# Use local git repository instead of GitHub (for development/testing)
+INFRAHUB_GIT_LOCAL="true"  # Default: false
+```
+
+When `INFRAHUB_GIT_LOCAL=true`:
+
+- Infrahub will use the current directory mounted at `/upstream` as the git repository
+- Useful for testing generator, transform, and check changes without pushing to GitHub
+- The volume mount is configured in `docker-compose.override.yml`
+- Bootstrap script automatically loads `objects/git-repo/local-dev.yml` (pointing to `/upstream`)
+- When disabled (default), bootstrap loads `objects/git-repo/github.yml` (pointing to GitHub URL)
+
+Note: The API token above is a demo token for local development only.
 
 ## Bootstrap Process
 
@@ -366,8 +383,8 @@ uv run infrahubctl object load objects/bootstrap
 # 5. Load security data (optional)
 uv run infrahubctl object load objects/security/
 
-# 6. Add repository
-uv run infrahubctl repository add DEMO https://github.com/opsmill/infrahub-bundle-dc.git --read-only --ref main
+# 6. Add repository (loaded from objects/git-repo/*.yml based on INFRAHUB_GIT_LOCAL)
+uv run infrahubctl object load objects/git-repo/github.yml --branch main
 
 # 7. Load event actions (optional)
 uv run infrahubctl object load objects/events/
@@ -446,6 +463,9 @@ The project includes a Streamlit-based service catalog application:
   - `18_devices.yml` - Pre-configured devices (corp-firewall, cisco-switch-01, etc.)
   - `19_docs.yml` - Documentation links
 - `objects/dc/` - Data center demo scenario files (Arista, Cisco, Juniper, SONiC)
+- `objects/git-repo/` - Repository configuration objects
+  - `github.yml` - GitHub repository configuration (default)
+  - `local-dev.yml` - Local development repository configuration (when INFRAHUB_GIT_LOCAL=true)
 - `objects/security/` - Security-related demo data
 - `objects/cloud_security/` - Cloud security examples
 - `objects/events/` - Event action definitions

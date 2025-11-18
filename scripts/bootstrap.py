@@ -8,7 +8,7 @@ This script loads all necessary data into Infrahub including:
 - Bootstrap data (locations, platforms, roles)
 - Security data
 - User accounts and roles (emma, otto)
-- Demo repository
+- Bundle-dc repository
 - Event actions
 
 Features:
@@ -25,6 +25,7 @@ Usage:
 """
 
 import argparse
+import os
 import subprocess
 import sys
 import time
@@ -46,6 +47,7 @@ from rich import box
 console = Console()
 
 INFRAHUB_ADDRESS = "http://localhost:8000"
+INFRAHUB_GIT_LOCAL = os.getenv("INFRAHUB_GIT_LOCAL", "false").lower() == "true"
 
 
 def check_infrahub_ready(max_retries: int = 30, sleep_time: int = 2) -> bool:
@@ -157,14 +159,14 @@ def main(branch: str = "main") -> int:
     console.print()
     console.print(
         Panel(
-            f"[bold bright_blue]🚀 Infrahub Demo Bootstrap[/bold bright_blue]\n"
+            f"[bold bright_blue]🚀 Infrahub bundle-dc Bootstrap[/bold bright_blue]\n"
             f"[bright_cyan]Branch:[/bright_cyan] [bold yellow]{branch}[/bold yellow]\n\n"
             "[dim]This will load:[/dim]\n"
             "  [blue]•[/blue] Schemas\n"
             "  [magenta]•[/magenta] Menu definitions\n"
             "  [yellow]•[/yellow] Bootstrap data\n"
             "  [green]•[/green] Security data\n"
-            "  [bright_magenta]•[/bright_magenta] Demo repository",
+            "  [bright_magenta]•[/bright_magenta] bundle-dc repository",
             border_style="bright_blue",
             box=box.SIMPLE,
             title="[bold bright_blue]Bootstrap Process[/bold bright_blue]",
@@ -238,10 +240,19 @@ def main(branch: str = "main") -> int:
 
     # Add repository (may already exist)
     console.print(
-        "\n[bold bright_magenta on black][6/7][/bold bright_magenta on black] 📚 [bold white]Adding demo repository[/bold white]"
+        "\n[bold bright_magenta on black][6/7][/bold bright_magenta on black] 📚 [bold white]Adding bundle-dc repository[/bold white]"
     )
+
+    # Use local repository if INFRAHUB_GIT_LOCAL is enabled, otherwise use GitHub
+    if INFRAHUB_GIT_LOCAL:
+        repo_file = "objects/git-repo/local-dev.yml"
+        console.print("[dim]Using local repository: /upstream[/dim]")
+    else:
+        repo_file = "objects/git-repo/github.yml"
+        console.print("[dim]Using GitHub repository: https://github.com/opsmill/infrahub-bundle-dc.git[/dim]")
+
     result = subprocess.run(
-        "uv run infrahubctl repository add DEMO https://github.com/opsmill/infrahub-bundle-dc.git --ref main --read-only --ref main",
+        f"uv run infrahubctl object load {repo_file} --branch {branch}",
         shell=True,
         capture_output=True,
         text=True,

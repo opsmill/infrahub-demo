@@ -37,15 +37,17 @@ class InfrahubGraphQLError(InfrahubAPIError):
 class InfrahubClient:
     """Client for interacting with the Infrahub API using the official SDK."""
 
-    def __init__(self, base_url: str, api_token: Optional[str] = None, timeout: int = 30):
+    def __init__(self, base_url: str, api_token: Optional[str] = None, timeout: int = 30, ui_url: Optional[str] = None):
         """Initialize the Infrahub API client.
 
         Args:
             base_url: Base URL of the Infrahub instance (e.g., "http://localhost:8000")
             api_token: Optional API token for authentication (not currently used by SDK)
             timeout: Request timeout in seconds (default: 30)
+            ui_url: Optional UI URL for generating browser links (defaults to base_url if not provided)
         """
         self.base_url = base_url.rstrip("/")
+        self.ui_url = (ui_url or base_url).rstrip("/")
         self.api_token = api_token
         self.timeout = timeout
 
@@ -588,9 +590,9 @@ class InfrahubClient:
             pc_id: Proposed change ID
 
         Returns:
-            URL string for the proposed change
+            URL string for the proposed change (uses UI URL for browser access)
         """
-        return f"{self.base_url}/proposed-changes/{pc_id}"
+        return f"{self.ui_url}/proposed-changes/{pc_id}"
 
     def get_location_rows(self, branch: str = "main") -> List[Dict[str, Any]]:
         """Fetch LocationRow objects.

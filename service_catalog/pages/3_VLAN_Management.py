@@ -433,7 +433,9 @@ def main() -> None:
 
     # Initialize API client (always use "main" branch)
     client = InfrahubClient(
-        st.session_state.infrahub_url, api_token=INFRAHUB_API_TOKEN or None
+        st.session_state.infrahub_url,
+        api_token=INFRAHUB_API_TOKEN or None,
+        ui_url=INFRAHUB_UI_URL
     )
 
     # Page title
