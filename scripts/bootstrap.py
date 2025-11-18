@@ -177,42 +177,42 @@ def main(branch: str = "main") -> int:
 
     steps = [
         {
-            "step": "[1/8]",
+            "step": "[1/7]",
             "description": "Loading schemas",
             "command": f"uv run infrahubctl schema load schemas --branch {branch}",
             "color": "blue",
             "icon": "📋",
         },
         {
-            "step": "[2/8]",
+            "step": "[2/7]",
             "description": "Loading menu definitions",
             "command": f"uv run infrahubctl menu load menus/menu-full.yml --branch {branch}",
             "color": "magenta",
             "icon": "📑",
         },
         {
-            "step": "[3/8]",
+            "step": "[3/7]",
             "description": "Loading bootstrap data (locations, platforms, roles, etc.)",
             "command": f"uv run infrahubctl object load objects/bootstrap/ --branch {branch}",
             "color": "yellow",
             "icon": "📦",
         },
         {
-            "step": "[4/8]",
+            "step": "[4/7]",
             "description": "Loading security data (zones, policies, rules)",
             "command": f"uv run infrahubctl object load objects/security/ --branch {branch}",
             "color": "green",
             "icon": "🔒",
         },
+        # {
+        #     "step": "[5/7]",
+        #     "description": "Populating security relationships",
+        #     "command": "uv run python scripts/populate_security_relationships.py",
+        #     "color": "cyan",
+        #     "icon": "🔗",
+        # },
         {
-            "step": "[5/8]",
-            "description": "Populating security relationships",
-            "command": "uv run python scripts/populate_security_relationships.py",
-            "color": "cyan",
-            "icon": "🔗",
-        },
-        {
-            "step": "[6/8]",
+            "step": "[5/7]",
             "description": "Creating user accounts and roles",
             "command": "uv run python scripts/create_users_roles.py",
             "color": "bright_blue",
@@ -238,7 +238,7 @@ def main(branch: str = "main") -> int:
 
     # Add repository (may already exist)
     console.print(
-        "\n[bold bright_magenta on black][7/8][/bold bright_magenta on black] 📚 [bold white]Adding demo repository[/bold white]"
+        "\n[bold bright_magenta on black][6/7][/bold bright_magenta on black] 📚 [bold white]Adding demo repository[/bold white]"
     )
     result = subprocess.run(
         "uv run infrahubctl repository add DEMO https://github.com/opsmill/infrahub-bundle-dc.git --ref main --read-only --ref main",
@@ -274,7 +274,7 @@ def main(branch: str = "main") -> int:
     console.print(Rule(style="dim bright_yellow"))
 
     # Load event actions (optional - may fail if repository not fully synced)
-    console.print("\n[bold bright_cyan on black][8/8][/bold bright_cyan on black] ⚡ [bold white]Loading event actions (optional)[/bold white]")
+    console.print("\n[bold bright_cyan on black][7/7][/bold bright_cyan on black] ⚡ [bold white]Loading event actions (optional)[/bold white]")
     events_loaded = run_command(
         f"uv run infrahubctl object load objects/events/ --branch {branch}",
         "Event actions loading",

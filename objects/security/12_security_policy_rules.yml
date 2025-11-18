@@ -11,10 +11,14 @@ spec:
       policy: "corporate-firewall-policy"
       source_zone: "internal"
       destination_zone: "dmz"
-      source_addresses: [["internet"]]
-      destination_addresses: [["web-servers"]]
-      services: [["web-services"]]
-      applications: [["web-browsing"]]
+      source_addresses:
+        - ["internet"]
+      destination_addresses:
+        - ["web-servers"]
+      services:
+        - ["web-services"]
+      applications:
+        - ["web-browsing"]
 
     - index: 200
       name: "allow-database-access"
