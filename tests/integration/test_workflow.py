@@ -1,12 +1,12 @@
 # pyright: reportAttributeAccessIssue=false
-"""Integration test for the DC-3 demo workflow.
+"""Integration test for the Arista DC demo workflow.
 
 This test validates the complete workflow from the README:
 1. Load schemas
 2. Load bootstrap data
 3. Add repository
 4. Create branch
-5. Load DC-3 design data
+5. Load dc-arista design data
 6. Run DC generator
 7. Create proposed change
 8. Validate and merge
@@ -32,12 +32,12 @@ logging.basicConfig(
 
 
 class TestDCWorkflow(TestInfrahubDockerWithClient):
-    """Test the complete DC-3 workflow from the demo."""
+    """Test the complete DC workflow from the demo."""
 
     @pytest.fixture(scope="class")
     def default_branch(self) -> str:
         """Default branch for testing."""
-        return "add-dc3"
+        return "add-dc-arista"
 
     def test_01_schema_load(self, client_main: InfrahubClientSync) -> None:
         """Load all schemas into Infrahub."""
@@ -164,27 +164,27 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
             client_main.branch.create(default_branch, wait_until_completion=True)
             logging.info("Created branch: %s", default_branch)
 
-    def test_07_load_dc3_design(
+    def test_07_load_dc_design(
         self, client_main: InfrahubClientSync, default_branch: str
     ) -> None:
-        """Load DC-3 design data onto the branch."""
-        logging.info("Starting test: test_07_load_dc3_design")
+        """Load dc-arista design data onto the branch."""
+        logging.info("Starting test: test_07_load_dc_design")
 
-        load_dc3 = self.execute_command(
+        load_dc = self.execute_command(
             f"infrahubctl object load objects/dc/dc-arista-s.yml --branch {default_branch}",
             address=client_main.config.address,
         )
 
-        logging.info("DC-3 design load output: %s", load_dc3.stdout)
-        assert load_dc3.returncode == 0, (
-            f"DC-3 design load failed: {load_dc3.stdout}\n{load_dc3.stderr}"
+        logging.info("DC design load output: %s", load_dc.stdout)
+        assert load_dc.returncode == 0, (
+            f"DC design load failed: {load_dc.stdout}\n{load_dc.stderr}"
         )
 
-    async def test_08_verify_dc3_created(
+    async def test_08_verify_dc_created(
         self, async_client_main: InfrahubClient, default_branch: str
     ) -> None:
-        """Verify that DC-3 topology object was created."""
-        logging.info("Starting test: test_08_verify_dc3_created")
+        """Verify that dc-arista topology object was created."""
+        logging.info("Starting test: test_08_verify_dc_created")
 
         client = async_client_main
         client.default_branch = default_branch
@@ -192,16 +192,16 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
         # Wait a moment for data to be fully committed
         time.sleep(5)
 
-        # Query for DC-3
-        dc3 = await client.get(
+        # Query for dc-arista
+        dc = await client.get(
             kind="TopologyDataCenter",
-            name__value="DC-3",
+            name__value="dc-arista",
             populate_store=True,
         )
 
-        assert dc3, "DC-3 topology not found"
-        assert dc3.name.value == "DC-3", f"Expected DC-3, got {dc3.name.value}"
-        logging.info("DC-3 topology verified: %s", dc3.name.value)
+        assert dc, "dc-arista topology not found"
+        assert dc.name.value == "dc-arista", f"Expected dc-arista, got {dc.name.value}"
+        logging.info("dc-arista topology verified: %s", dc.name.value)
 
     async def test_09_run_generator(
         self, async_client_main: InfrahubClient, default_branch: str
@@ -252,15 +252,15 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
         # Switch to target branch for running the generator
         client.default_branch = default_branch
 
-        # Get the DC-3 topology object to pass its ID to the generator
-        dc3 = await client.get(
+        # Get the dc-arista topology object to pass its ID to the generator
+        dc = await client.get(
             kind="TopologyDataCenter",
-            name__value="DC-3",
+            name__value="dc-arista",
             populate_store=True,
         )
 
-        assert dc3, "DC-3 topology not found before running generator"
-        logging.info("Found DC-3 topology with ID: %s", dc3.id)
+        assert dc, "dc-arista topology not found before running generator"
+        logging.info("Found dc-arista topology with ID: %s", dc.id)
 
         # Run the generator with the correct format
         # The nodes field should contain a list of node IDs to process
@@ -269,7 +269,7 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
             input_data={
                 "data": {
                     "id": definition.id,
-                    "nodes": [dc3.id],  # List of node IDs to run the generator on
+                    "nodes": [dc.id],  # List of node IDs to run the generator on
                 },
                 "wait_until_completion": False,
             },
@@ -358,7 +358,7 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
             mutation="CoreProposedChangeCreate",
             input_data={
                 "data": {
-                    "name": {"value": f"Add DC-3 - Test {default_branch}"},
+                    "name": {"value": f"Add Arista DC - Test {default_branch}"},
                     "source_branch": {"value": default_branch},
                     "destination_branch": {"value": "main"},
                 }
@@ -380,7 +380,7 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
         while not validations_completed and attempts < max_attempts:
             pc = client_main.get(
                 "CoreProposedChange",
-                name__value=f"Add DC-3 - Test {default_branch}",
+                name__value=f"Add Arista DC - Test {default_branch}",
                 include=["validations"],
                 exclude=["reviewers", "approved_by", "created_by"],
                 prefetch_relationships=True,
@@ -453,7 +453,7 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
         # Get the proposed change
         pc = client_main.get(
             "CoreProposedChange",
-            name__value=f"Add DC-3 - Test {default_branch}",
+            name__value=f"Add Arista DC - Test {default_branch}",
         )
 
         logging.info("Proposed change state: %s", pc.state.value if hasattr(pc.state, 'value') else pc.state)
@@ -502,7 +502,7 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
     async def test_14_verify_merge_to_main(
         self, async_client_main: InfrahubClient
     ) -> None:
-        """Verify that DC-3 and devices exist in main branch."""
+        """Verify that dc-arista and devices exist in main branch."""
         logging.info("Starting test: test_14_verify_merge_to_main")
 
         client = async_client_main
@@ -512,20 +512,20 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
         logging.info("Waiting 5 seconds for data propagation...")
         time.sleep(5)
 
-        # Try to get DC-3 from main branch
+        # Try to get dc-arista from main branch
         try:
-            dc3_main = await client.get(
+            dc_main = await client.get(
                 kind="TopologyDataCenter",
-                name__value="DC-3",
+                name__value="dc-arista",
                 raise_when_missing=False,
             )
         except Exception as e:
-            logging.error("Error querying for DC-3 in main: %s", str(e))
-            dc3_main = None
+            logging.error("Error querying for dc-arista in main: %s", str(e))
+            dc_main = None
 
-        # If DC-3 not found, query all datacenters to see what's there
-        if not dc3_main:
-            logging.info("DC-3 not found in main, querying all datacenters...")
+        # If dc-arista not found, query all datacenters to see what's there
+        if not dc_main:
+            logging.info("dc-arista not found in main, querying all datacenters...")
             all_dcs = await client.all(kind="TopologyDataCenter")
             dc_names = [dc.name.value if hasattr(dc, 'name') else str(dc) for dc in all_dcs]
             logging.info("Datacenters in main branch: %s", dc_names)
@@ -534,15 +534,15 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
             proposed_changes = await client.all(kind="CoreProposedChange")
             logging.info("Total proposed changes: %d", len(proposed_changes))
             for pc in proposed_changes:
-                if hasattr(pc, 'name') and 'DC-3' in pc.name.value:
+                if hasattr(pc, 'name') and 'Arista DC' in pc.name.value:
                     pc_state = pc.state.value if hasattr(pc.state, 'value') else pc.state
                     logging.info("Found PC '%s' with state: %s", pc.name.value, pc_state)
 
-        assert dc3_main, (
-            "DC-3 not found in main branch after merge. "
+        assert dc_main, (
+            "dc-arista not found in main branch after merge. "
             "The merge in test_13 may have failed. Check logs above for merge task state."
         )
-        logging.info("DC-3 verified in main branch")
+        logging.info("dc-arista verified in main branch")
 
         # Verify devices exist in main
         devices_main = await client.all(kind="DcimDevice")
