@@ -146,6 +146,13 @@ def start(context: Context, rebuild: bool = False) -> None:
     """Start all containers (use --rebuild to force rebuild images)."""
     edition = "Enterprise" if INFRAHUB_ENTERPRISE else "Community"
 
+    # Get infrahub-sdk version
+    try:
+        import importlib.metadata
+        sdk_version = importlib.metadata.version("infrahub-sdk")
+    except Exception:
+        sdk_version = "unknown"
+
     # Build the compose command with optional service catalog profile
     compose_cmd = COMPOSE_COMMAND
     if INFRAHUB_SERVICE_CATALOG:
@@ -154,7 +161,8 @@ def start(context: Context, rebuild: bool = False) -> None:
     console.print()
     status_msg = (
         f"[green]Starting Infrahub {edition}[/green] [dim]({INFRAHUB_VERSION})[/dim]\n"
-        f"[dim]Compose:[/dim] {COMPOSE_SOURCE}"
+        f"[dim]Compose:[/dim] {COMPOSE_SOURCE}\n"
+        f"[dim]Infrahub SDK:[/dim] {sdk_version}"
     )
     if INFRAHUB_SERVICE_CATALOG:
         status_msg += "\n[cyan]Service Catalog:[/cyan] Enabled"
