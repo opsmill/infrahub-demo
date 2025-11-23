@@ -487,17 +487,25 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
             for log_entry in task.logs[:10]:  # Show first 10 log entries
                 logging.info("  %s", log_entry)
 
-        # The merge task can fail due to check failures even if the merge completes.
-        # test_14 will verify that the data actually made it to main.
-        if task.state != TaskState.COMPLETED:
-            logging.warning(
-                "Merge task %s finished with state %s, "
-                "but will verify merge succeeded in next test",
-                task.id,
-                task.state,
-            )
-        else:
-            logging.info("Proposed change merged successfully")
+        # Verify the merge completed successfully
+        # Check the PC state rather than just the task state, as the PC state
+        # is the authoritative source for whether the merge succeeded
+        pc_after_merge = client_main.get(
+            "CoreProposedChange",
+            name__value=f"Add Arista DC - Test {default_branch}",
+        )
+
+        pc_state = pc_after_merge.state.value if hasattr(pc_after_merge.state, 'value') else pc_after_merge.state
+        logging.info("Proposed change state after merge: %s", pc_state)
+
+        # The PC should be in 'merged' or 'closed' state if merge succeeded
+        assert pc_state in ['merged', 'closed'], (
+            f"Merge did not complete successfully. "
+            f"Task state: {task.state}, PC state: {pc_state}. "
+            f"Check task logs above for details."
+        )
+
+        logging.info("Proposed change merged successfully")
 
     async def test_14_verify_merge_to_main(
         self, async_client_main: InfrahubClient
@@ -508,9 +516,10 @@ class TestDCWorkflow(TestInfrahubDockerWithClient):
         client = async_client_main
         client.default_branch = "main"
 
-        # Add a small delay to allow for data propagation after merge
-        logging.info("Waiting 5 seconds for data propagation...")
-        time.sleep(5)
+        # Add a delay to allow for data propagation after merge
+        # Infrahub needs time to propagate merged data across the system
+        logging.info("Waiting 10 seconds for merge data propagation...")
+        time.sleep(10)
 
         # Try to get dc-arista from main branch
         try:
